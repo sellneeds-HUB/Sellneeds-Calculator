@@ -109,14 +109,15 @@
     return { ok: true, price: data.price, cost: data.cost, commission, fixed: r.fixed, shipping, affiliate, total, profit, margin, tone, rules: r, weights: ctx.weights };
   }
 
-  // Não usa busca binária global: a margem pode cair ao mudar a faixa.
-  // Particiona em todos os limites de preço e nos pontos do teto de frete.
-  // Resolve cada trecho, arredonda para cima ao centavo e confirma no cálculo real.
-  function minimumPrice(market, data, targetPercent) {
-    if (!finite(targetPercent) || targetPercent < 0 || targetPercent > 100) return { ok: false, error: 'Informe uma meta de 0% a 100%.' };
-    const ctx = context(market, data);
-    if (ctx.error) return { ok: false, error: ctx.error };
-    const target = targetPercent / 100;
+  // A comparação admite só ruído de ponto flutuante, não uma margem menor.
+  function meetsTarget(margin, target) {
+    return margin >= target || Math.abs(margin - target) <= Number.EPSILON * 4 * Math.max(1, Math.abs(margin), Math.abs(target));
+  }
+  function resultTone(margin, targetPercent) {
+    if (finite(targetPercent) && targetPercent >= 0 && targetPercent <= 100) return meetsTarget(margin, targetPercent / 100) ? 'good' : margin < C.marginColors.low - EPS ? 'bad' : 'warn';
+    return margin < C.marginColors.low - EPS ? 'bad' : margin <= C.marginColors.high + EPS ? 'warn' : 'good';
+  }
+  function priceSegments(market, data, ctx) {
     const points = new Set([0]);
     if (market === 'mercadoLivre') {
       if (!data.manualMode) {
@@ -124,39 +125,86 @@
         m.priceBands.forEach(b => points.add(b.min));
         points.add(m.mandatoryFreeShippingFrom);
         points.add(m.cheapShippingCap.below);
+        // Também divide o trecho em que o frete deixa de ser 50% do preço.
         if (m.cheapShippingCap.rate > 0) ctx.row.slice(1).forEach(v => points.add(v / m.cheapShippingCap.rate));
       }
     } else C[market].bands.forEach(b => points.add(b.min));
     const sorted = [...points].sort((a, b) => a - b);
-    let best = null;
-    for (let i = 0; i < sorted.length; i++) {
-      const low = sorted[i], high = sorted[i + 1] ?? Infinity;
+    return sorted.map((low, i) => {
+      const high = sorted[i + 1] ?? Infinity;
       const probe = finite(high) ? (low + high) / 2 : low + 1;
-      const r = charges(market, probe, data, ctx);
-      const availableRate = 1 - r.commission - r.shippingRate - r.affiliate - target;
+      return { low, high, rules: charges(market, probe, data, ctx) };
+    });
+  }
+  // Maior margem por faixa. No último intervalo, informa o limite teórico
+  // quando o preço cresce: custos fixos impedem atingir esse limite exato.
+  function maximumMargin(market, data) {
+    const ctx = context(market, data);
+    if (ctx.error) return { ok: false, error: ctx.error };
+    let maximum = -Infinity, isLimit = false;
+    for (const { low, high, rules: r } of priceSegments(market, data, ctx)) {
+      const rate = 1 - r.commission - r.shippingRate - r.affiliate;
       const fixedCosts = data.cost + r.fixed + r.shippingFixed;
-      if (availableRate < -EPS || (Math.abs(availableRate) <= EPS && fixedCosts > EPS)) continue;
-      const raw = availableRate > EPS ? fixedCosts / availableRate : 0;
+      if (!finite(high)) {
+        if (rate > maximum) { maximum = rate; isLimit = fixedCosts > 0; }
+      } else {
+        const lastCent = (Math.ceil(high * 100 - EPS) - 1) / 100;
+        if (lastCent < Math.max(low, 0.01)) continue;
+        const value = rate - fixedCosts / lastCent;
+        if (value > maximum) { maximum = value; isLimit = false; }
+      }
+    }
+    return { ok: finite(maximum), margin: finite(maximum) ? maximum : null, isLimit };
+  }
+  // Resolve cada faixa separadamente; a margem pode cair ao mudar de faixa.
+  // O cálculo real valida o preço arredondado para cima ao centavo.
+  function minimumPrice(market, data, targetPercent) {
+    if (!['mercadoLivre', 'shopee', 'tiktok'].includes(market)) return { ok: false, error: 'Marketplace inválido.' };
+    if (!finite(targetPercent) || targetPercent < 0 || targetPercent > 100) return { ok: false, error: 'Informe uma meta de 0% a 100%.' };
+    const ctx = context(market, data);
+    if (ctx.error) return { ok: false, error: ctx.error };
+    const target = targetPercent / 100;
+    let best = null;
+    for (const { low, high, rules: r } of priceSegments(market, data, ctx)) {
+      const denominator = 1 - r.commission - r.shippingRate - r.affiliate - target;
+      if (denominator <= 0) continue;
+      const raw = (data.cost + r.fixed + r.shippingFixed) / denominator;
       let cents = Math.max(1, Math.ceil(Math.max(low, raw) * 100 - EPS));
-      let candidate = cents / 100;
-      // Um passo adicional trata exclusivamente arredondamento de ponto flutuante.
-      for (let adjustment = 0; adjustment < 2; adjustment++, candidate = ++cents / 100) {
+      for (let step = 0; step < 3; step++, cents++) {
+        const candidate = cents / 100;
         if (candidate < low || candidate >= high || candidate > C.maxInput) break;
         const quote = calculate(market, { ...data, price: candidate });
-        if (quote.ok && quote.margin + EPS >= target) {
+        if (quote.ok && meetsTarget(quote.margin, target)) {
           if (!best || candidate < best.price) best = { ok: true, price: candidate, quote };
           break;
         }
       }
     }
-    return best || { ok: false, error: 'Meta inviável com esses custos e taxas dentro do limite de ' + money(C.maxInput) + '.' };
+    if (best) return best;
+    const ceiling = maximumMargin(market, data);
+    return { ok: false, error: 'Meta inviável com essas taxas', maxMargin: ceiling.margin, maxIsLimit: ceiling.isLimit, inputLimit: C.maxInput };
   }
 
-  const api = { parseNumber, weights, calculate, minimumPrice, validateConfig };
+  // Persiste só metas válidas; apagar a meta também fica salvo.
+  function readTargetStorage(getStorage = () => root.localStorage) {
+    const fallback = String(C.defaults.target ?? '').replace('.', ',');
+    try {
+      const value = getStorage().getItem(C.storage.target);
+      if (value === null) return { value: fallback, available: true };
+      const number = parseNumber(value);
+      return { value: value === '' || (finite(number) && number >= 0 && number <= 100) ? value : fallback, available: true };
+    } catch (_) { return { value: fallback, available: false }; }
+  }
+  function saveTargetStorage(value, getStorage = () => root.localStorage) {
+    const number = parseNumber(value);
+    if (number !== null && (!finite(number) || number < 0 || number > 100)) return false;
+    try { getStorage().setItem(C.storage.target, number === null ? '' : String(number)); return true; } catch (_) { return false; }
+  }
+
+  const api = { parseNumber, weights, calculate, minimumPrice, maximumMargin, resultTone, meetsTarget, readTargetStorage, saveTargetStorage, validateConfig };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SellneedsCalculator = api;
   if (typeof document === 'undefined') return;
-
   const $ = id => document.getElementById(id);
   try { validateConfig(); } catch (e) {
     $('fatal-error').hidden = false;
@@ -164,245 +212,207 @@
     $('calculator').hidden = true;
     return;
   }
-
-  let market = 'mercadoLivre';
-  let fastShipping = C.defaults.fastShipping;
-  let latest = null;
-  let minimum = null;
-  let animation = 0;
-  let announcement = 0;
-  let displayProfit = 0;
-  let displayMargin = 0;
+  let market = 'mercadoLivre', fastShipping = C.defaults.fastShipping;
+  let latest = null, ideal = null, animation = 0, announcement = 0;
+  let displayedProfit = 0, displayedMargin = 0;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const fields = ['price', 'cost', 'weight', 'affiliate', 'target', 'manualShipping'];
+  const fields = ['price', 'cost', 'target', 'weight', 'affiliate', 'manualShipping'];
   const cashFields = ['price', 'cost', 'manualShipping'];
-  fields.forEach(id => { $(id).value = cashFields.includes(id) ? decimal(C.defaults[id]) : String(C.defaults[id]).replace('.', ','); });
+  fields.forEach(id => { $(id).value = cashFields.includes(id) ? decimal(C.defaults[id]) : String(C.defaults[id] ?? '').replace('.', ','); });
+  const savedTarget = readTargetStorage();
+  let storageAvailable = savedTarget.available;
+  $('target').value = savedTarget.value;
   $('manual-mode').checked = C.defaults.manualMode;
-  $('config-version').textContent = 'Configuração: ' + C.version + '.';
-
+  $('fast-shipping').value = String(fastShipping);
   function readData() {
-    const data = Object.fromEntries(fields.map(id => [id, parseNumber($(id).value)]));
-    return { ...data, fastShipping, manualMode: $('manual-mode').checked };
-  }
-  function fieldError(id, message) {
-    $(id + '-error').textContent = message;
-    $(id).setAttribute('aria-invalid', message ? 'true' : 'false');
+    return { ...Object.fromEntries(fields.map(id => [id, parseNumber($(id).value)])), fastShipping, manualMode: $('manual-mode').checked };
   }
   function validateFields(data) {
-    fields.forEach(id => fieldError(id, ''));
-    const required = ['price', 'cost'];
-    if (market === 'tiktok') required.push('affiliate');
-    if (market === 'mercadoLivre') required.push(...(data.manualMode ? ['manualShipping'] : ['weight']));
-    required.forEach(id => {
-      const n = data[id];
-      const allowZero = ['cost', 'affiliate', 'manualShipping'].includes(id);
+    const errors = [];
+    fields.forEach(id => { $(id + '-error').textContent = ''; $(id).setAttribute('aria-invalid', 'false'); });
+    const active = ['price', 'cost', 'target'];
+    if (market === 'tiktok') active.push('affiliate');
+    if (market === 'mercadoLivre') active.push(data.manualMode ? 'manualShipping' : 'weight');
+    const names = { price: 'Preço', cost: 'Custo', target: 'Meta', weight: 'Peso', affiliate: 'Afiliado', manualShipping: 'Frete manual' };
+    active.forEach(id => {
+      const n = data[id], optional = id === 'target' || id === 'price';
+      const allowZero = !['price', 'weight'].includes(id);
+      const maximum = ['affiliate', 'target'].includes(id) ? 100 : C.maxInput;
       let message = '';
-      if (n === null) message = 'Preencha este campo.';
-      else if (!finite(n)) message = 'Digite um número válido.';
-      else if (n < 0 || (!allowZero && n === 0)) message = allowZero ? 'Use zero ou um valor positivo.' : 'Use um valor maior que zero.';
-      else if (n > (id === 'affiliate' ? 100 : C.maxInput)) message = id === 'affiliate' ? 'O máximo é 100%.' : 'Valor acima do limite de entrada.';
-      fieldError(id, message);
+      if (n === null && !optional) message = 'Preencha ' + names[id].toLowerCase() + '.';
+      else if (n !== null && !finite(n)) message = names[id] + ': número inválido.';
+      else if (n !== null && (n < 0 || (!allowZero && n === 0))) message = names[id] + (allowZero ? ': use zero ou positivo.' : ': use valor positivo.');
+      else if (n !== null && n > maximum) message = names[id] + (maximum === 100 ? ': máximo de 100%.' : ': acima do limite.');
+      $(id + '-error').textContent = message;
+      $(id).setAttribute('aria-invalid', message ? 'true' : 'false');
+      if (message) errors.push(message);
     });
-    if (data.target !== null && (!finite(data.target) || data.target < 0 || data.target > 100)) fieldError('target', 'Use uma margem entre 0% e 100%.');
-  }
-  function setFast(value) {
-    fastShipping = value;
-    $('fast-no').setAttribute('aria-pressed', String(!value));
-    $('fast-yes').setAttribute('aria-pressed', String(value));
+    return errors;
   }
   function visibility(data) {
     const ml = market === 'mercadoLivre';
-    $('ml-section').hidden = !ml;
+    $('weight-section').hidden = !ml;
     $('affiliate-section').hidden = market !== 'tiktok';
+    $('manual-button').hidden = !ml;
+    $('manual-button').dataset.active = String(data.manualMode);
+    $('manual-button').setAttribute('aria-label', data.manualMode ? 'Frete manual ativo: ' + money(data.manualShipping || 0) + '. Configurar' : 'Configurar frete manual');
     $('manual-section').hidden = !data.manualMode;
-    const below = finite(data.price) && data.price >= 0 && data.price < C.mercadoLivre.mandatoryFreeShippingFrom;
-    $('fast-section').hidden = !below;
-    $('fast-yes').disabled = data.manualMode;
-    $('fast-no').disabled = data.manualMode;
-    $('fast-help').textContent = data.manualMode ? 'O frete manual está ativo.' : 'Opcional abaixo de ' + money(C.mercadoLivre.mandatoryFreeShippingFrom) + '.';
-    $('mandatory-note').hidden = below || !finite(data.price);
-    $('mandatory-note').textContent = 'Frete grátis obrigatório a partir de ' + money(C.mercadoLivre.mandatoryFreeShippingFrom) + (data.manualMode ? '. Valor manual aplicado.' : '. Faixa automática aplicada.');
-    $('goal-policy').textContent = !ml ? 'A meta considera a comissão e os custos de cada faixa de preço.' : data.manualMode ? 'O preço mínimo usa o mesmo frete manual em todas as faixas.' : 'Abaixo de ' + money(C.mercadoLivre.mandatoryFreeShippingFrom) + ', a meta considera frete grátis rápido: ' + (fastShipping ? 'Sim' : 'Não') + '. Acima desse valor, usa as faixas obrigatórias.';
+    // Sem preço, a escolha permanece disponível para o cálculo da meta.
+    const below = data.price === null || (finite(data.price) && data.price >= 0 && data.price < C.mercadoLivre.mandatoryFreeShippingFrom);
+    $('fast-section').hidden = !ml || !below;
+    $('fast-shipping').disabled = data.manualMode;
   }
-  function showWeights(data) {
-    if (market !== 'mercadoLivre') return;
-    $('weight-note').textContent = data.manualMode
-      ? 'O frete manual substitui a tabela. O peso é opcional neste modo.'
-      : 'Nesta simulação, o frete considera somente o peso informado.';
+  function showNumber(id, text) {
+    $(id).textContent = text;
+    $(id).style.setProperty('--digits', Math.max(text.length, 4));
   }
   function animateNumbers(profit, margin) {
     cancelAnimationFrame(animation);
-    const startProfit = displayProfit, startMargin = displayMargin;
-    const start = performance.now();
+    const fromProfit = displayedProfit, fromMargin = displayedMargin, start = performance.now();
     function frame(now) {
-      const t = reducedMotion.matches ? 1 : Math.min(1, (now - start) / 240);
-      const ease = 1 - Math.pow(1 - t, 3);
-      displayProfit = startProfit + (profit - startProfit) * ease;
-      displayMargin = startMargin + (margin - startMargin) * ease;
-      $('profit').textContent = money(displayProfit);
-      $('margin').textContent = percent(displayMargin);
+      const t = reducedMotion.matches ? 1 : Math.max(0, Math.min(1, (now - start) / 180));
+      const ease = 1 - (1 - t) ** 3;
+      displayedProfit = fromProfit + (profit - fromProfit) * ease;
+      displayedMargin = fromMargin + (margin - fromMargin) * ease;
+      showNumber('profit', money(displayedProfit)); showNumber('margin', percent(displayedMargin));
       if (t < 1) animation = requestAnimationFrame(frame);
     }
     animation = requestAnimationFrame(frame);
   }
-  function details(result) {
+  function renderBreakdown(result, tone) {
     const rows = [
-      ['Custo do produto', result.cost, '--cost'],
-      ['Comissão · ' + percent(result.rules.commission), result.commission, '--commission'],
-      ['Taxa fixa', result.fixed, '--fixed'],
-      ['Frete', result.shipping, '--shipping'],
-      ['Afiliado' + (market === 'tiktok' ? ' · ' + percent(result.rules.affiliate) : ''), result.affiliate, '--affiliate'],
-      ['Lucro de contribuição', result.profit, result.tone === 'good' ? '--good' : result.tone === 'warn' ? '--warn' : '--bad']
+      ['Custo', result?.cost, '--cost'],
+      ['Comissão' + (result ? ' · ' + decimal(result.rules.commission * 100, 0) + '%' : ''), result?.commission, '--commission'],
+      ['Taxa fixa', result?.fixed, '--fixed'],
+      ['Frete', result?.shipping, '--shipping'],
+      ['Afiliado' + (market === 'tiktok' && result ? ' · ' + decimal(result.rules.affiliate * 100, 1) + '%' : ''), result?.affiliate, '--affiliate'],
+      ['Lucro', result?.profit, tone === 'bad' ? '--bad' : tone === 'warn' ? '--warn' : '--good']
     ];
-    const list = $('breakdown-list'), bar = $('composition');
-    list.replaceChildren(); bar.replaceChildren();
-    const base = Math.max(result.price, result.total);
-    rows.forEach(([label, amount, color], i) => {
-      const row = document.createElement('div'); row.className = 'breakdown-row' + (i === 5 ? ' profit-row' : '');
+    $('breakdown-list').replaceChildren(); $('composition').replaceChildren();
+    const base = result ? Math.max(result.price, result.total) : 1;
+    rows.forEach(([label, amount, color]) => {
+      const row = document.createElement('div'); row.className = 'breakdown-row';
       const swatch = document.createElement('span'); swatch.className = 'swatch'; swatch.style.background = 'var(' + color + ')';
-      const name = document.createElement('span'); name.textContent = label;
-      const val = document.createElement('span'); val.className = 'amount'; val.textContent = money(amount);
-      const share = document.createElement('span'); share.className = 'share'; share.textContent = decimal(amount / result.price * 100, 1) + '%';
-      row.append(swatch, name, val, share); list.append(row);
-      if (amount > 0) { const part = document.createElement('span'); part.style.width = amount / base * 100 + '%'; part.style.background = 'var(' + color + ')'; bar.append(part); }
+      const title = document.createElement('span'); title.className = 'breakdown-label'; title.textContent = label;
+      const value = document.createElement('span'); value.className = 'amount'; value.textContent = finite(amount) ? money(amount) : '—';
+      const share = document.createElement('span'); share.className = 'share'; share.textContent = result ? decimal(amount / result.price * 100, 1) + '%' : '—';
+      row.append(swatch, title, value, share); $('breakdown-list').append(row);
+      if (amount > 0) { const part = document.createElement('span'); part.style.width = amount / base * 100 + '%'; part.style.background = 'var(' + color + ')'; $('composition').append(part); }
     });
-    $('loss-note').hidden = result.profit >= 0;
-    $('loss-note').textContent = 'Os custos excedem a venda em ' + money(-result.profit) + '. A barra representa o total dos custos; os percentuais abaixo usam o preço de venda.';
-    $('breakdown-base').textContent = result.profit < 0 ? 'TOTAL DOS CUSTOS' : 'PREÇO DE VENDA';
-    $('rate-note').textContent = market === 'mercadoLivre' ? result.rules.bandLabel + ' · ' + (result.rules.manual ? 'O valor informado substitui a tabela.' : 'Faixa de peso até ' + decimal(context(market, readData()).row[0], 1) + ' kg.') : 'Faixa vigente: ' + result.rules.bandLabel + '. Taxas sobre o preço de venda.';
+    $('detail-market').textContent = C[market].name;
+    $('result-price').textContent = result ? money(result.price) : '—';
+    $('total-cost').textContent = result ? money(result.total) : '—';
+    $('loss-note').hidden = !result || result.profit >= 0;
+    $('loss-note').textContent = result?.profit < 0 ? 'Déficit: ' + money(-result.profit) + '. Barra = custos; % = venda.' : '';
+    $('rate-note').textContent = result ? (market === 'mercadoLivre' ? result.rules.bandLabel + (result.rules.manual ? '' : ' · ' + decimal(result.weights.charged, 3) + ' kg') : 'Faixa: ' + result.rules.bandLabel) : '';
+    $('composition').setAttribute('aria-label', result ? 'Composição do preço. Custo total ' + money(result.total) + '; lucro ' + money(result.profit) + '. Valores no botão Detalhes.' : 'Preencha os campos para ver a composição.');
   }
-  function renderMinimum(data) {
-    minimum = null;
-    $('minimum-price').textContent = '—';
-    $('minimum-warning').hidden = true;
-    if (data.target === null) { $('minimum-description').textContent = 'Informe uma margem desejada para descobrir o preço mínimo.'; return; }
-    minimum = minimumPrice(market, data, data.target);
-    if (!minimum.ok) { $('minimum-description').textContent = minimum.error; return; }
-    $('minimum-price').textContent = money(minimum.price);
-    $('minimum-description').textContent = 'Para uma meta de ' + decimal(data.target) + '% · margem calculada: ' + percent(minimum.quote.margin) + '.';
-    $('minimum-warning').hidden = false;
-    $('minimum-warning').textContent = 'Primeiro preço viável, em centavos. Ao aumentar o preço, recalcule: uma nova faixa de taxas pode reduzir a margem.';
+  function idealBandNote(data, quote) {
+    const r = quote.rules;
+    const previous = finite(data.price) && data.price > 0 ? calculate(market, data) : null;
+    if (previous?.ok && previous.rules.bandLabel !== r.bandLabel) {
+      if (market === 'shopee') return 'No preço ideal, a taxa fixa muda para ' + money(r.fixed) + '.';
+      if (market === 'tiktok') return 'Preço ideal: comissão ' + percent(r.commission) + ', fixa ' + money(r.fixed) + ', frete ' + money(quote.shipping) + '.';
+      return 'Preço ideal: ' + r.bandLabel + ', frete ' + money(quote.shipping) + '.';
+    }
+    return market === 'mercadoLivre' ? 'Frete no preço ideal: ' + money(quote.shipping) + '.' : 'Preço ideal: comissão ' + percent(r.commission) + ', fixa ' + money(r.fixed) + '.';
+  }
+  function renderIdeal(data, hasErrors) {
+    ideal = null;
+    showNumber('ideal-price', '—'); $('ideal-profit').textContent = '';
+    $('ideal-status').hidden = true; $('ideal-note').hidden = true;
+    if (data.target === null) return;
+    ideal = minimumPrice(market, data, data.target);
+    if (ideal.ok) {
+      showNumber('ideal-price', money(ideal.price));
+      $('ideal-profit').textContent = 'Lucro ' + money(ideal.quote.profit);
+      $('ideal-note').hidden = false; $('ideal-note').textContent = idealBandNote(data, ideal.quote);
+    } else if (!hasErrors) {
+      $('ideal-status').hidden = false;
+      $('ideal-status').textContent = finite(ideal.maxMargin) ? 'Meta inviável · Máx. ' + (ideal.maxIsLimit ? 'teórica ' : '') + percent(ideal.maxMargin) : 'Revise os campos para calcular a meta.';
+      $('ideal-status').setAttribute('aria-label', finite(ideal.maxMargin) ? 'Meta inviável com essas taxas. Margem máxima ' + (ideal.maxIsLimit ? 'teórica, não atingível com custos fixos: ' : 'possível: ') + percent(ideal.maxMargin) : ideal.error);
+    }
+    if (!storageAvailable && ideal?.ok) { $('ideal-status').hidden = false; $('ideal-status').textContent = 'Meta salva só nesta sessão.'; $('ideal-status').removeAttribute('aria-label'); }
   }
   function update() {
-    const data = readData();
-    validateFields(data); visibility(data); showWeights(data);
+    const data = readData(), errors = validateFields(data);
+    visibility(data);
     const result = calculate(market, data);
     latest = result.ok ? result : null;
-    $('copy-button').disabled = !result.ok;
-    $('copy-status').textContent = '';
-    $('result-card').dataset.tone = result.ok ? result.tone : 'empty';
-    $('result-error').hidden = result.ok;
-    $('shipping-notice').hidden = true;
+    const tone = result.ok ? resultTone(result.margin, data.target) : 'empty';
+    $('result-card').dataset.tone = tone;
+    let notice = errors[0] || '';
+    if (market === 'mercadoLivre' && !data.manualMode && result.weights?.charged > C.mercadoLivre.shippingTable.at(-1)[0]) notice = 'Peso acima de ' + decimal(C.mercadoLivre.shippingTable.at(-1)[0], 0) + ' kg: use frete manual ⚙.';
     if (result.ok) {
       animateNumbers(result.profit, result.margin);
-      $('result-price').textContent = money(result.price);
-      $('total-cost').textContent = money(result.total);
-      $('result-status').textContent = result.profit < -EPS ? 'Prejuízo' : result.tone === 'bad' ? 'Margem baixa' : result.tone === 'warn' ? 'Atenção à margem' : 'Margem saudável';
-      $('result-message').textContent = result.profit < -EPS ? 'Esta venda não cobre os custos informados. Reveja o preço e as despesas.' : 'A cada ' + money(100) + ' vendidos, sobram ' + money(result.margin * 100) + ' antes das demais despesas.';
-      if (result.rules.capped) { $('shipping-notice').hidden = false; $('shipping-notice').className = 'notice'; $('shipping-notice').textContent = 'Frete limitado a ' + decimal(C.mercadoLivre.cheapShippingCap.rate * 100, 0) + '% do preço do produto. Tabela: ' + money(result.rules.tableShipping) + ' → aplicado: ' + money(result.shipping) + '.'; }
-      details(result);
+      const hasTarget = finite(data.target) && data.target >= 0 && data.target <= 100;
+      $('result-status').textContent = hasTarget ? tone === 'good' ? 'Meta atingida' : 'Abaixo da meta' : result.profit < 0 ? 'Prejuízo' : tone === 'good' ? 'Margem saudável' : tone === 'warn' ? 'Atenção' : 'Margem baixa';
+      if (!notice && result.rules.capped) notice = 'Frete limitado a ' + decimal(C.mercadoLivre.cheapShippingCap.rate * 100, 0) + '% do preço.';
+      else if (!notice && market === 'mercadoLivre' && data.manualMode) notice = 'Frete manual: ' + money(result.shipping) + '.';
     } else {
-      cancelAnimationFrame(animation); displayProfit = 0; displayMargin = 0;
-      ['profit', 'margin', 'result-price', 'total-cost'].forEach(id => { $(id).textContent = '—'; });
-      $('result-status').textContent = 'Complete os dados';
-      $('result-message').textContent = 'O resultado aparece assim que os campos necessários estiverem válidos.';
-      $('result-error').textContent = result.error;
-      $('breakdown-list').replaceChildren(); $('composition').replaceChildren();
-      $('rate-note').textContent = 'Preencha os campos para ver o detalhamento.'; $('loss-note').hidden = true;
-      if (market === 'mercadoLivre' && result.weights?.ok && !data.manualMode && result.weights.charged > C.mercadoLivre.shippingTable.at(-1)[0] + EPS) {
-        $('shipping-notice').hidden = false; $('shipping-notice').className = 'notice danger'; $('shipping-notice').textContent = result.error;
-      }
+      cancelAnimationFrame(animation); displayedProfit = 0; displayedMargin = 0;
+      showNumber('profit', '—'); showNumber('margin', '—');
+      $('result-status').textContent = data.price === null ? 'Informe o preço' : 'Revise os campos';
     }
-    renderMinimum(data);
+    $('form-notice').textContent = notice; $('form-notice').hidden = !notice;
+    $('form-notice').classList.toggle('error', !!errors.length || (!result.ok && data.price !== null));
+    renderBreakdown(latest, tone); renderIdeal(data, !!errors.length || !!notice && !result.ok);
     clearTimeout(announcement);
-    announcement = setTimeout(() => { $('live-summary').textContent = result.ok ? C[market].name + ': lucro ' + money(result.profit) + ', margem ' + percent(result.margin) + '.' : result.error; }, 500);
+    announcement = setTimeout(() => { $('live-summary').textContent = latest ? C[market].name + ': lucro ' + money(latest.profit) + ', margem ' + percent(latest.margin) + '.' : ideal?.ok ? 'Preço ideal: ' + money(ideal.price) + '.' : result.error; }, 400);
   }
-
   function switchMarket(next) {
     market = next;
-    document.querySelectorAll('[data-market][role="tab"]').forEach(button => {
-      const active = button.dataset.market === market;
-      button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1;
+    document.querySelectorAll('[role="tab"]').forEach(tab => {
+      const selected = tab.dataset.market === market;
+      tab.setAttribute('aria-selected', String(selected)); tab.tabIndex = selected ? 0 : -1;
     });
     $('calculator').dataset.market = market;
     $('calculator').setAttribute('aria-labelledby', 'tab-' + market);
-    $('calculator').classList.remove('tab-enter');
-    void $('calculator').offsetWidth;
-    $('calculator').classList.add('tab-enter');
+    $('calculator').classList.remove('tab-enter'); void $('calculator').offsetWidth; $('calculator').classList.add('tab-enter');
     update();
   }
   const tabs = [...document.querySelectorAll('[role="tab"]')];
   tabs.forEach((tab, index) => {
     tab.addEventListener('click', () => switchMarket(tab.dataset.market));
     tab.addEventListener('keydown', e => {
-      let next;
-      if (e.key === 'ArrowRight') next = (index + 1) % tabs.length;
-      if (e.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
-      if (e.key === 'Home') next = 0;
-      if (e.key === 'End') next = tabs.length - 1;
-      if (next !== undefined) { e.preventDefault(); tabs[next].focus(); switchMarket(tabs[next].dataset.market); }
+      const next = e.key === 'ArrowRight' ? (index + 1) % tabs.length : e.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : null;
+      if (next !== null) { e.preventDefault(); tabs[next].focus(); switchMarket(tabs[next].dataset.market); }
     });
+    const img = tab.querySelector('img'), asset = C.logos[tab.dataset.market];
+    img.src = asset.src; img.width = asset.width; img.height = asset.height;
   });
   fields.forEach(id => {
-    $(id).addEventListener('input', update);
+    $(id).addEventListener('input', () => {
+      if (id === 'target') {
+        const value = parseNumber($('target').value);
+        if (value === null || (finite(value) && value >= 0 && value <= 100)) storageAvailable = saveTargetStorage($('target').value);
+      }
+      update();
+    });
     $(id).addEventListener('blur', () => {
-      const n = parseNumber($(id).value);
-      if (cashFields.includes(id) && finite(n) && n >= 0 && n <= C.maxInput) { $(id).value = decimal(n); update(); }
+      const value = parseNumber($(id).value);
+      if (cashFields.includes(id) && finite(value) && value >= 0 && value <= C.maxInput) { $(id).value = decimal(value); update(); }
     });
   });
   $('calculator-form').addEventListener('submit', e => e.preventDefault());
-  $('fast-no').addEventListener('click', () => { setFast(false); update(); });
-  $('fast-yes').addEventListener('click', () => { setFast(true); update(); });
+  $('fast-shipping').addEventListener('change', () => { fastShipping = $('fast-shipping').value === 'true'; update(); });
   $('manual-mode').addEventListener('change', update);
-  setFast(fastShipping);
-
-  function setTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    $('theme-icon').textContent = theme === 'dark' ? '☀' : '☾';
-    $('theme-toggle').setAttribute('aria-label', theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro');
-    $('theme-toggle').setAttribute('aria-pressed', String(theme === 'dark'));
-    document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
-    try { localStorage.setItem('sellneeds-theme', theme); } catch (_) { /* Continua funcionando com armazenamento bloqueado. */ }
+  // <dialog> mantém o foco no painel, fecha com Esc e devolve o foco ao botão.
+  $('details-button').addEventListener('click', () => $('details-dialog').showModal());
+  $('manual-button').addEventListener('click', () => $('manual-dialog').showModal());
+  document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
+  document.querySelectorAll('dialog').forEach(dialog => dialog.addEventListener('click', event => {
+    if (event.target !== dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+  }));
+  // Sem botão extra: acompanha o tema claro/escuro do dispositivo.
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+  function applyTheme() {
+    document.documentElement.dataset.theme = systemTheme.matches ? 'dark' : 'light';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   }
-  let theme;
-  try { theme = localStorage.getItem('sellneeds-theme'); } catch (_) { /* Sem persistência no navegador. */ }
-  setTheme(theme === 'dark' || theme === 'light' ? theme : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  $('theme-toggle').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
-
-  $('copy-button').addEventListener('click', async () => {
-    if (!latest) return;
-    const r = latest, data = readData();
-    const lines = [
-      'Sellneeds · ' + C[market].name,
-      'Preço de venda: ' + money(r.price), 'Custo do produto: ' + money(r.cost),
-      'Comissão: ' + money(r.commission) + ' (' + percent(r.rules.commission) + ')',
-      'Taxa fixa: ' + money(r.fixed), 'Frete: ' + money(r.shipping),
-      'Afiliado: ' + money(r.affiliate) + ' (' + percent(r.rules.affiliate) + ')',
-      'Custo total: ' + money(r.total), 'Lucro de contribuição: ' + money(r.profit), 'Margem: ' + percent(r.margin)
-    ];
-    if (market === 'mercadoLivre') {
-      lines.push('Frete: ' + (data.manualMode ? 'manual' : r.rules.bandLabel));
-      if (r.weights?.ok) lines.push('Peso informado: ' + decimal(r.weights.charged, 3) + ' kg');
-      if (r.rules.capped) lines.push('Frete limitado a ' + percent(C.mercadoLivre.cheapShippingCap.rate) + ' do preço.');
-    }
-    if (minimum?.ok) lines.push('Preço mínimo para ' + decimal(data.target) + '%: ' + money(minimum.price) + '. Recalcule se alterar o preço.');
-    lines.push('Não inclui impostos, anúncios, embalagem ou despesas operacionais.', 'Regras: ' + C.version);
-    const text = lines.join('\n');
-    try {
-      if (!navigator.clipboard || !window.isSecureContext) throw Error('Usar alternativa local');
-      await navigator.clipboard.writeText(text);
-      $('copy-status').textContent = 'Resultado copiado! Pronto para colar.';
-    } catch (_) {
-      // Alternativa para abertura local e navegadores sem Clipboard API.
-      const area = document.createElement('textarea'); area.value = text; area.setAttribute('aria-label', 'Resultado para copiar');
-      area.style.position = 'fixed'; area.style.top = '0'; area.style.left = '0'; area.style.opacity = '0';
-      document.body.append(area); area.select();
-      let copied = false;
-      try { copied = document.execCommand('copy'); } catch (_) { /* Mostra alternativa selecionável. */ }
-      area.remove(); $('copy-button').focus();
-      if (copied) $('copy-status').textContent = 'Resultado copiado! Pronto para colar.';
-      else { window.prompt('Copie o resultado abaixo:', text); $('copy-status').textContent = 'Use a janela aberta para copiar o resultado.'; }
-    }
-  });
+  applyTheme(); systemTheme.addEventListener('change', applyTheme);
   update();
 })(typeof window !== 'undefined' ? window : globalThis);

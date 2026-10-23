@@ -1,8 +1,6 @@
 # Código completo · Sellneeds
 
-Versão revisada: Mercado Livre somente por peso informado.
-
-Copie cada bloco inteiro para o arquivo indicado. Mantenha os quatro arquivos e `logo-sellneeds.png` juntos. A imagem está incluída no ZIP.
+Interface de 23/10/2026. Copie cada bloco para o arquivo com o nome indicado. Os logos ficam em `img/`, conforme o LEIA-ME.
 
 ## index.html
 
@@ -11,84 +9,81 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os quatro arquivos e 
 <html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f6f7f9">
-  <meta name="description" content="Calcule lucro, margem de contribuição e preço mínimo no Mercado Livre, Shopee e TikTok Shop. Uma ferramenta Sellneeds.">
-  <title>Calculadora de Margem · Sellneeds</title>
-  <link rel="icon" type="image/png" href="./logo-sellneeds.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f6f3">
+  <title>Margem · Sellneeds</title>
+  <link rel="icon" type="image/png" href="logo-sellneeds.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css">
-  <script src="./config.js" defer></script>
-  <script src="./script.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#calculator">Ir para a calculadora</a>
-  <header class="site-header wrap">
-    <a class="brand" href="./index.html" aria-label="Sellneeds, início">
-      <img src="./logo-sellneeds.png" width="64" height="64" alt="Logo Sellneeds">
-      <span><strong>Sellneeds<span class="brand-dot">.</span></strong><small>INTELIGÊNCIA PARA VENDER</small></span>
-    </a>
-    <div class="header-actions"><span class="private-note"><i></i> Cálculo no seu navegador</span><button id="theme-toggle" class="icon-button" type="button" aria-label="Ativar modo escuro" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span></button></div>
-  </header>
-  <main class="wrap">
-    <section class="hero">
-      <div><p class="eyebrow"><span></span> CALCULADORA DE MARGEM DE CONTRIBUIÇÃO</p><h1>Venda com clareza.<br>Cresça com <em>margem.</em></h1><p class="hero-copy">Descubra quanto sobra em cada venda e encontre o preço que faz sentido para o seu negócio.</p></div>
-      <div class="hero-aside"><span class="outline-icon" aria-hidden="true">↗</span><p>Menos suposição.<br><strong>Mais resultado.</strong></p></div>
-    </section>
-    <nav class="market-tabs" role="tablist" aria-label="Escolha o marketplace">
-      <button class="market-tab" type="button" role="tab" id="tab-mercadoLivre" data-market="mercadoLivre" aria-selected="true" aria-controls="calculator"><span class="market-symbol ml" aria-hidden="true">ML</span><span>Mercado Livre<small>Frete por peso e preço</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
-      <button class="market-tab" type="button" role="tab" id="tab-shopee" data-market="shopee" aria-selected="false" aria-controls="calculator" tabindex="-1"><span class="market-symbol shopee" aria-hidden="true">S</span><span>Shopee<small>Comissão por faixa</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
-      <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-selected="false" aria-controls="calculator" tabindex="-1"><span class="market-symbol tiktok" aria-hidden="true">♪</span><span>TikTok Shop<small>Inclui afiliados</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+  <div class="app-shell" id="app-shell">
+    <header class="app-header">
+      <img class="brand-logo" src="logo-sellneeds.png" width="250" height="250" alt="Sellneeds">
+      <h1>Calculadora de margem</h1>
+    </header>
+    <nav class="market-tabs" role="tablist" aria-label="Marketplace">
+      <button class="market-tab" type="button" role="tab" id="tab-mercadoLivre" data-market="mercadoLivre" aria-label="Mercado Livre" aria-selected="true" aria-controls="calculator">
+        <img src="img/mercadolivre.webp" alt="Mercado Livre" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>Mercado Livre</span>
+      </button>
+      <button class="market-tab" type="button" role="tab" id="tab-shopee" data-market="shopee" aria-label="Shopee" aria-selected="false" aria-controls="calculator" tabindex="-1">
+        <img src="img/shopee.webp" alt="Shopee" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>Shopee</span>
+      </button>
+      <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-label="TikTok Shop" aria-selected="false" aria-controls="calculator" tabindex="-1">
+        <img src="img/tiktok.webp" alt="TikTok Shop" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>TikTok Shop</span>
+      </button>
     </nav>
-    <p class="demo-note">Simulação de exemplo preenchida. Edite os valores para calcular o seu produto.</p>
-    <div id="fatal-error" class="notice danger" role="alert" hidden></div>
-    <section id="calculator" class="calculator" data-market="mercadoLivre" role="tabpanel" aria-labelledby="tab-mercadoLivre" tabindex="0">
-      <div class="input-column">
-        <form id="calculator-form" novalidate>
-          <article class="card form-card">
-            <div class="section-title"><span class="step">01</span><div><h2>Dados da venda</h2><p>Comece pelo preço e pelo custo unitário.</p></div><span class="live-badge"><i></i> AO VIVO</span></div>
-            <div class="field-grid">
-              <div class="field"><label for="price">Preço de venda</label><div class="input-wrap"><span>R$</span><input id="price" name="price" type="text" inputmode="decimal" autocomplete="off" aria-describedby="price-error"></div><small id="price-error" class="field-error"></small></div>
-              <div class="field"><label for="cost">Custo do produto</label><div class="input-wrap"><span>R$</span><input id="cost" name="cost" type="text" inputmode="decimal" autocomplete="off" aria-describedby="cost-error"></div><small id="cost-error" class="field-error"></small></div>
-            </div>
-            <div id="affiliate-section" class="revealed" hidden><div class="field"><label for="affiliate">Comissão de afiliado</label><div class="input-wrap"><input id="affiliate" type="text" inputmode="decimal" autocomplete="off" aria-describedby="affiliate-hint affiliate-error"><span>%</span></div><small id="affiliate-hint">Aplicada sobre o preço de venda. Use zero sem afiliado.</small><small id="affiliate-error" class="field-error"></small></div></div>
-            <div id="ml-section" class="revealed">
-              <div class="divider"></div>
-              <div class="section-title compact"><span class="step">02</span><div><h2>Peso & frete</h2><p>Informe o peso para encontrar a faixa de frete.</p></div></div>
-              <div class="field weight-field"><label for="weight">Peso do pacote</label><div class="input-wrap"><input id="weight" type="text" inputmode="decimal" autocomplete="off" aria-describedby="weight-note weight-error"><span>kg</span></div><small id="weight-error" class="field-error"></small></div>
-              <p id="weight-note" class="helper-note"></p>
-              <div id="fast-section" class="option-row revealed" hidden><div><strong>Oferecer frete grátis rápido?</strong><small id="fast-help"></small></div><div class="segmented" role="group" aria-label="Frete grátis rápido"><button id="fast-no" type="button" aria-pressed="true">Não</button><button id="fast-yes" type="button" aria-pressed="false">Sim</button></div></div>
-              <p id="mandatory-note" class="helper-note"></p>
-              <label class="checkbox-row" for="manual-mode"><input id="manual-mode" type="checkbox"><span>Informar frete manualmente<small>Substitui o frete automático e o limite para itens baratos.</small></span></label>
-              <div id="manual-section" class="field revealed" hidden><label for="manualShipping">Frete por unidade</label><div class="input-wrap"><span>R$</span><input id="manualShipping" type="text" inputmode="decimal" autocomplete="off" aria-describedby="manualShipping-error"></div><small id="manualShipping-error" class="field-error"></small></div>
-              <p id="shipping-notice" class="notice" hidden></p>
-            </div>
-          </article>
-          <article class="card goal-card"><div class="section-title compact"><span class="target-icon" aria-hidden="true">◎</span><div><h2>Qual é a sua meta?</h2><p>Encontre o menor preço para a margem desejada.</p></div></div><div class="field"><label for="target">Margem desejada <span class="optional">opcional</span></label><div class="input-wrap"><input id="target" type="text" inputmode="decimal" autocomplete="off" placeholder="Ex.: 20" aria-describedby="target-error"><span>%</span></div><small id="target-error" class="field-error"></small></div><p id="goal-policy" class="helper-note"></p></article>
-        </form>
-      </div>
-      <aside class="result-column" aria-label="Resultado da simulação">
-        <article id="result-card" class="card result-card" data-tone="good">
-          <div class="result-top"><span class="eyebrow">SEU RESULTADO POR VENDA</span><span id="result-status" class="status-pill">Margem saudável</span></div>
-          <div class="profit-label">Lucro de contribuição</div><div id="profit" class="profit">—</div>
-          <div class="margin-row"><div><span id="margin">—</span><small>de margem</small></div><p id="result-message">Preencha os dados para começar.</p></div>
-          <p id="result-error" class="notice danger" hidden></p>
-          <div class="mini-stats"><div><span>Preço de venda</span><strong id="result-price">—</strong></div><div><span>Custo total da venda</span><strong id="total-cost">—</strong></div></div>
-          <button id="copy-button" class="copy-button" type="button" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span>Copiar resultado</span></button>
-          <p id="copy-status" class="copy-status" role="status"></p>
-        </article>
-        <article class="card breakdown-card"><div class="breakdown-heading"><h2>Para onde vai o dinheiro</h2><span id="breakdown-base">POR VENDA</span></div><div id="composition" class="composition" aria-hidden="true"></div><p id="loss-note" class="helper-note" hidden></p><div id="breakdown-list" class="breakdown-list"></div><p id="rate-note" class="rate-note"></p></article>
-        <article class="card minimum-card"><div class="minimum-heading"><span class="target-icon" aria-hidden="true">↗</span><span>PREÇO MÍNIMO PARA A META</span></div><strong id="minimum-price">—</strong><p id="minimum-description">Informe uma margem desejada.</p><p id="minimum-warning" class="helper-note" hidden></p></article>
-      </aside>
-    </section>
-    <div class="scope-note"><span aria-hidden="true">ⓘ</span><p><strong>Margem de contribuição não é lucro líquido.</strong> A simulação considera somente os custos e taxas exibidos. Impostos, anúncios, embalagem e despesas operacionais não estão incluídos.</p></div>
-    <details class="rules-details"><summary>Sobre as regras desta calculadora</summary><p id="config-version"></p><p>As taxas seguem os valores informados pela Sellneeds. Não há consulta automática aos marketplaces. Confira as condições da sua conta antes de definir o preço.</p><p>Shopee: R$ 200,00 foi incluído na última faixa. TikTok: frete percentual e afiliado incidem sobre o preço de venda. O preço mínimo considera as mudanças de faixa; preços maiores podem ter margem menor ao cruzar um limite.</p><p>Valores monetários são exibidos com duas casas. Os cálculos usam a precisão completa antes da exibição, e o preço mínimo é arredondado para cima ao centavo.</p></details>
-  </main>
-  <footer class="wrap site-footer"><span>Sellneeds<span class="brand-dot">.</span> <small>Ferramentas para crescer.</small></span><small>Feito para decidir melhor, venda após venda.</small></footer>
-  <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-  <noscript><p class="notice danger wrap">Ative o JavaScript do navegador para usar a calculadora.</p></noscript>
+    <p id="fatal-error" class="notice error" role="alert" hidden></p>
+    <main class="calculator" id="calculator" data-market="mercadoLivre" role="tabpanel" aria-labelledby="tab-mercadoLivre">
+      <form id="calculator-form" class="panel form-panel" novalidate>
+        <div class="panel-heading">
+          <h2>Preço e custos</h2>
+          <button type="button" id="manual-button" class="icon-button" aria-label="Configurar frete manual" aria-haspopup="dialog" aria-controls="manual-dialog" title="Frete manual"><span aria-hidden="true">⚙</span></button>
+        </div>
+        <div class="fields-grid">
+          <div class="field"><label for="price">Preço</label><div class="input-wrap"><span>R$</span><input id="price" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="price-error"></div><small id="price-error" class="sr-only"></small></div>
+          <div class="field"><label for="cost">Custo</label><div class="input-wrap"><span>R$</span><input id="cost" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="cost-error"></div><small id="cost-error" class="sr-only"></small></div>
+          <div class="field" id="weight-section"><label for="weight">Peso</label><div class="input-wrap"><input id="weight" type="text" inputmode="decimal" autocomplete="off" aria-describedby="weight-error"><span>kg</span></div><small id="weight-error" class="sr-only"></small></div>
+          <div class="field" id="fast-section"><label for="fast-shipping">Frete rápido</label><select id="fast-shipping" aria-label="Oferecer frete grátis rápido"><option value="false">Não</option><option value="true">Sim</option></select></div>
+          <div class="field" id="affiliate-section" hidden><label for="affiliate">Afiliado</label><div class="input-wrap"><input id="affiliate" type="text" inputmode="decimal" autocomplete="off" aria-describedby="affiliate-error"><span>%</span></div><small id="affiliate-error" class="sr-only"></small></div>
+        </div>
+        <p id="form-notice" class="notice" role="status" hidden></p>
+      </form>
+      <section class="panel result-panel" id="result-card" data-tone="good" aria-label="Resultado">
+        <div class="panel-heading"><h2>Resultado</h2><span id="result-status" class="status"></span></div>
+        <div class="result-values">
+          <div class="metric"><span class="metric-label">Lucro</span><strong id="profit" class="big-value">—</strong></div>
+          <div class="metric margin-metric"><span class="metric-label">Margem de contribuição</span><strong id="margin" class="big-value">—</strong></div>
+        </div>
+        <div class="goal-grid">
+          <div class="field"><label for="target">Meta de margem (%)</label><div class="input-wrap"><input id="target" type="text" inputmode="decimal" autocomplete="off" placeholder="Sem meta" aria-describedby="target-error"><span>%</span></div><small id="target-error" class="sr-only"></small></div>
+          <div class="ideal"><span class="metric-label" id="ideal-title">Preço para a meta</span><strong id="ideal-price">—</strong><span id="ideal-profit" class="ideal-profit"></span></div>
+        </div>
+        <p id="ideal-status" class="notice" role="status" hidden></p>
+        <div class="breakdown-trigger"><div id="composition" class="composition" role="img" aria-label="Composição do preço; valores em Detalhes"></div><button id="details-button" type="button" class="text-button" aria-haspopup="dialog" aria-controls="details-dialog">Detalhes <span aria-hidden="true">↗</span></button></div>
+      </section>
+    </main>
+    <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  </div>
+  <dialog id="details-dialog" class="modal" aria-labelledby="details-title">
+    <div class="dialog-heading"><h2 id="details-title">Detalhes</h2><button type="button" class="icon-button" data-close="details-dialog" aria-label="Fechar detalhes">×</button></div>
+    <div class="detail-summary"><strong id="detail-market"></strong><span>Venda <b id="result-price">—</b></span></div>
+    <div id="breakdown-list" class="breakdown-list"></div>
+    <div class="detail-total"><span>Custo total</span><strong id="total-cost">—</strong></div>
+    <p id="rate-note" class="notice"></p>
+    <p id="ideal-note" class="notice" hidden></p>
+    <p id="loss-note" class="notice error" hidden></p>
+  </dialog>
+  <dialog id="manual-dialog" class="modal manual-modal" aria-labelledby="manual-title">
+    <div class="dialog-heading"><h2 id="manual-title">Frete manual</h2><button type="button" class="icon-button" data-close="manual-dialog" aria-label="Fechar frete manual">×</button></div>
+    <label class="check-label" for="manual-mode"><input id="manual-mode" type="checkbox">Usar frete manual</label>
+    <div id="manual-section" class="field" hidden><label for="manualShipping">Valor</label><div class="input-wrap"><span>R$</span><input id="manualShipping" type="text" inputmode="decimal" autocomplete="off" aria-describedby="manualShipping-error"></div><small id="manualShipping-error" class="field-error"></small></div>
+  </dialog>
+  <noscript><p class="noscript">Ative o JavaScript para usar a calculadora.</p></noscript>
 </body>
 </html>
 ```
@@ -96,207 +91,160 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os quatro arquivos e 
 ## style.css
 
 ```css
-/* Identidade visual: altere cores e fontes nestas variáveis. */
+/* SELLNEEDS · Identidade editável; os cálculos ficam em script.js/config.js. */
 :root {
   --font-body: 'DM Sans', Arial, sans-serif;
   --font-display: 'Manrope', Arial, sans-serif;
-  --brand: #216a4a;
-  --brand-soft: #e9f3ec;
-  --brand-ink: #185436;
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-soft: #f7f8fa;
-  --text: #19231e;
-  --muted: #69736e;
-  --line: #e3e8e4;
-  --input-bg: #ffffff;
-  --ml: #ffe66a;
-  --ml-ink: #453c00;
-  --ml-border: #ad9024;
-  --shopee: #ee4d2d;
-  --shopee-soft: #fff0e9;
-  --tiktok: #192b33;
-  --tiktok-soft: #e7f1ef;
-  --tiktok-ink: #122e2b;
-  --logo-bg: #ffffff;
-  --bad: #b9363f;
-  --bad-soft: #fff0f0;
-  --warn: #846000;
-  --warn-soft: #fff7db;
-  --good: #216a4a;
-  --good-soft: #eaf4ed;
-  --cost: #88968b;
-  --commission: #b7c2b8;
-  --fixed: #e4bf68;
-  --shipping: #b8b0dd;
-  --affiliate: #e8a696;
-  --radius: 20px;
-  --shadow: 0 5px 24px rgba(23, 44, 30, .035);
+  --bg: #f4f6f3; --surface: #ffffff; --surface-soft: #f3f6f2;
+  --text: #1c2922; --muted: #627064; --line: #dce4da;
+  --brand: #226a49; --brand-soft: #eaf4ec;
+  --good: #226a49; --good-soft: #eaf4ec;
+  --bad: #bb3843; --bad-soft: #fff0f0;
+  --warn: #946900; --warn-soft: #fff7db;
+  --ml: #b19500; --shopee: #ee4d2d; --tiktok: #245e60;
+  --cost: #8d9c91; --commission: #b5c6b8; --fixed: #dbb862;
+  --shipping: #aea3d7; --affiliate: #e7a18d;
+  --logo-bg: #ffffff; --radius: clamp(.8rem, 1.4vw, 1.5rem);
+  --shadow: 0 .3rem 2rem #213c240a;
+  --gap: clamp(.65rem, 2dvh, 1.5rem);
+  --pad: clamp(.85rem, 2.6dvh, 2rem);
+  --label-size: clamp(.75rem, 1vw, .9rem);
+  --small-size: clamp(.7rem, .9vw, .85rem);
+  --control-height: clamp(2.5rem, 6dvh, 3.5rem);
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --brand: #88cf9e; --brand-soft: #21352a; --brand-ink: #b7e8c5;
-  --bg: #121714; --surface: #1b221e; --surface-soft: #222b25;
-  --text: #edf4ee; --muted: #a6b4aa; --line: #344138; --input-bg: #17201a;
-  --good: #91d7a6; --good-soft: #20392a; --bad: #ffabb0; --bad-soft: #402729;
-  --warn: #efd187; --warn-soft: #3a3421; --tiktok: #e6f3f1;
-  --shadow: 0 5px 24px rgba(0,0,0,.1);
+  --bg: #141c17; --surface: #1d2820; --surface-soft: #26342a;
+  --text: #edf4ee; --muted: #b4c1b7; --line: #3d4c40;
+  --brand: #96d4aa; --brand-soft: #284131;
+  --good: #96d4aa; --good-soft: #284131;
+  --bad: #ffacb3; --bad-soft: #43272b;
+  --warn: #efce79; --warn-soft: #41391f;
+  --ml: #e7c755; --tiktok: #8ad6d0; --shadow: 0 .3rem 2rem #00000020;
 }
-* { box-sizing: border-box; }
-body { margin: 0; color: var(--text); background: var(--bg); font-family: var(--font-body); font-size: 14px; line-height: 1.5; transition: background .2s, color .2s; }
-button, input { font: inherit; }
-button, summary { cursor: pointer; }
-button { color: inherit; }
-button:focus-visible, input:focus-visible, summary:focus-visible, a:focus-visible, [tabindex='0']:focus-visible { outline: 3px solid var(--brand); outline-offset: 4px; }
-button:disabled { opacity: .5; cursor: not-allowed; }
+* { box-sizing: border-box; min-inline-size: 0; }
+html, body { margin: 0; inline-size: 100%; height: 100vh; height: 100dvh; overflow: hidden; }
+body { color: var(--text); background: var(--bg); font-family: var(--font-body); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: .15rem solid var(--brand); outline-offset: .15rem; }
 [hidden] { display: none !important; }
-.wrap { width: min(1152px, calc(100% - 48px)); margin: 0 auto; }
-.site-header { display: flex; justify-content: space-between; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--line); }
-.brand { display: flex; align-items: center; gap: 12px; color: var(--text); text-decoration: none; }
-.brand img { width: 56px; height: 56px; object-fit: contain; border-radius: 12px; background: var(--logo-bg); }
-.brand strong { display: block; font: 800 23px var(--font-display); letter-spacing: -1px; }
-.brand small { display: block; font-size: 8px; font-weight: 700; letter-spacing: 1.5px; margin-top: 4px; }
-.brand-dot { color: var(--brand); }
-.header-actions { display: flex; gap: 22px; align-items: center; }
-.private-note { color: var(--muted); font-size: 11px; display: flex; align-items: center; gap: 7px; }
-i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
-.icon-button { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: 24px; display: grid; place-items: center; }
-.hero { padding: 42px 0 32px; display: flex; justify-content: space-between; align-items: center; gap: 30px; }
-.eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 1.25px; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
-.hero .eyebrow { color: var(--muted); }
-.hero .eyebrow span { width: 16px; height: 2px; background: var(--brand); }
-h1 { font: 800 clamp(32px, 4vw, 49px)/1.15 var(--font-display); letter-spacing: -2px; margin: 0; }
-h1 em { color: var(--brand); font-style: normal; }
-.hero-copy { color: var(--muted); max-width: 490px; margin: 17px 0 0; font-size: 14px; }
-.hero-aside { display: flex; align-items: center; gap: 16px; color: var(--muted); font-size: 14px; padding-right: 24px; }
-.hero-aside strong { color: var(--text); font-weight: 500; }
-.outline-icon { color: var(--brand); border: 1px solid var(--line); width: 62px; height: 62px; border-radius: 20px; display: grid; place-items: center; font-size: 38px; transform: rotate(-7deg); background: var(--surface); }
-.market-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.market-tab { display: flex; gap: 13px; align-items: center; padding: 16px 19px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); text-align: left; transition: border-color .2s, transform .2s, box-shadow .2s; font-weight: 700; font-size: 15px; }
-.market-tab:hover { transform: translateY(-2px); }
-.market-tab[aria-selected='true'] { border-color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
-.market-tab[data-market='mercadoLivre'][aria-selected='true'] { border-color: var(--ml-border); box-shadow: inset 0 0 0 1px var(--ml-border); }
-.market-tab[data-market='shopee'][aria-selected='true'] { border-color: var(--shopee); box-shadow: inset 0 0 0 1px var(--shopee); }
-.market-tab small { display: block; color: var(--muted); font-size: 10px; font-weight: 400; margin-top: 3px; }
-.market-symbol { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; flex-shrink: 0; font-family: var(--font-display); }
-.market-symbol.ml { background: var(--ml); color: var(--ml-ink); font-size: 13px; }
-.market-symbol.shopee { background: var(--shopee-soft); color: var(--shopee); font-size: 22px; }
-.market-symbol.tiktok { background: var(--tiktok-soft); color: var(--tiktok-ink); font-size: 25px; }
-.tab-arrow { margin-left: auto; font-size: 21px; opacity: 0; }
-[aria-selected='true'] .tab-arrow { opacity: 1; }
-.demo-note { color: var(--muted); font-size: 11px; margin: 13px 0 22px; }
-.calculator { display: grid; grid-template-columns: 1.06fr 1fr; gap: 24px; align-items: start; }
-.card { border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--surface); }
-.form-card, .goal-card { padding: 26px; }
-.section-title { display: flex; align-items: center; gap: 12px; margin-bottom: 23px; }
-h2 { margin: 0; font: 800 15px var(--font-display); letter-spacing: -.25px; }
-.section-title p { color: var(--muted); font-size: 11px; margin: 5px 0 0; }
-.step { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 9px; background: var(--surface-soft); border: 1px solid var(--line); font-size: 10px; color: var(--muted); flex-shrink: 0; }
-.live-badge { margin-left: auto; font-size: 8px; letter-spacing: 1px; white-space: nowrap; color: var(--brand); display: flex; align-items: center; gap: 5px; }
-.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.field { min-width: 0; }
-.field label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
-.input-wrap { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 10px; height: 48px; background: var(--input-bg); padding: 0 13px; gap: 8px; transition: border-color .2s, box-shadow .2s; }
-.input-wrap:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
-.input-wrap span { color: var(--muted); font-size: 12px; }
-input[type='text'] { width: 100%; min-width: 0; background: transparent; color: var(--text); border: 0; outline: 0; font-weight: 600; font-size: 17px; padding: 5px 0; font-variant-numeric: tabular-nums; }
-input[type='text']:focus-visible { outline: none; }
-.input-wrap:has([aria-invalid='true']) { border-color: var(--bad); }
-.field small { display: block; color: var(--muted); font-size: 10px; margin-top: 6px; }
-.field .field-error { color: var(--bad); }
-.field-error:empty { display: none; }
-.divider { height: 1px; background: var(--line); margin: 26px 0; }
-
-
-.weight-field { margin-top: 18px; }
-
-
-
-
-.helper-note { color: var(--muted); font-size: 10px; margin: 10px 0 0; line-height: 1.6; }
-.option-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 0; border-top: 1px solid var(--line); margin-top: 18px; }
-.option-row strong { font-size: 11px; }
-.option-row small { font-size: 10px; color: var(--muted); display: block; margin-top: 3px; }
-.segmented { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-soft); }
-.segmented button { border: 0; padding: 7px 13px; border-radius: 6px; background: transparent; font-size: 11px; }
-.segmented [aria-pressed='true'] { background: var(--text); color: var(--surface); }
-.checkbox-row { display: flex; gap: 9px; align-items: start; margin-top: 18px; font-size: 11px; cursor: pointer; }
-.checkbox-row input { margin: 3px 0 0; width: 15px; height: 15px; accent-color: var(--brand); }
-.checkbox-row small { display: block; color: var(--muted); font-size: 10px; margin-top: 3px; }
-#manual-section, #affiliate-section { margin-top: 18px; }
-.notice { font-size: 11px; padding: 12px 14px; border-radius: 10px; color: var(--warn); background: var(--warn-soft); }
-.notice.danger { color: var(--bad); background: var(--bad-soft); }
-.goal-card { margin-top: 18px; }
-.goal-card .input-wrap { max-width: 180px; }
-.target-icon { font-size: 27px; color: var(--brand); line-height: 1; }
-.optional { font-weight: 400; color: var(--muted); margin-left: 6px; }
-.result-column { display: flex; flex-direction: column; gap: 18px; }
-.result-card { padding: 27px; border-color: color-mix(in srgb, var(--tone) 25%, var(--line)); background: linear-gradient(140deg, var(--surface), var(--tone-soft)); --tone: var(--good); --tone-soft: var(--good-soft); }
-.result-card[data-tone='bad'] { --tone: var(--bad); --tone-soft: var(--bad-soft); }
-.result-card[data-tone='warn'] { --tone: var(--warn); --tone-soft: var(--warn-soft); }
-.result-card[data-tone='empty'] { --tone: var(--muted); --tone-soft: var(--surface-soft); }
-.result-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.result-top .eyebrow { margin: 0; font-size: 8px; color: var(--muted); letter-spacing: 1px; }
-.status-pill { color: var(--tone); border: 1px solid color-mix(in srgb, var(--tone) 20%, transparent); background: var(--tone-soft); font-size: 9px; padding: 5px 9px; border-radius: 20px; white-space: nowrap; }
-.profit-label { color: var(--muted); font-size: 12px; margin-top: 30px; }
-.profit { font: 800 clamp(32px, 4.6vw, 54px)/1.2 var(--font-display); letter-spacing: -2px; color: var(--tone); margin: 9px 0 15px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
-.margin-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
-.margin-row > div { flex-shrink: 0; }
-#margin { color: var(--tone); font: 800 22px var(--font-display); }
-.margin-row small { display: block; color: var(--muted); font-size: 10px; margin-top: 3px; }
-.margin-row p { font-size: 11px; max-width: 215px; margin: 0; color: var(--muted); }
-.mini-stats { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); margin-top: 24px; padding-top: 18px; gap: 15px; }
-.mini-stats span { display: block; color: var(--muted); font-size: 10px; }
-.mini-stats strong { font-size: 14px; display: block; margin-top: 4px; }
-.copy-button { width: 100%; margin-top: 23px; display: flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid var(--line); background: var(--surface); padding: 12px 15px; border-radius: 10px; font-weight: 600; font-size: 11px; }
-.copy-button:hover { border-color: var(--brand); }
-.copy-status { font-size: 10px; margin: 7px 0 0; color: var(--muted); }
-.copy-status:empty { display: none; }
-.breakdown-card { padding: 25px 27px; }
-.breakdown-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-.breakdown-heading h2 { font-size: 13px; }
-.breakdown-heading > span { color: var(--muted); font-size: 8px; letter-spacing: 1px; }
-.composition { display: flex; gap: 3px; height: 10px; border-radius: 10px; overflow: hidden; margin: 22px 0; background: var(--surface-soft); }
-.composition span { min-width: 1px; height: 100%; transition: width .25s; }
-.breakdown-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 11px; }
-.breakdown-row .swatch { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
-.breakdown-row .amount { margin-left: auto; font-weight: 600; }
-.breakdown-row .share { width: 52px; text-align: right; font-size: 10px; color: var(--muted); }
-.breakdown-row.profit-row { border-top: 1px solid var(--line); margin-top: 7px; padding-top: 13px; font-weight: 700; }
-.rate-note { color: var(--muted); font-size: 10px; background: var(--surface-soft); padding: 10px 12px; border-radius: 8px; margin: 15px 0 0; }
-.minimum-card { padding: 22px 27px; background: var(--brand-soft); border-color: transparent; }
-.minimum-heading { display: flex; gap: 10px; align-items: center; font-size: 9px; font-weight: 700; letter-spacing: .8px; color: var(--brand-ink); }
-.minimum-heading .target-icon { font-size: 24px; }
-#minimum-price { display: block; font: 800 30px var(--font-display); letter-spacing: -1px; margin-top: 10px; color: var(--brand-ink); }
-#minimum-description { font-size: 11px; margin: 6px 0 0; color: var(--brand-ink); }
-.scope-note { display: flex; align-items: start; gap: 10px; color: var(--muted); margin-top: 28px; font-size: 11px; }
-.scope-note p { margin: 0; }
-.scope-note strong { color: var(--text); font-weight: 500; }
-.rules-details { font-size: 11px; color: var(--muted); margin: 20px 0 32px; }
-.rules-details summary { width: fit-content; }
-.rules-details p { max-width: 880px; }
-.site-footer { border-top: 1px solid var(--line); padding: 24px 0 32px; display: flex; justify-content: space-between; gap: 15px; align-items: center; font-family: var(--font-display); font-weight: 800; }
-.site-footer small { color: var(--muted); font-weight: 400; font-family: var(--font-body); font-size: 10px; }
-.site-footer span small { margin-left: 12px; }
-.revealed { animation: reveal .22s ease both; }
-/* Navegadores modernos também suavizam a saída do controle de frete. */
-#fast-section { opacity: 1; transition: opacity .18s ease, display .18s allow-discrete; }
-#fast-section[hidden] { opacity: 0; }
-@starting-style { #fast-section { opacity: 0; } }
-.tab-enter { animation: reveal .22s ease both; }
-@keyframes reveal { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-.sr-only, .skip-link:not(:focus) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.skip-link:focus { display: block; padding: 12px; background: var(--surface); color: var(--brand); }
-@media (min-width: 1050px) { .result-column { position: sticky; top: 18px; } }
-@media (max-width: 850px) { .hero-aside { display: none; } .calculator { gap: 16px; } .form-card, .goal-card, .result-card, .breakdown-card, .minimum-card { padding: 22px; } .market-tab { padding: 14px; } .tab-arrow { display: none; } .result-top { align-items: start; flex-direction: column; }   .live-badge { display: none; } }
-@media (max-width: 680px) {
-  .wrap { width: calc(100% - 32px); } .site-header { padding: 17px 0; } .brand img { width: 46px; height: 46px; } .brand strong { font-size: 20px; } .brand small { font-size: 7px; } .private-note { display: none; }
-  .hero { padding: 29px 0 24px; } h1 { font-size: 36px; letter-spacing: -1.5px; } .hero .eyebrow { font-size: 8px; letter-spacing: .8px; } .hero-copy { font-size: 12px; max-width: 350px; }
-  .market-tabs { gap: 8px; } .market-tab { flex-direction: column; gap: 8px; text-align: center; padding: 13px 4px; font-size: 10px; border-radius: 13px; } .market-tab small { display: none; } .market-symbol { width: 32px; height: 32px; border-radius: 9px; } .market-symbol.ml { font-size: 11px; }
-  .demo-note { font-size: 10px; margin-bottom: 17px; } .calculator { grid-template-columns: 1fr; } .form-card, .goal-card { padding: 21px; } .result-top { flex-direction: row; align-items: center; } .result-column { gap: 14px; } .profit { font-size: 48px; } .profit-label { margin-top: 25px; } .field-grid { gap: 13px; }
-  .goal-card { margin-top: 14px; } .site-footer { align-items: start; flex-direction: column; gap: 8px; } .scope-note { margin-top: 24px; }  .rules-details { margin-bottom: 25px; }
+h1, h2, p { margin: 0; }
+h1 { font: 800 clamp(1rem, 2vw, 1.7rem)/1.2 var(--font-display); letter-spacing: -.04em; }
+h2 { font: 700 clamp(.85rem, 1.2vw, 1.1rem)/1.25 var(--font-display); }
+.app-shell {
+  inline-size: 100%; max-inline-size: 76rem; margin-inline: auto;
+  height: 100vh; height: 100dvh;
+  padding: max(clamp(.75rem, 3dvh, 2.5rem), env(safe-area-inset-top)) max(clamp(.75rem, 3vw, 2rem), env(safe-area-inset-right)) max(clamp(.75rem, 3dvh, 2.5rem), env(safe-area-inset-bottom)) max(clamp(.75rem, 3vw, 2rem), env(safe-area-inset-left));
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: var(--gap);
 }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+.app-header { display: flex; align-items: center; justify-content: center; gap: .6rem; }
+.brand-logo { inline-size: clamp(2rem, 5dvh, 3rem); block-size: auto; aspect-ratio: 1; object-fit: contain; border-radius: .5rem; background: var(--logo-bg); }
+.market-tabs { display: flex; align-items: center; justify-content: center; gap: clamp(1rem, 3vw, 2.5rem); }
+.market-tab {
+  --accent: var(--brand); padding: .2rem; border: .12rem solid transparent; border-radius: clamp(.8rem, 1.5vw, 1.2rem);
+  background: var(--logo-bg); opacity: .48; min-block-size: 2.5rem; min-inline-size: 2.5rem;
+  display: grid; place-items: center; transition: opacity .16s, box-shadow .16s, border-color .16s;
+}
+.market-tab[data-market='mercadoLivre'] { --accent: var(--ml); }
+.market-tab[data-market='shopee'] { --accent: var(--shopee); }
+.market-tab[data-market='tiktok'] { --accent: var(--tiktok); }
+.market-tab[aria-selected='true'] { opacity: 1; border-color: var(--accent); box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--accent) 18%, transparent); }
+.market-tab:hover { opacity: 1; }
+.market-tab img { display: block; inline-size: clamp(2.7rem, 8dvh, 5rem); block-size: clamp(2.7rem, 8dvh, 5rem); object-fit: contain; border-radius: .6rem; }
+.logo-fallback { display: grid; place-items: center; inline-size: clamp(2.7rem, 8dvh, 5rem); min-block-size: clamp(2.7rem, 8dvh, 5rem); font-size: .65rem; font-weight: 700; color: #17231c; text-align: center; }
+.calculator { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: var(--gap); min-block-size: 0; max-block-size: 40rem; align-self: center; block-size: 100%; }
+.panel { border: 1px solid var(--line); border-radius: var(--radius); padding: var(--pad); background: var(--surface); box-shadow: var(--shadow); min-block-size: 0; }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: .5rem; min-block-size: 2.5rem; }
+.form-panel { display: flex; flex-direction: column; gap: clamp(.5rem, 3dvh, 2rem); margin: 0; }
+.icon-button { min-inline-size: 2.5rem; min-block-size: 2.5rem; display: grid; place-items: center; border: 1px solid var(--line); border-radius: .65rem; background: var(--surface-soft); font-size: 1.3rem; line-height: 1; padding: .25rem; }
+#manual-button[data-active='true'] { color: var(--brand); border-color: var(--brand); background: var(--brand-soft); }
+.fields-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(.65rem, 2.5dvh, 1.6rem) clamp(.65rem, 1.5vw, 1.5rem); }
+.field label { display: block; font-size: var(--label-size); font-weight: 500; margin-bottom: .3rem; line-height: 1.2; }
+.input-wrap { display: flex; align-items: center; gap: .4rem; padding-inline: clamp(.55rem, 1vw, .9rem); border: 1px solid var(--line); border-radius: .6rem; background: var(--surface-soft); min-block-size: var(--control-height); }
+.input-wrap span { font-size: var(--small-size); color: var(--muted); }
+.input-wrap:focus-within { border-color: var(--brand); }
+.input-wrap:has([aria-invalid='true']) { border-color: var(--bad); }
+input[type='text'] { inline-size: 100%; min-block-size: var(--control-height); padding: .1rem 0; border: 0; background: transparent; outline: 0; font-size: clamp(1rem, 1.7vw, 1.5rem); font-weight: 600; font-variant-numeric: tabular-nums; }
+input::placeholder { color: var(--muted); font-weight: 400; }
+select { inline-size: 100%; min-block-size: var(--control-height); font-size: 1rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface-soft); padding: .35rem .55rem; }
+.notice { font-size: var(--small-size); line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
+.error, .field-error { color: var(--bad); }
+.field-error { font-size: var(--small-size); }
+#form-notice { margin-top: auto; }
+.result-panel { --tone: var(--good); --tone-soft: var(--good-soft); display: flex; flex-direction: column; justify-content: space-between; gap: clamp(.6rem, 2.4dvh, 1.7rem); background: linear-gradient(135deg, var(--surface) 30%, var(--tone-soft)); }
+.result-panel[data-tone='bad'] { --tone: var(--bad); --tone-soft: var(--bad-soft); }
+.result-panel[data-tone='warn'] { --tone: var(--warn); --tone-soft: var(--warn-soft); }
+.result-panel[data-tone='empty'] { --tone: var(--muted); --tone-soft: var(--surface-soft); }
+.status { font-size: var(--small-size); color: var(--tone); font-weight: 600; text-align: end; }
+.result-values { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: .7rem; }
+.metric, .ideal { container-type: inline-size; }
+.metric-label { display: block; color: var(--muted); font-size: var(--label-size); line-height: 1.2; margin-bottom: .3rem; }
+.big-value { color: var(--tone); display: block; font: 800 min(clamp(1.8rem, 6dvh, 4rem), calc(170cqw / var(--digits, 8)))/1.1 var(--font-display); letter-spacing: -.045em; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.margin-metric { text-align: right; }
+.margin-metric .metric-label { font-size: var(--small-size); }
+.goal-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(.65rem, 1.5vw, 1.5rem); border-top: 1px solid var(--line); padding-top: clamp(.65rem, 2.5dvh, 1.8rem); }
+.ideal { display: flex; flex-direction: column; justify-content: center; }
+#ideal-price { font: 800 min(clamp(1.3rem, 3.6dvh, 2.2rem), calc(170cqw / var(--digits, 8)))/1.15 var(--font-display); letter-spacing: -.03em; white-space: nowrap; }
+.ideal-profit { font-size: var(--small-size); color: var(--muted); margin-top: .2rem; }
+.breakdown-trigger { display: flex; gap: .8rem; align-items: center; }
+.composition { display: flex; flex: 1; block-size: clamp(.3rem, .8dvh, .5rem); background: var(--line); border-radius: 1rem; overflow: hidden; }
+.composition span { block-size: 100%; transition: width .18s; }
+.text-button { min-block-size: 2.5rem; padding: .35rem .65rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface); font-size: var(--small-size); font-weight: 600; white-space: nowrap; }
+.modal { inline-size: min(34rem, calc(100% - 2rem)); max-block-size: calc(100dvh - 2rem); margin: auto; padding: clamp(.8rem, 2dvh, 1.5rem); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text); overflow: hidden; box-shadow: 0 1rem 5rem #0003; }
+.modal::backdrop { background: #111b18a6; backdrop-filter: blur(.2rem); }
+.modal[open] { display: flex; flex-direction: column; gap: clamp(.4rem, 1.5dvh, 1rem); }
+.dialog-heading, .detail-summary, .detail-total { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.detail-summary, .detail-total { font-size: clamp(.75rem, 1.4vw, .95rem); }
+.breakdown-list { display: grid; gap: clamp(.35rem, 1dvh, .7rem); }
+.breakdown-row { display: grid; grid-template-columns: .45rem minmax(0, 1fr) auto minmax(3.6rem, auto); gap: .4rem; align-items: center; font-size: clamp(.75rem, 1.3vw, .95rem); }
+.swatch { inline-size: .4rem; block-size: .4rem; border-radius: .1rem; }
+.amount { font-weight: 600; font-variant-numeric: tabular-nums; }
+.share { color: var(--muted); text-align: right; font-size: var(--small-size); }
+.detail-total { border-top: 1px solid var(--line); padding-top: .5rem; }
+.check-label { display: flex; align-items: center; min-block-size: 2.5rem; gap: .5rem; font-size: 1rem; cursor: pointer; }
+.check-label input { inline-size: 1.25rem; block-size: 1.25rem; accent-color: var(--brand); }
+.manual-modal { max-inline-size: 26rem; }
+.sr-only { position: absolute; inline-size: 1px; block-size: 1px; margin: -1px; padding: 0; border: 0; clip-path: inset(50%); overflow: hidden; white-space: nowrap; }
+.noscript { position: fixed; inset: auto 1rem 1rem; background: var(--surface); padding: 1rem; }
+.tab-enter { animation: enter .16s ease-out; }
+@keyframes enter { from { opacity: .7; transform: translateY(.2rem); } to { opacity: 1; transform: translateY(0); } }
+/* Celular e tablet em pé: dois blocos empilhados. */
+@media (max-width: 56.25rem) and (orientation: portrait) {
+  :root { --gap: clamp(.5rem, 1.3dvh, 1rem); --pad: clamp(.75rem, 2dvh, 1.3rem); }
+  .app-shell { max-inline-size: 44rem; }
+  .calculator { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); max-block-size: none; }
+  .form-panel { gap: .55rem; }
+  .fields-grid { gap: .65rem .7rem; }
+  .result-panel { gap: .7rem; }
+  .big-value { font-size: min(clamp(1.9rem, 5dvh, 3.5rem), calc(170cqw / var(--digits, 8))); }
+}
+/* Telas baixas: altura mínima de toque preservada, blocos lado a lado. */
+@media (max-height: 35rem) and (orientation: landscape) {
+  :root { --gap: .6rem; --pad: .75rem; --control-height: 2.5rem; }
+  .app-shell { grid-template-columns: auto 1fr; grid-template-rows: auto minmax(0, 1fr); padding-block: max(.5rem, env(safe-area-inset-top)) max(.5rem, env(safe-area-inset-bottom)); }
+  .app-header { justify-content: flex-start; }
+  .market-tabs { justify-content: flex-end; gap: .75rem; }
+  .market-tab img, .logo-fallback { inline-size: 2.5rem; block-size: 2.5rem; min-block-size: 2.5rem; }
+  .calculator { grid-column: 1 / -1; max-block-size: none; }
+  .form-panel { gap: .55rem; }
+  .fields-grid { gap: .65rem; }
+  .result-panel { gap: .4rem; }
+  .result-panel .panel-heading { min-block-size: 1.3rem; }
+  .goal-grid { padding-top: .6rem; }
+  .big-value { font-size: min(2rem, calc(170cqw / var(--digits, 8))); }
+  .modal[open] { gap: .4rem; }
+  .breakdown-list { gap: .3rem; }
+}
+@media (max-width: 25rem) and (orientation: portrait) {
+  .app-shell { padding-inline: max(.6rem, env(safe-area-inset-left)) max(.6rem, env(safe-area-inset-right)); padding-block: max(.6rem, env(safe-area-inset-top)) max(.6rem, env(safe-area-inset-bottom)); }
+  .result-panel { gap: .5rem; }
+  .panel-heading { min-block-size: 2.5rem; }
+  .result-panel .panel-heading { min-block-size: 1.4rem; }
+  .goal-grid { padding-top: .65rem; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 ```
 
 ## script.js
@@ -413,14 +361,15 @@ input[type='text']:focus-visible { outline: none; }
     return { ok: true, price: data.price, cost: data.cost, commission, fixed: r.fixed, shipping, affiliate, total, profit, margin, tone, rules: r, weights: ctx.weights };
   }
 
-  // Não usa busca binária global: a margem pode cair ao mudar a faixa.
-  // Particiona em todos os limites de preço e nos pontos do teto de frete.
-  // Resolve cada trecho, arredonda para cima ao centavo e confirma no cálculo real.
-  function minimumPrice(market, data, targetPercent) {
-    if (!finite(targetPercent) || targetPercent < 0 || targetPercent > 100) return { ok: false, error: 'Informe uma meta de 0% a 100%.' };
-    const ctx = context(market, data);
-    if (ctx.error) return { ok: false, error: ctx.error };
-    const target = targetPercent / 100;
+  // A comparação admite só ruído de ponto flutuante, não uma margem menor.
+  function meetsTarget(margin, target) {
+    return margin >= target || Math.abs(margin - target) <= Number.EPSILON * 4 * Math.max(1, Math.abs(margin), Math.abs(target));
+  }
+  function resultTone(margin, targetPercent) {
+    if (finite(targetPercent) && targetPercent >= 0 && targetPercent <= 100) return meetsTarget(margin, targetPercent / 100) ? 'good' : margin < C.marginColors.low - EPS ? 'bad' : 'warn';
+    return margin < C.marginColors.low - EPS ? 'bad' : margin <= C.marginColors.high + EPS ? 'warn' : 'good';
+  }
+  function priceSegments(market, data, ctx) {
     const points = new Set([0]);
     if (market === 'mercadoLivre') {
       if (!data.manualMode) {
@@ -428,39 +377,86 @@ input[type='text']:focus-visible { outline: none; }
         m.priceBands.forEach(b => points.add(b.min));
         points.add(m.mandatoryFreeShippingFrom);
         points.add(m.cheapShippingCap.below);
+        // Também divide o trecho em que o frete deixa de ser 50% do preço.
         if (m.cheapShippingCap.rate > 0) ctx.row.slice(1).forEach(v => points.add(v / m.cheapShippingCap.rate));
       }
     } else C[market].bands.forEach(b => points.add(b.min));
     const sorted = [...points].sort((a, b) => a - b);
-    let best = null;
-    for (let i = 0; i < sorted.length; i++) {
-      const low = sorted[i], high = sorted[i + 1] ?? Infinity;
+    return sorted.map((low, i) => {
+      const high = sorted[i + 1] ?? Infinity;
       const probe = finite(high) ? (low + high) / 2 : low + 1;
-      const r = charges(market, probe, data, ctx);
-      const availableRate = 1 - r.commission - r.shippingRate - r.affiliate - target;
+      return { low, high, rules: charges(market, probe, data, ctx) };
+    });
+  }
+  // Maior margem por faixa. No último intervalo, informa o limite teórico
+  // quando o preço cresce: custos fixos impedem atingir esse limite exato.
+  function maximumMargin(market, data) {
+    const ctx = context(market, data);
+    if (ctx.error) return { ok: false, error: ctx.error };
+    let maximum = -Infinity, isLimit = false;
+    for (const { low, high, rules: r } of priceSegments(market, data, ctx)) {
+      const rate = 1 - r.commission - r.shippingRate - r.affiliate;
       const fixedCosts = data.cost + r.fixed + r.shippingFixed;
-      if (availableRate < -EPS || (Math.abs(availableRate) <= EPS && fixedCosts > EPS)) continue;
-      const raw = availableRate > EPS ? fixedCosts / availableRate : 0;
+      if (!finite(high)) {
+        if (rate > maximum) { maximum = rate; isLimit = fixedCosts > 0; }
+      } else {
+        const lastCent = (Math.ceil(high * 100 - EPS) - 1) / 100;
+        if (lastCent < Math.max(low, 0.01)) continue;
+        const value = rate - fixedCosts / lastCent;
+        if (value > maximum) { maximum = value; isLimit = false; }
+      }
+    }
+    return { ok: finite(maximum), margin: finite(maximum) ? maximum : null, isLimit };
+  }
+  // Resolve cada faixa separadamente; a margem pode cair ao mudar de faixa.
+  // O cálculo real valida o preço arredondado para cima ao centavo.
+  function minimumPrice(market, data, targetPercent) {
+    if (!['mercadoLivre', 'shopee', 'tiktok'].includes(market)) return { ok: false, error: 'Marketplace inválido.' };
+    if (!finite(targetPercent) || targetPercent < 0 || targetPercent > 100) return { ok: false, error: 'Informe uma meta de 0% a 100%.' };
+    const ctx = context(market, data);
+    if (ctx.error) return { ok: false, error: ctx.error };
+    const target = targetPercent / 100;
+    let best = null;
+    for (const { low, high, rules: r } of priceSegments(market, data, ctx)) {
+      const denominator = 1 - r.commission - r.shippingRate - r.affiliate - target;
+      if (denominator <= 0) continue;
+      const raw = (data.cost + r.fixed + r.shippingFixed) / denominator;
       let cents = Math.max(1, Math.ceil(Math.max(low, raw) * 100 - EPS));
-      let candidate = cents / 100;
-      // Um passo adicional trata exclusivamente arredondamento de ponto flutuante.
-      for (let adjustment = 0; adjustment < 2; adjustment++, candidate = ++cents / 100) {
+      for (let step = 0; step < 3; step++, cents++) {
+        const candidate = cents / 100;
         if (candidate < low || candidate >= high || candidate > C.maxInput) break;
         const quote = calculate(market, { ...data, price: candidate });
-        if (quote.ok && quote.margin + EPS >= target) {
+        if (quote.ok && meetsTarget(quote.margin, target)) {
           if (!best || candidate < best.price) best = { ok: true, price: candidate, quote };
           break;
         }
       }
     }
-    return best || { ok: false, error: 'Meta inviável com esses custos e taxas dentro do limite de ' + money(C.maxInput) + '.' };
+    if (best) return best;
+    const ceiling = maximumMargin(market, data);
+    return { ok: false, error: 'Meta inviável com essas taxas', maxMargin: ceiling.margin, maxIsLimit: ceiling.isLimit, inputLimit: C.maxInput };
   }
 
-  const api = { parseNumber, weights, calculate, minimumPrice, validateConfig };
+  // Persiste só metas válidas; apagar a meta também fica salvo.
+  function readTargetStorage(getStorage = () => root.localStorage) {
+    const fallback = String(C.defaults.target ?? '').replace('.', ',');
+    try {
+      const value = getStorage().getItem(C.storage.target);
+      if (value === null) return { value: fallback, available: true };
+      const number = parseNumber(value);
+      return { value: value === '' || (finite(number) && number >= 0 && number <= 100) ? value : fallback, available: true };
+    } catch (_) { return { value: fallback, available: false }; }
+  }
+  function saveTargetStorage(value, getStorage = () => root.localStorage) {
+    const number = parseNumber(value);
+    if (number !== null && (!finite(number) || number < 0 || number > 100)) return false;
+    try { getStorage().setItem(C.storage.target, number === null ? '' : String(number)); return true; } catch (_) { return false; }
+  }
+
+  const api = { parseNumber, weights, calculate, minimumPrice, maximumMargin, resultTone, meetsTarget, readTargetStorage, saveTargetStorage, validateConfig };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SellneedsCalculator = api;
   if (typeof document === 'undefined') return;
-
   const $ = id => document.getElementById(id);
   try { validateConfig(); } catch (e) {
     $('fatal-error').hidden = false;
@@ -468,246 +464,208 @@ input[type='text']:focus-visible { outline: none; }
     $('calculator').hidden = true;
     return;
   }
-
-  let market = 'mercadoLivre';
-  let fastShipping = C.defaults.fastShipping;
-  let latest = null;
-  let minimum = null;
-  let animation = 0;
-  let announcement = 0;
-  let displayProfit = 0;
-  let displayMargin = 0;
+  let market = 'mercadoLivre', fastShipping = C.defaults.fastShipping;
+  let latest = null, ideal = null, animation = 0, announcement = 0;
+  let displayedProfit = 0, displayedMargin = 0;
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const fields = ['price', 'cost', 'weight', 'affiliate', 'target', 'manualShipping'];
+  const fields = ['price', 'cost', 'target', 'weight', 'affiliate', 'manualShipping'];
   const cashFields = ['price', 'cost', 'manualShipping'];
-  fields.forEach(id => { $(id).value = cashFields.includes(id) ? decimal(C.defaults[id]) : String(C.defaults[id]).replace('.', ','); });
+  fields.forEach(id => { $(id).value = cashFields.includes(id) ? decimal(C.defaults[id]) : String(C.defaults[id] ?? '').replace('.', ','); });
+  const savedTarget = readTargetStorage();
+  let storageAvailable = savedTarget.available;
+  $('target').value = savedTarget.value;
   $('manual-mode').checked = C.defaults.manualMode;
-  $('config-version').textContent = 'Configuração: ' + C.version + '.';
-
+  $('fast-shipping').value = String(fastShipping);
   function readData() {
-    const data = Object.fromEntries(fields.map(id => [id, parseNumber($(id).value)]));
-    return { ...data, fastShipping, manualMode: $('manual-mode').checked };
-  }
-  function fieldError(id, message) {
-    $(id + '-error').textContent = message;
-    $(id).setAttribute('aria-invalid', message ? 'true' : 'false');
+    return { ...Object.fromEntries(fields.map(id => [id, parseNumber($(id).value)])), fastShipping, manualMode: $('manual-mode').checked };
   }
   function validateFields(data) {
-    fields.forEach(id => fieldError(id, ''));
-    const required = ['price', 'cost'];
-    if (market === 'tiktok') required.push('affiliate');
-    if (market === 'mercadoLivre') required.push(...(data.manualMode ? ['manualShipping'] : ['weight']));
-    required.forEach(id => {
-      const n = data[id];
-      const allowZero = ['cost', 'affiliate', 'manualShipping'].includes(id);
+    const errors = [];
+    fields.forEach(id => { $(id + '-error').textContent = ''; $(id).setAttribute('aria-invalid', 'false'); });
+    const active = ['price', 'cost', 'target'];
+    if (market === 'tiktok') active.push('affiliate');
+    if (market === 'mercadoLivre') active.push(data.manualMode ? 'manualShipping' : 'weight');
+    const names = { price: 'Preço', cost: 'Custo', target: 'Meta', weight: 'Peso', affiliate: 'Afiliado', manualShipping: 'Frete manual' };
+    active.forEach(id => {
+      const n = data[id], optional = id === 'target' || id === 'price';
+      const allowZero = !['price', 'weight'].includes(id);
+      const maximum = ['affiliate', 'target'].includes(id) ? 100 : C.maxInput;
       let message = '';
-      if (n === null) message = 'Preencha este campo.';
-      else if (!finite(n)) message = 'Digite um número válido.';
-      else if (n < 0 || (!allowZero && n === 0)) message = allowZero ? 'Use zero ou um valor positivo.' : 'Use um valor maior que zero.';
-      else if (n > (id === 'affiliate' ? 100 : C.maxInput)) message = id === 'affiliate' ? 'O máximo é 100%.' : 'Valor acima do limite de entrada.';
-      fieldError(id, message);
+      if (n === null && !optional) message = 'Preencha ' + names[id].toLowerCase() + '.';
+      else if (n !== null && !finite(n)) message = names[id] + ': número inválido.';
+      else if (n !== null && (n < 0 || (!allowZero && n === 0))) message = names[id] + (allowZero ? ': use zero ou positivo.' : ': use valor positivo.');
+      else if (n !== null && n > maximum) message = names[id] + (maximum === 100 ? ': máximo de 100%.' : ': acima do limite.');
+      $(id + '-error').textContent = message;
+      $(id).setAttribute('aria-invalid', message ? 'true' : 'false');
+      if (message) errors.push(message);
     });
-    if (data.target !== null && (!finite(data.target) || data.target < 0 || data.target > 100)) fieldError('target', 'Use uma margem entre 0% e 100%.');
-  }
-  function setFast(value) {
-    fastShipping = value;
-    $('fast-no').setAttribute('aria-pressed', String(!value));
-    $('fast-yes').setAttribute('aria-pressed', String(value));
+    return errors;
   }
   function visibility(data) {
     const ml = market === 'mercadoLivre';
-    $('ml-section').hidden = !ml;
+    $('weight-section').hidden = !ml;
     $('affiliate-section').hidden = market !== 'tiktok';
+    $('manual-button').hidden = !ml;
+    $('manual-button').dataset.active = String(data.manualMode);
+    $('manual-button').setAttribute('aria-label', data.manualMode ? 'Frete manual ativo: ' + money(data.manualShipping || 0) + '. Configurar' : 'Configurar frete manual');
     $('manual-section').hidden = !data.manualMode;
-    const below = finite(data.price) && data.price >= 0 && data.price < C.mercadoLivre.mandatoryFreeShippingFrom;
-    $('fast-section').hidden = !below;
-    $('fast-yes').disabled = data.manualMode;
-    $('fast-no').disabled = data.manualMode;
-    $('fast-help').textContent = data.manualMode ? 'O frete manual está ativo.' : 'Opcional abaixo de ' + money(C.mercadoLivre.mandatoryFreeShippingFrom) + '.';
-    $('mandatory-note').hidden = below || !finite(data.price);
-    $('mandatory-note').textContent = 'Frete grátis obrigatório a partir de ' + money(C.mercadoLivre.mandatoryFreeShippingFrom) + (data.manualMode ? '. Valor manual aplicado.' : '. Faixa automática aplicada.');
-    $('goal-policy').textContent = !ml ? 'A meta considera a comissão e os custos de cada faixa de preço.' : data.manualMode ? 'O preço mínimo usa o mesmo frete manual em todas as faixas.' : 'Abaixo de ' + money(C.mercadoLivre.mandatoryFreeShippingFrom) + ', a meta considera frete grátis rápido: ' + (fastShipping ? 'Sim' : 'Não') + '. Acima desse valor, usa as faixas obrigatórias.';
+    // Sem preço, a escolha permanece disponível para o cálculo da meta.
+    const below = data.price === null || (finite(data.price) && data.price >= 0 && data.price < C.mercadoLivre.mandatoryFreeShippingFrom);
+    $('fast-section').hidden = !ml || !below;
+    $('fast-shipping').disabled = data.manualMode;
   }
-  function showWeights(data) {
-    if (market !== 'mercadoLivre') return;
-    $('weight-note').textContent = data.manualMode
-      ? 'O frete manual substitui a tabela. O peso é opcional neste modo.'
-      : 'Nesta simulação, o frete considera somente o peso informado.';
+  function showNumber(id, text) {
+    $(id).textContent = text;
+    $(id).style.setProperty('--digits', Math.max(text.length, 4));
   }
   function animateNumbers(profit, margin) {
     cancelAnimationFrame(animation);
-    const startProfit = displayProfit, startMargin = displayMargin;
-    const start = performance.now();
+    const fromProfit = displayedProfit, fromMargin = displayedMargin, start = performance.now();
     function frame(now) {
-      const t = reducedMotion.matches ? 1 : Math.min(1, (now - start) / 240);
-      const ease = 1 - Math.pow(1 - t, 3);
-      displayProfit = startProfit + (profit - startProfit) * ease;
-      displayMargin = startMargin + (margin - startMargin) * ease;
-      $('profit').textContent = money(displayProfit);
-      $('margin').textContent = percent(displayMargin);
+      const t = reducedMotion.matches ? 1 : Math.max(0, Math.min(1, (now - start) / 180));
+      const ease = 1 - (1 - t) ** 3;
+      displayedProfit = fromProfit + (profit - fromProfit) * ease;
+      displayedMargin = fromMargin + (margin - fromMargin) * ease;
+      showNumber('profit', money(displayedProfit)); showNumber('margin', percent(displayedMargin));
       if (t < 1) animation = requestAnimationFrame(frame);
     }
     animation = requestAnimationFrame(frame);
   }
-  function details(result) {
+  function renderBreakdown(result, tone) {
     const rows = [
-      ['Custo do produto', result.cost, '--cost'],
-      ['Comissão · ' + percent(result.rules.commission), result.commission, '--commission'],
-      ['Taxa fixa', result.fixed, '--fixed'],
-      ['Frete', result.shipping, '--shipping'],
-      ['Afiliado' + (market === 'tiktok' ? ' · ' + percent(result.rules.affiliate) : ''), result.affiliate, '--affiliate'],
-      ['Lucro de contribuição', result.profit, result.tone === 'good' ? '--good' : result.tone === 'warn' ? '--warn' : '--bad']
+      ['Custo', result?.cost, '--cost'],
+      ['Comissão' + (result ? ' · ' + decimal(result.rules.commission * 100, 0) + '%' : ''), result?.commission, '--commission'],
+      ['Taxa fixa', result?.fixed, '--fixed'],
+      ['Frete', result?.shipping, '--shipping'],
+      ['Afiliado' + (market === 'tiktok' && result ? ' · ' + decimal(result.rules.affiliate * 100, 1) + '%' : ''), result?.affiliate, '--affiliate'],
+      ['Lucro', result?.profit, tone === 'bad' ? '--bad' : tone === 'warn' ? '--warn' : '--good']
     ];
-    const list = $('breakdown-list'), bar = $('composition');
-    list.replaceChildren(); bar.replaceChildren();
-    const base = Math.max(result.price, result.total);
-    rows.forEach(([label, amount, color], i) => {
-      const row = document.createElement('div'); row.className = 'breakdown-row' + (i === 5 ? ' profit-row' : '');
+    $('breakdown-list').replaceChildren(); $('composition').replaceChildren();
+    const base = result ? Math.max(result.price, result.total) : 1;
+    rows.forEach(([label, amount, color]) => {
+      const row = document.createElement('div'); row.className = 'breakdown-row';
       const swatch = document.createElement('span'); swatch.className = 'swatch'; swatch.style.background = 'var(' + color + ')';
-      const name = document.createElement('span'); name.textContent = label;
-      const val = document.createElement('span'); val.className = 'amount'; val.textContent = money(amount);
-      const share = document.createElement('span'); share.className = 'share'; share.textContent = decimal(amount / result.price * 100, 1) + '%';
-      row.append(swatch, name, val, share); list.append(row);
-      if (amount > 0) { const part = document.createElement('span'); part.style.width = amount / base * 100 + '%'; part.style.background = 'var(' + color + ')'; bar.append(part); }
+      const title = document.createElement('span'); title.className = 'breakdown-label'; title.textContent = label;
+      const value = document.createElement('span'); value.className = 'amount'; value.textContent = finite(amount) ? money(amount) : '—';
+      const share = document.createElement('span'); share.className = 'share'; share.textContent = result ? decimal(amount / result.price * 100, 1) + '%' : '—';
+      row.append(swatch, title, value, share); $('breakdown-list').append(row);
+      if (amount > 0) { const part = document.createElement('span'); part.style.width = amount / base * 100 + '%'; part.style.background = 'var(' + color + ')'; $('composition').append(part); }
     });
-    $('loss-note').hidden = result.profit >= 0;
-    $('loss-note').textContent = 'Os custos excedem a venda em ' + money(-result.profit) + '. A barra representa o total dos custos; os percentuais abaixo usam o preço de venda.';
-    $('breakdown-base').textContent = result.profit < 0 ? 'TOTAL DOS CUSTOS' : 'PREÇO DE VENDA';
-    $('rate-note').textContent = market === 'mercadoLivre' ? result.rules.bandLabel + ' · ' + (result.rules.manual ? 'O valor informado substitui a tabela.' : 'Faixa de peso até ' + decimal(context(market, readData()).row[0], 1) + ' kg.') : 'Faixa vigente: ' + result.rules.bandLabel + '. Taxas sobre o preço de venda.';
+    $('detail-market').textContent = C[market].name;
+    $('result-price').textContent = result ? money(result.price) : '—';
+    $('total-cost').textContent = result ? money(result.total) : '—';
+    $('loss-note').hidden = !result || result.profit >= 0;
+    $('loss-note').textContent = result?.profit < 0 ? 'Déficit: ' + money(-result.profit) + '. Barra = custos; % = venda.' : '';
+    $('rate-note').textContent = result ? (market === 'mercadoLivre' ? result.rules.bandLabel + (result.rules.manual ? '' : ' · ' + decimal(result.weights.charged, 3) + ' kg') : 'Faixa: ' + result.rules.bandLabel) : '';
+    $('composition').setAttribute('aria-label', result ? 'Composição do preço. Custo total ' + money(result.total) + '; lucro ' + money(result.profit) + '. Valores no botão Detalhes.' : 'Preencha os campos para ver a composição.');
   }
-  function renderMinimum(data) {
-    minimum = null;
-    $('minimum-price').textContent = '—';
-    $('minimum-warning').hidden = true;
-    if (data.target === null) { $('minimum-description').textContent = 'Informe uma margem desejada para descobrir o preço mínimo.'; return; }
-    minimum = minimumPrice(market, data, data.target);
-    if (!minimum.ok) { $('minimum-description').textContent = minimum.error; return; }
-    $('minimum-price').textContent = money(minimum.price);
-    $('minimum-description').textContent = 'Para uma meta de ' + decimal(data.target) + '% · margem calculada: ' + percent(minimum.quote.margin) + '.';
-    $('minimum-warning').hidden = false;
-    $('minimum-warning').textContent = 'Primeiro preço viável, em centavos. Ao aumentar o preço, recalcule: uma nova faixa de taxas pode reduzir a margem.';
+  function idealBandNote(data, quote) {
+    const r = quote.rules;
+    const previous = finite(data.price) && data.price > 0 ? calculate(market, data) : null;
+    if (previous?.ok && previous.rules.bandLabel !== r.bandLabel) {
+      if (market === 'shopee') return 'No preço ideal, a taxa fixa muda para ' + money(r.fixed) + '.';
+      if (market === 'tiktok') return 'Preço ideal: comissão ' + percent(r.commission) + ', fixa ' + money(r.fixed) + ', frete ' + money(quote.shipping) + '.';
+      return 'Preço ideal: ' + r.bandLabel + ', frete ' + money(quote.shipping) + '.';
+    }
+    return market === 'mercadoLivre' ? 'Frete no preço ideal: ' + money(quote.shipping) + '.' : 'Preço ideal: comissão ' + percent(r.commission) + ', fixa ' + money(r.fixed) + '.';
+  }
+  function renderIdeal(data, hasErrors) {
+    ideal = null;
+    showNumber('ideal-price', '—'); $('ideal-profit').textContent = '';
+    $('ideal-status').hidden = true; $('ideal-note').hidden = true;
+    if (data.target === null) return;
+    ideal = minimumPrice(market, data, data.target);
+    if (ideal.ok) {
+      showNumber('ideal-price', money(ideal.price));
+      $('ideal-profit').textContent = 'Lucro ' + money(ideal.quote.profit);
+      $('ideal-note').hidden = false; $('ideal-note').textContent = idealBandNote(data, ideal.quote);
+    } else if (!hasErrors) {
+      $('ideal-status').hidden = false;
+      $('ideal-status').textContent = finite(ideal.maxMargin) ? 'Meta inviável · Máx. ' + (ideal.maxIsLimit ? 'teórica ' : '') + percent(ideal.maxMargin) : 'Revise os campos para calcular a meta.';
+      $('ideal-status').setAttribute('aria-label', finite(ideal.maxMargin) ? 'Meta inviável com essas taxas. Margem máxima ' + (ideal.maxIsLimit ? 'teórica, não atingível com custos fixos: ' : 'possível: ') + percent(ideal.maxMargin) : ideal.error);
+    }
+    if (!storageAvailable && ideal?.ok) { $('ideal-status').hidden = false; $('ideal-status').textContent = 'Meta salva só nesta sessão.'; $('ideal-status').removeAttribute('aria-label'); }
   }
   function update() {
-    const data = readData();
-    validateFields(data); visibility(data); showWeights(data);
+    const data = readData(), errors = validateFields(data);
+    visibility(data);
     const result = calculate(market, data);
     latest = result.ok ? result : null;
-    $('copy-button').disabled = !result.ok;
-    $('copy-status').textContent = '';
-    $('result-card').dataset.tone = result.ok ? result.tone : 'empty';
-    $('result-error').hidden = result.ok;
-    $('shipping-notice').hidden = true;
+    const tone = result.ok ? resultTone(result.margin, data.target) : 'empty';
+    $('result-card').dataset.tone = tone;
+    let notice = errors[0] || '';
+    if (market === 'mercadoLivre' && !data.manualMode && result.weights?.charged > C.mercadoLivre.shippingTable.at(-1)[0]) notice = 'Peso acima de ' + decimal(C.mercadoLivre.shippingTable.at(-1)[0], 0) + ' kg: use frete manual ⚙.';
     if (result.ok) {
       animateNumbers(result.profit, result.margin);
-      $('result-price').textContent = money(result.price);
-      $('total-cost').textContent = money(result.total);
-      $('result-status').textContent = result.profit < -EPS ? 'Prejuízo' : result.tone === 'bad' ? 'Margem baixa' : result.tone === 'warn' ? 'Atenção à margem' : 'Margem saudável';
-      $('result-message').textContent = result.profit < -EPS ? 'Esta venda não cobre os custos informados. Reveja o preço e as despesas.' : 'A cada ' + money(100) + ' vendidos, sobram ' + money(result.margin * 100) + ' antes das demais despesas.';
-      if (result.rules.capped) { $('shipping-notice').hidden = false; $('shipping-notice').className = 'notice'; $('shipping-notice').textContent = 'Frete limitado a ' + decimal(C.mercadoLivre.cheapShippingCap.rate * 100, 0) + '% do preço do produto. Tabela: ' + money(result.rules.tableShipping) + ' → aplicado: ' + money(result.shipping) + '.'; }
-      details(result);
+      const hasTarget = finite(data.target) && data.target >= 0 && data.target <= 100;
+      $('result-status').textContent = hasTarget ? tone === 'good' ? 'Meta atingida' : 'Abaixo da meta' : result.profit < 0 ? 'Prejuízo' : tone === 'good' ? 'Margem saudável' : tone === 'warn' ? 'Atenção' : 'Margem baixa';
+      if (!notice && result.rules.capped) notice = 'Frete limitado a ' + decimal(C.mercadoLivre.cheapShippingCap.rate * 100, 0) + '% do preço.';
+      else if (!notice && market === 'mercadoLivre' && data.manualMode) notice = 'Frete manual: ' + money(result.shipping) + '.';
     } else {
-      cancelAnimationFrame(animation); displayProfit = 0; displayMargin = 0;
-      ['profit', 'margin', 'result-price', 'total-cost'].forEach(id => { $(id).textContent = '—'; });
-      $('result-status').textContent = 'Complete os dados';
-      $('result-message').textContent = 'O resultado aparece assim que os campos necessários estiverem válidos.';
-      $('result-error').textContent = result.error;
-      $('breakdown-list').replaceChildren(); $('composition').replaceChildren();
-      $('rate-note').textContent = 'Preencha os campos para ver o detalhamento.'; $('loss-note').hidden = true;
-      if (market === 'mercadoLivre' && result.weights?.ok && !data.manualMode && result.weights.charged > C.mercadoLivre.shippingTable.at(-1)[0] + EPS) {
-        $('shipping-notice').hidden = false; $('shipping-notice').className = 'notice danger'; $('shipping-notice').textContent = result.error;
-      }
+      cancelAnimationFrame(animation); displayedProfit = 0; displayedMargin = 0;
+      showNumber('profit', '—'); showNumber('margin', '—');
+      $('result-status').textContent = data.price === null ? 'Informe o preço' : 'Revise os campos';
     }
-    renderMinimum(data);
+    $('form-notice').textContent = notice; $('form-notice').hidden = !notice;
+    $('form-notice').classList.toggle('error', !!errors.length || (!result.ok && data.price !== null));
+    renderBreakdown(latest, tone); renderIdeal(data, !!errors.length || !!notice && !result.ok);
     clearTimeout(announcement);
-    announcement = setTimeout(() => { $('live-summary').textContent = result.ok ? C[market].name + ': lucro ' + money(result.profit) + ', margem ' + percent(result.margin) + '.' : result.error; }, 500);
+    announcement = setTimeout(() => { $('live-summary').textContent = latest ? C[market].name + ': lucro ' + money(latest.profit) + ', margem ' + percent(latest.margin) + '.' : ideal?.ok ? 'Preço ideal: ' + money(ideal.price) + '.' : result.error; }, 400);
   }
-
   function switchMarket(next) {
     market = next;
-    document.querySelectorAll('[data-market][role="tab"]').forEach(button => {
-      const active = button.dataset.market === market;
-      button.setAttribute('aria-selected', String(active)); button.tabIndex = active ? 0 : -1;
+    document.querySelectorAll('[role="tab"]').forEach(tab => {
+      const selected = tab.dataset.market === market;
+      tab.setAttribute('aria-selected', String(selected)); tab.tabIndex = selected ? 0 : -1;
     });
     $('calculator').dataset.market = market;
     $('calculator').setAttribute('aria-labelledby', 'tab-' + market);
-    $('calculator').classList.remove('tab-enter');
-    void $('calculator').offsetWidth;
-    $('calculator').classList.add('tab-enter');
+    $('calculator').classList.remove('tab-enter'); void $('calculator').offsetWidth; $('calculator').classList.add('tab-enter');
     update();
   }
   const tabs = [...document.querySelectorAll('[role="tab"]')];
   tabs.forEach((tab, index) => {
     tab.addEventListener('click', () => switchMarket(tab.dataset.market));
     tab.addEventListener('keydown', e => {
-      let next;
-      if (e.key === 'ArrowRight') next = (index + 1) % tabs.length;
-      if (e.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
-      if (e.key === 'Home') next = 0;
-      if (e.key === 'End') next = tabs.length - 1;
-      if (next !== undefined) { e.preventDefault(); tabs[next].focus(); switchMarket(tabs[next].dataset.market); }
+      const next = e.key === 'ArrowRight' ? (index + 1) % tabs.length : e.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : null;
+      if (next !== null) { e.preventDefault(); tabs[next].focus(); switchMarket(tabs[next].dataset.market); }
     });
+    const img = tab.querySelector('img'), asset = C.logos[tab.dataset.market];
+    img.src = asset.src; img.width = asset.width; img.height = asset.height;
   });
   fields.forEach(id => {
-    $(id).addEventListener('input', update);
+    $(id).addEventListener('input', () => {
+      if (id === 'target') {
+        const value = parseNumber($('target').value);
+        if (value === null || (finite(value) && value >= 0 && value <= 100)) storageAvailable = saveTargetStorage($('target').value);
+      }
+      update();
+    });
     $(id).addEventListener('blur', () => {
-      const n = parseNumber($(id).value);
-      if (cashFields.includes(id) && finite(n) && n >= 0 && n <= C.maxInput) { $(id).value = decimal(n); update(); }
+      const value = parseNumber($(id).value);
+      if (cashFields.includes(id) && finite(value) && value >= 0 && value <= C.maxInput) { $(id).value = decimal(value); update(); }
     });
   });
   $('calculator-form').addEventListener('submit', e => e.preventDefault());
-  $('fast-no').addEventListener('click', () => { setFast(false); update(); });
-  $('fast-yes').addEventListener('click', () => { setFast(true); update(); });
+  $('fast-shipping').addEventListener('change', () => { fastShipping = $('fast-shipping').value === 'true'; update(); });
   $('manual-mode').addEventListener('change', update);
-  setFast(fastShipping);
-
-  function setTheme(theme) {
-    document.documentElement.dataset.theme = theme;
-    $('theme-icon').textContent = theme === 'dark' ? '☀' : '☾';
-    $('theme-toggle').setAttribute('aria-label', theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro');
-    $('theme-toggle').setAttribute('aria-pressed', String(theme === 'dark'));
-    document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
-    try { localStorage.setItem('sellneeds-theme', theme); } catch (_) { /* Continua funcionando com armazenamento bloqueado. */ }
+  // <dialog> mantém o foco no painel, fecha com Esc e devolve o foco ao botão.
+  $('details-button').addEventListener('click', () => $('details-dialog').showModal());
+  $('manual-button').addEventListener('click', () => $('manual-dialog').showModal());
+  document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => $(button.dataset.close).close()));
+  document.querySelectorAll('dialog').forEach(dialog => dialog.addEventListener('click', event => {
+    if (event.target !== dialog) return;
+    const rect = dialog.getBoundingClientRect();
+    if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+  }));
+  // Sem botão extra: acompanha o tema claro/escuro do dispositivo.
+  const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+  function applyTheme() {
+    document.documentElement.dataset.theme = systemTheme.matches ? 'dark' : 'light';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   }
-  let theme;
-  try { theme = localStorage.getItem('sellneeds-theme'); } catch (_) { /* Sem persistência no navegador. */ }
-  setTheme(theme === 'dark' || theme === 'light' ? theme : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  $('theme-toggle').addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'));
-
-  $('copy-button').addEventListener('click', async () => {
-    if (!latest) return;
-    const r = latest, data = readData();
-    const lines = [
-      'Sellneeds · ' + C[market].name,
-      'Preço de venda: ' + money(r.price), 'Custo do produto: ' + money(r.cost),
-      'Comissão: ' + money(r.commission) + ' (' + percent(r.rules.commission) + ')',
-      'Taxa fixa: ' + money(r.fixed), 'Frete: ' + money(r.shipping),
-      'Afiliado: ' + money(r.affiliate) + ' (' + percent(r.rules.affiliate) + ')',
-      'Custo total: ' + money(r.total), 'Lucro de contribuição: ' + money(r.profit), 'Margem: ' + percent(r.margin)
-    ];
-    if (market === 'mercadoLivre') {
-      lines.push('Frete: ' + (data.manualMode ? 'manual' : r.rules.bandLabel));
-      if (r.weights?.ok) lines.push('Peso informado: ' + decimal(r.weights.charged, 3) + ' kg');
-      if (r.rules.capped) lines.push('Frete limitado a ' + percent(C.mercadoLivre.cheapShippingCap.rate) + ' do preço.');
-    }
-    if (minimum?.ok) lines.push('Preço mínimo para ' + decimal(data.target) + '%: ' + money(minimum.price) + '. Recalcule se alterar o preço.');
-    lines.push('Não inclui impostos, anúncios, embalagem ou despesas operacionais.', 'Regras: ' + C.version);
-    const text = lines.join('\n');
-    try {
-      if (!navigator.clipboard || !window.isSecureContext) throw Error('Usar alternativa local');
-      await navigator.clipboard.writeText(text);
-      $('copy-status').textContent = 'Resultado copiado! Pronto para colar.';
-    } catch (_) {
-      // Alternativa para abertura local e navegadores sem Clipboard API.
-      const area = document.createElement('textarea'); area.value = text; area.setAttribute('aria-label', 'Resultado para copiar');
-      area.style.position = 'fixed'; area.style.top = '0'; area.style.left = '0'; area.style.opacity = '0';
-      document.body.append(area); area.select();
-      let copied = false;
-      try { copied = document.execCommand('copy'); } catch (_) { /* Mostra alternativa selecionável. */ }
-      area.remove(); $('copy-button').focus();
-      if (copied) $('copy-status').textContent = 'Resultado copiado! Pronto para colar.';
-      else { window.prompt('Copie o resultado abaixo:', text); $('copy-status').textContent = 'Use a janela aberta para copiar o resultado.'; }
-    }
-  });
+  applyTheme(); systemTheme.addEventListener('change', applyTheme);
   update();
 })(typeof window !== 'undefined' ? window : globalThis);
 ```
@@ -725,6 +683,12 @@ input[type='text']:focus-visible { outline: none; }
   'use strict';
   const config = {
     version: '22/10/2026 · regras Sellneeds · ML somente peso informado',
+    storage: { target: 'sellneeds-margin-target', theme: 'sellneeds-theme' },
+    logos: {
+      mercadoLivre: { src: 'img/mercadolivre.webp', width: 160, height: 160 },
+      shopee: { src: 'img/shopee.webp', width: 160, height: 160 },
+      tiktok: { src: 'img/tiktok.webp', width: 160, height: 160 }
+    },
     currency: 'BRL',
     locale: 'pt-BR',
     marginColors: { low: 0.10, high: 0.20 }, // Vermelho <10%; amarelo 10–20%; verde >20%.

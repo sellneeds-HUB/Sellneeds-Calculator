@@ -2,83 +2,80 @@
 <html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f6f7f9">
-  <meta name="description" content="Calcule lucro, margem de contribuição e preço mínimo no Mercado Livre, Shopee e TikTok Shop. Uma ferramenta Sellneeds.">
-  <title>Calculadora de Margem · Sellneeds</title>
-  <link rel="icon" type="image/png" href="./logo-sellneeds.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f6f3">
+  <title>Margem · Sellneeds</title>
+  <link rel="icon" type="image/png" href="logo-sellneeds.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css">
-  <script src="./config.js" defer></script>
-  <script src="./script.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="config.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#calculator">Ir para a calculadora</a>
-  <header class="site-header wrap">
-    <a class="brand" href="./index.html" aria-label="Sellneeds, início">
-      <img src="./logo-sellneeds.png" width="64" height="64" alt="Logo Sellneeds">
-      <span><strong>Sellneeds<span class="brand-dot">.</span></strong><small>INTELIGÊNCIA PARA VENDER</small></span>
-    </a>
-    <div class="header-actions"><span class="private-note"><i></i> Cálculo no seu navegador</span><button id="theme-toggle" class="icon-button" type="button" aria-label="Ativar modo escuro" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span></button></div>
-  </header>
-  <main class="wrap">
-    <section class="hero">
-      <div><p class="eyebrow"><span></span> CALCULADORA DE MARGEM DE CONTRIBUIÇÃO</p><h1>Venda com clareza.<br>Cresça com <em>margem.</em></h1><p class="hero-copy">Descubra quanto sobra em cada venda e encontre o preço que faz sentido para o seu negócio.</p></div>
-      <div class="hero-aside"><span class="outline-icon" aria-hidden="true">↗</span><p>Menos suposição.<br><strong>Mais resultado.</strong></p></div>
-    </section>
-    <nav class="market-tabs" role="tablist" aria-label="Escolha o marketplace">
-      <button class="market-tab" type="button" role="tab" id="tab-mercadoLivre" data-market="mercadoLivre" aria-selected="true" aria-controls="calculator"><span class="market-symbol ml" aria-hidden="true">ML</span><span>Mercado Livre<small>Frete por peso e preço</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
-      <button class="market-tab" type="button" role="tab" id="tab-shopee" data-market="shopee" aria-selected="false" aria-controls="calculator" tabindex="-1"><span class="market-symbol shopee" aria-hidden="true">S</span><span>Shopee<small>Comissão por faixa</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
-      <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-selected="false" aria-controls="calculator" tabindex="-1"><span class="market-symbol tiktok" aria-hidden="true">♪</span><span>TikTok Shop<small>Inclui afiliados</small></span><span class="tab-arrow" aria-hidden="true">↗</span></button>
+  <div class="app-shell" id="app-shell">
+    <header class="app-header">
+      <img class="brand-logo" src="logo-sellneeds.png" width="250" height="250" alt="Sellneeds">
+      <h1>Calculadora de margem</h1>
+    </header>
+    <nav class="market-tabs" role="tablist" aria-label="Marketplace">
+      <button class="market-tab" type="button" role="tab" id="tab-mercadoLivre" data-market="mercadoLivre" aria-label="Mercado Livre" aria-selected="true" aria-controls="calculator">
+        <img src="img/mercadolivre.webp" alt="Mercado Livre" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>Mercado Livre</span>
+      </button>
+      <button class="market-tab" type="button" role="tab" id="tab-shopee" data-market="shopee" aria-label="Shopee" aria-selected="false" aria-controls="calculator" tabindex="-1">
+        <img src="img/shopee.webp" alt="Shopee" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>Shopee</span>
+      </button>
+      <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-label="TikTok Shop" aria-selected="false" aria-controls="calculator" tabindex="-1">
+        <img src="img/tiktok.webp" alt="TikTok Shop" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>TikTok Shop</span>
+      </button>
     </nav>
-    <p class="demo-note">Simulação de exemplo preenchida. Edite os valores para calcular o seu produto.</p>
-    <div id="fatal-error" class="notice danger" role="alert" hidden></div>
-    <section id="calculator" class="calculator" data-market="mercadoLivre" role="tabpanel" aria-labelledby="tab-mercadoLivre" tabindex="0">
-      <div class="input-column">
-        <form id="calculator-form" novalidate>
-          <article class="card form-card">
-            <div class="section-title"><span class="step">01</span><div><h2>Dados da venda</h2><p>Comece pelo preço e pelo custo unitário.</p></div><span class="live-badge"><i></i> AO VIVO</span></div>
-            <div class="field-grid">
-              <div class="field"><label for="price">Preço de venda</label><div class="input-wrap"><span>R$</span><input id="price" name="price" type="text" inputmode="decimal" autocomplete="off" aria-describedby="price-error"></div><small id="price-error" class="field-error"></small></div>
-              <div class="field"><label for="cost">Custo do produto</label><div class="input-wrap"><span>R$</span><input id="cost" name="cost" type="text" inputmode="decimal" autocomplete="off" aria-describedby="cost-error"></div><small id="cost-error" class="field-error"></small></div>
-            </div>
-            <div id="affiliate-section" class="revealed" hidden><div class="field"><label for="affiliate">Comissão de afiliado</label><div class="input-wrap"><input id="affiliate" type="text" inputmode="decimal" autocomplete="off" aria-describedby="affiliate-hint affiliate-error"><span>%</span></div><small id="affiliate-hint">Aplicada sobre o preço de venda. Use zero sem afiliado.</small><small id="affiliate-error" class="field-error"></small></div></div>
-            <div id="ml-section" class="revealed">
-              <div class="divider"></div>
-              <div class="section-title compact"><span class="step">02</span><div><h2>Peso & frete</h2><p>Informe o peso para encontrar a faixa de frete.</p></div></div>
-              <div class="field weight-field"><label for="weight">Peso do pacote</label><div class="input-wrap"><input id="weight" type="text" inputmode="decimal" autocomplete="off" aria-describedby="weight-note weight-error"><span>kg</span></div><small id="weight-error" class="field-error"></small></div>
-              <p id="weight-note" class="helper-note"></p>
-              <div id="fast-section" class="option-row revealed" hidden><div><strong>Oferecer frete grátis rápido?</strong><small id="fast-help"></small></div><div class="segmented" role="group" aria-label="Frete grátis rápido"><button id="fast-no" type="button" aria-pressed="true">Não</button><button id="fast-yes" type="button" aria-pressed="false">Sim</button></div></div>
-              <p id="mandatory-note" class="helper-note"></p>
-              <label class="checkbox-row" for="manual-mode"><input id="manual-mode" type="checkbox"><span>Informar frete manualmente<small>Substitui o frete automático e o limite para itens baratos.</small></span></label>
-              <div id="manual-section" class="field revealed" hidden><label for="manualShipping">Frete por unidade</label><div class="input-wrap"><span>R$</span><input id="manualShipping" type="text" inputmode="decimal" autocomplete="off" aria-describedby="manualShipping-error"></div><small id="manualShipping-error" class="field-error"></small></div>
-              <p id="shipping-notice" class="notice" hidden></p>
-            </div>
-          </article>
-          <article class="card goal-card"><div class="section-title compact"><span class="target-icon" aria-hidden="true">◎</span><div><h2>Qual é a sua meta?</h2><p>Encontre o menor preço para a margem desejada.</p></div></div><div class="field"><label for="target">Margem desejada <span class="optional">opcional</span></label><div class="input-wrap"><input id="target" type="text" inputmode="decimal" autocomplete="off" placeholder="Ex.: 20" aria-describedby="target-error"><span>%</span></div><small id="target-error" class="field-error"></small></div><p id="goal-policy" class="helper-note"></p></article>
-        </form>
-      </div>
-      <aside class="result-column" aria-label="Resultado da simulação">
-        <article id="result-card" class="card result-card" data-tone="good">
-          <div class="result-top"><span class="eyebrow">SEU RESULTADO POR VENDA</span><span id="result-status" class="status-pill">Margem saudável</span></div>
-          <div class="profit-label">Lucro de contribuição</div><div id="profit" class="profit">—</div>
-          <div class="margin-row"><div><span id="margin">—</span><small>de margem</small></div><p id="result-message">Preencha os dados para começar.</p></div>
-          <p id="result-error" class="notice danger" hidden></p>
-          <div class="mini-stats"><div><span>Preço de venda</span><strong id="result-price">—</strong></div><div><span>Custo total da venda</span><strong id="total-cost">—</strong></div></div>
-          <button id="copy-button" class="copy-button" type="button" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg><span>Copiar resultado</span></button>
-          <p id="copy-status" class="copy-status" role="status"></p>
-        </article>
-        <article class="card breakdown-card"><div class="breakdown-heading"><h2>Para onde vai o dinheiro</h2><span id="breakdown-base">POR VENDA</span></div><div id="composition" class="composition" aria-hidden="true"></div><p id="loss-note" class="helper-note" hidden></p><div id="breakdown-list" class="breakdown-list"></div><p id="rate-note" class="rate-note"></p></article>
-        <article class="card minimum-card"><div class="minimum-heading"><span class="target-icon" aria-hidden="true">↗</span><span>PREÇO MÍNIMO PARA A META</span></div><strong id="minimum-price">—</strong><p id="minimum-description">Informe uma margem desejada.</p><p id="minimum-warning" class="helper-note" hidden></p></article>
-      </aside>
-    </section>
-    <div class="scope-note"><span aria-hidden="true">ⓘ</span><p><strong>Margem de contribuição não é lucro líquido.</strong> A simulação considera somente os custos e taxas exibidos. Impostos, anúncios, embalagem e despesas operacionais não estão incluídos.</p></div>
-    <details class="rules-details"><summary>Sobre as regras desta calculadora</summary><p id="config-version"></p><p>As taxas seguem os valores informados pela Sellneeds. Não há consulta automática aos marketplaces. Confira as condições da sua conta antes de definir o preço.</p><p>Shopee: R$ 200,00 foi incluído na última faixa. TikTok: frete percentual e afiliado incidem sobre o preço de venda. O preço mínimo considera as mudanças de faixa; preços maiores podem ter margem menor ao cruzar um limite.</p><p>Valores monetários são exibidos com duas casas. Os cálculos usam a precisão completa antes da exibição, e o preço mínimo é arredondado para cima ao centavo.</p></details>
-  </main>
-  <footer class="wrap site-footer"><span>Sellneeds<span class="brand-dot">.</span> <small>Ferramentas para crescer.</small></span><small>Feito para decidir melhor, venda após venda.</small></footer>
-  <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-  <noscript><p class="notice danger wrap">Ative o JavaScript do navegador para usar a calculadora.</p></noscript>
+    <p id="fatal-error" class="notice error" role="alert" hidden></p>
+    <main class="calculator" id="calculator" data-market="mercadoLivre" role="tabpanel" aria-labelledby="tab-mercadoLivre">
+      <form id="calculator-form" class="panel form-panel" novalidate>
+        <div class="panel-heading">
+          <h2>Preço e custos</h2>
+          <button type="button" id="manual-button" class="icon-button" aria-label="Configurar frete manual" aria-haspopup="dialog" aria-controls="manual-dialog" title="Frete manual"><span aria-hidden="true">⚙</span></button>
+        </div>
+        <div class="fields-grid">
+          <div class="field"><label for="price">Preço</label><div class="input-wrap"><span>R$</span><input id="price" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="price-error"></div><small id="price-error" class="sr-only"></small></div>
+          <div class="field"><label for="cost">Custo</label><div class="input-wrap"><span>R$</span><input id="cost" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="cost-error"></div><small id="cost-error" class="sr-only"></small></div>
+          <div class="field" id="weight-section"><label for="weight">Peso</label><div class="input-wrap"><input id="weight" type="text" inputmode="decimal" autocomplete="off" aria-describedby="weight-error"><span>kg</span></div><small id="weight-error" class="sr-only"></small></div>
+          <div class="field" id="fast-section"><label for="fast-shipping">Frete rápido</label><select id="fast-shipping" aria-label="Oferecer frete grátis rápido"><option value="false">Não</option><option value="true">Sim</option></select></div>
+          <div class="field" id="affiliate-section" hidden><label for="affiliate">Afiliado</label><div class="input-wrap"><input id="affiliate" type="text" inputmode="decimal" autocomplete="off" aria-describedby="affiliate-error"><span>%</span></div><small id="affiliate-error" class="sr-only"></small></div>
+        </div>
+        <p id="form-notice" class="notice" role="status" hidden></p>
+      </form>
+      <section class="panel result-panel" id="result-card" data-tone="good" aria-label="Resultado">
+        <div class="panel-heading"><h2>Resultado</h2><span id="result-status" class="status"></span></div>
+        <div class="result-values">
+          <div class="metric"><span class="metric-label">Lucro</span><strong id="profit" class="big-value">—</strong></div>
+          <div class="metric margin-metric"><span class="metric-label">Margem de contribuição</span><strong id="margin" class="big-value">—</strong></div>
+        </div>
+        <div class="goal-grid">
+          <div class="field"><label for="target">Meta de margem (%)</label><div class="input-wrap"><input id="target" type="text" inputmode="decimal" autocomplete="off" placeholder="Sem meta" aria-describedby="target-error"><span>%</span></div><small id="target-error" class="sr-only"></small></div>
+          <div class="ideal"><span class="metric-label" id="ideal-title">Preço para a meta</span><strong id="ideal-price">—</strong><span id="ideal-profit" class="ideal-profit"></span></div>
+        </div>
+        <p id="ideal-status" class="notice" role="status" hidden></p>
+        <div class="breakdown-trigger"><div id="composition" class="composition" role="img" aria-label="Composição do preço; valores em Detalhes"></div><button id="details-button" type="button" class="text-button" aria-haspopup="dialog" aria-controls="details-dialog">Detalhes <span aria-hidden="true">↗</span></button></div>
+      </section>
+    </main>
+    <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  </div>
+  <dialog id="details-dialog" class="modal" aria-labelledby="details-title">
+    <div class="dialog-heading"><h2 id="details-title">Detalhes</h2><button type="button" class="icon-button" data-close="details-dialog" aria-label="Fechar detalhes">×</button></div>
+    <div class="detail-summary"><strong id="detail-market"></strong><span>Venda <b id="result-price">—</b></span></div>
+    <div id="breakdown-list" class="breakdown-list"></div>
+    <div class="detail-total"><span>Custo total</span><strong id="total-cost">—</strong></div>
+    <p id="rate-note" class="notice"></p>
+    <p id="ideal-note" class="notice" hidden></p>
+    <p id="loss-note" class="notice error" hidden></p>
+  </dialog>
+  <dialog id="manual-dialog" class="modal manual-modal" aria-labelledby="manual-title">
+    <div class="dialog-heading"><h2 id="manual-title">Frete manual</h2><button type="button" class="icon-button" data-close="manual-dialog" aria-label="Fechar frete manual">×</button></div>
+    <label class="check-label" for="manual-mode"><input id="manual-mode" type="checkbox">Usar frete manual</label>
+    <div id="manual-section" class="field" hidden><label for="manualShipping">Valor</label><div class="input-wrap"><span>R$</span><input id="manualShipping" type="text" inputmode="decimal" autocomplete="off" aria-describedby="manualShipping-error"></div><small id="manualShipping-error" class="field-error"></small></div>
+  </dialog>
+  <noscript><p class="noscript">Ative o JavaScript para usar a calculadora.</p></noscript>
 </body>
 </html>
