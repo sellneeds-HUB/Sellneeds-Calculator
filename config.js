@@ -8,12 +8,6 @@
   'use strict';
   const config = {
     version: '22/10/2026 · regras Sellneeds · ML somente peso informado',
-    storage: { target: 'sellneeds-margin-target', theme: 'sellneeds-theme' },
-    logos: {
-      mercadoLivre: { src: 'img/mercadolivre.webp', width: 160, height: 160 },
-      shopee: { src: 'img/shopee.webp', width: 160, height: 160 },
-      tiktok: { src: 'img/tiktok.webp', width: 160, height: 160 }
-    },
     currency: 'BRL',
     locale: 'pt-BR',
     marginColors: { low: 0.10, high: 0.20 }, // Vermelho <10%; amarelo 10–20%; verde >20%.

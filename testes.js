@@ -104,4 +104,13 @@ ok(calculate('shopee',{...base,price:100,cost:40}).tone==='warn','Limite inferio
 C.marginColors={low:.10,high:.26};
 ok(calculate('shopee',{...base,price:100,cost:40}).tone==='warn','Limite superior inclusivo');
 C.marginColors=oldThresholds;
+// Bloco 2 "Cálculo por margem" e ida e volta com o bloco 1 "Cálculo por preço".
+const bloco2={...C.defaults,cost:50,weight:0.4,fastShipping:false,manualMode:false};
+const porMargem=minimumPrice('mercadoLivre',bloco2,20);
+ok(porMargem.ok,'Bloco 2: meta de 20% viável');
+equal(porMargem.price,93.90,'Bloco 2: ML, custo 50, 0,4 kg, rápido Não, meta 20%');
+const porPreco=calculate('mercadoLivre',{...bloco2,price:porMargem.price});
+ok((porPreco.margin*100).toFixed(2)==='20.00','Bloco 1 com R$ 93,90: margem 20,00% (obtido '+(porPreco.margin*100).toFixed(4)+'%)');
+ok(calculate('mercadoLivre',{...bloco2,price:93.89}).margin<0.20,'Bloco 1 com R$ 93,89 fica abaixo de 20%');
+console.log('Bloco 2: preço '+porMargem.price.toFixed(2)+' | bloco 1 nesse preço: margem '+(porPreco.margin*100).toFixed(2)+'%');
 console.log('\nAPROVADO: '+checks+' verificações, incluindo '+scenarios+' comparações de preço mínimo com busca independente centavo por centavo.');

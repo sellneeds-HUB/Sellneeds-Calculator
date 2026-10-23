@@ -2,80 +2,47 @@
 <html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f4f6f3">
-  <title>Margem · Sellneeds</title>
-  <link rel="icon" type="image/png" href="logo-sellneeds.png">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
+  <meta name="theme-color" content="#f6f7f9">
+  <meta name="description" content="Calcule margem de contribuição e preço de venda no Mercado Livre, Shopee e TikTok Shop. Uma ferramenta Sellneeds.">
+  <title>Calculadora de Margem · Sellneeds</title>
+  <link rel="icon" type="image/png" href="./logo-sellneeds.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <script src="config.js" defer></script>
-  <script src="script.js" defer></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./config.js" defer></script>
+  <script src="./script.js" defer></script>
 </head>
 <body>
-  <div class="app-shell" id="app-shell">
-    <header class="app-header">
-      <img class="brand-logo" src="logo-sellneeds.png" width="250" height="250" alt="Sellneeds">
-      <h1>Calculadora de margem</h1>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Sellneeds, início">
+        <img src="./logo-sellneeds.png" width="40" height="40" alt="Logo Sellneeds">
+        <h1>Calculadora de Margem</h1>
+      </a>
+      <nav class="market-tabs" role="tablist" aria-label="Escolha o marketplace">
+        <button class="market-tab" type="button" role="tab" id="tab-mercadoLivre" data-market="mercadoLivre" aria-label="Mercado Livre" aria-selected="true" aria-controls="blocks"><img src="./logo-mercado-livre.webp" width="160" height="160" alt="Mercado Livre" onerror="this.parentNode.classList.add('logo-failed')"><span class="logo-fallback" aria-hidden="true">Mercado Livre</span></button>
+        <button class="market-tab" type="button" role="tab" id="tab-shopee" data-market="shopee" aria-label="Shopee" aria-selected="false" aria-controls="blocks" tabindex="-1"><img src="./logo-shopee.webp" width="160" height="160" alt="Shopee" onerror="this.parentNode.classList.add('logo-failed')"><span class="logo-fallback" aria-hidden="true">Shopee</span></button>
+        <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-label="TikTok Shop" aria-selected="false" aria-controls="blocks" tabindex="-1"><img src="./logo-tiktok.webp" width="160" height="160" alt="TikTok Shop" onerror="this.parentNode.classList.add('logo-failed')"><span class="logo-fallback" aria-hidden="true">TikTok Shop</span></button>
+      </nav>
+      <div class="top-actions">
+        <button id="info-button" class="icon-button" type="button" aria-label="Informações e avisos" aria-haspopup="dialog" aria-controls="info-dialog"><span aria-hidden="true">i</span></button>
+        <button id="theme-toggle" class="icon-button" type="button" aria-label="Ativar modo escuro" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span></button>
+      </div>
     </header>
-    <nav class="market-tabs" role="tablist" aria-label="Marketplace">
-      <button class="market-tab" type="button" role="tab" id="tab-mercadoLivre" data-market="mercadoLivre" aria-label="Mercado Livre" aria-selected="true" aria-controls="calculator">
-        <img src="img/mercadolivre.webp" alt="Mercado Livre" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>Mercado Livre</span>
-      </button>
-      <button class="market-tab" type="button" role="tab" id="tab-shopee" data-market="shopee" aria-label="Shopee" aria-selected="false" aria-controls="calculator" tabindex="-1">
-        <img src="img/shopee.webp" alt="Shopee" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>Shopee</span>
-      </button>
-      <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-label="TikTok Shop" aria-selected="false" aria-controls="calculator" tabindex="-1">
-        <img src="img/tiktok.webp" alt="TikTok Shop" width="160" height="160" onerror="this.hidden=true;this.nextElementSibling.hidden=false;"><span class="logo-fallback" hidden>TikTok Shop</span>
-      </button>
-    </nav>
-    <p id="fatal-error" class="notice error" role="alert" hidden></p>
-    <main class="calculator" id="calculator" data-market="mercadoLivre" role="tabpanel" aria-labelledby="tab-mercadoLivre">
-      <form id="calculator-form" class="panel form-panel" novalidate>
-        <div class="panel-heading">
-          <h2>Preço e custos</h2>
-          <button type="button" id="manual-button" class="icon-button" aria-label="Configurar frete manual" aria-haspopup="dialog" aria-controls="manual-dialog" title="Frete manual"><span aria-hidden="true">⚙</span></button>
-        </div>
-        <div class="fields-grid">
-          <div class="field"><label for="price">Preço</label><div class="input-wrap"><span>R$</span><input id="price" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="price-error"></div><small id="price-error" class="sr-only"></small></div>
-          <div class="field"><label for="cost">Custo</label><div class="input-wrap"><span>R$</span><input id="cost" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="cost-error"></div><small id="cost-error" class="sr-only"></small></div>
-          <div class="field" id="weight-section"><label for="weight">Peso</label><div class="input-wrap"><input id="weight" type="text" inputmode="decimal" autocomplete="off" aria-describedby="weight-error"><span>kg</span></div><small id="weight-error" class="sr-only"></small></div>
-          <div class="field" id="fast-section"><label for="fast-shipping">Frete rápido</label><select id="fast-shipping" aria-label="Oferecer frete grátis rápido"><option value="false">Não</option><option value="true">Sim</option></select></div>
-          <div class="field" id="affiliate-section" hidden><label for="affiliate">Afiliado</label><div class="input-wrap"><input id="affiliate" type="text" inputmode="decimal" autocomplete="off" aria-describedby="affiliate-error"><span>%</span></div><small id="affiliate-error" class="sr-only"></small></div>
-        </div>
-        <p id="form-notice" class="notice" role="status" hidden></p>
-      </form>
-      <section class="panel result-panel" id="result-card" data-tone="good" aria-label="Resultado">
-        <div class="panel-heading"><h2>Resultado</h2><span id="result-status" class="status"></span></div>
-        <div class="result-values">
-          <div class="metric"><span class="metric-label">Lucro</span><strong id="profit" class="big-value">—</strong></div>
-          <div class="metric margin-metric"><span class="metric-label">Margem de contribuição</span><strong id="margin" class="big-value">—</strong></div>
-        </div>
-        <div class="goal-grid">
-          <div class="field"><label for="target">Meta de margem (%)</label><div class="input-wrap"><input id="target" type="text" inputmode="decimal" autocomplete="off" placeholder="Sem meta" aria-describedby="target-error"><span>%</span></div><small id="target-error" class="sr-only"></small></div>
-          <div class="ideal"><span class="metric-label" id="ideal-title">Preço para a meta</span><strong id="ideal-price">—</strong><span id="ideal-profit" class="ideal-profit"></span></div>
-        </div>
-        <p id="ideal-status" class="notice" role="status" hidden></p>
-        <div class="breakdown-trigger"><div id="composition" class="composition" role="img" aria-label="Composição do preço; valores em Detalhes"></div><button id="details-button" type="button" class="text-button" aria-haspopup="dialog" aria-controls="details-dialog">Detalhes <span aria-hidden="true">↗</span></button></div>
-      </section>
-    </main>
-    <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <div class="view-switch segmented" role="group" aria-label="Tipo de cálculo">
+      <button type="button" data-view="preco" aria-controls="preco" aria-pressed="true">Por preço</button>
+      <button type="button" data-view="margem" aria-controls="margem" aria-pressed="false">Por margem</button>
+    </div>
+    <div id="fatal-error" class="notice danger" role="alert" hidden></div>
+    <main id="blocks" class="blocks" data-market="mercadoLivre" role="tabpanel" aria-labelledby="tab-mercadoLivre"></main>
   </div>
-  <dialog id="details-dialog" class="modal" aria-labelledby="details-title">
-    <div class="dialog-heading"><h2 id="details-title">Detalhes</h2><button type="button" class="icon-button" data-close="details-dialog" aria-label="Fechar detalhes">×</button></div>
-    <div class="detail-summary"><strong id="detail-market"></strong><span>Venda <b id="result-price">—</b></span></div>
-    <div id="breakdown-list" class="breakdown-list"></div>
-    <div class="detail-total"><span>Custo total</span><strong id="total-cost">—</strong></div>
-    <p id="rate-note" class="notice"></p>
-    <p id="ideal-note" class="notice" hidden></p>
-    <p id="loss-note" class="notice error" hidden></p>
+  <dialog id="info-dialog" class="info-dialog" aria-labelledby="info-title">
+    <div class="info-head"><h2 id="info-title">Informações</h2><button id="info-close" class="icon-button" type="button" aria-label="Fechar informações"><span aria-hidden="true">×</span></button></div>
+    <div id="info-content" class="info-content" tabindex="-1" autofocus></div>
   </dialog>
-  <dialog id="manual-dialog" class="modal manual-modal" aria-labelledby="manual-title">
-    <div class="dialog-heading"><h2 id="manual-title">Frete manual</h2><button type="button" class="icon-button" data-close="manual-dialog" aria-label="Fechar frete manual">×</button></div>
-    <label class="check-label" for="manual-mode"><input id="manual-mode" type="checkbox">Usar frete manual</label>
-    <div id="manual-section" class="field" hidden><label for="manualShipping">Valor</label><div class="input-wrap"><span>R$</span><input id="manualShipping" type="text" inputmode="decimal" autocomplete="off" aria-describedby="manualShipping-error"></div><small id="manualShipping-error" class="field-error"></small></div>
-  </dialog>
-  <noscript><p class="noscript">Ative o JavaScript para usar a calculadora.</p></noscript>
+  <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <noscript><p class="notice danger">Ative o JavaScript do navegador para usar a calculadora.</p></noscript>
 </body>
 </html>

@@ -1,93 +1,142 @@
-# Calculadora de margem · Sellneeds
+# Calculadora de Margem de Contribuição · Sellneeds
 
-Interface atualizada em 23/10/2026. Site estático, sem instalação, backend ou compilação.
+Site estático completo, em HTML, CSS e JavaScript puro. Não precisa instalar nada para usar. Logo enviada pela Sellneeds, base visual em preto e branco com verde nos destaques, fontes Manrope e DM Sans, modos claro e escuro. Tela única, sem rolagem, com dois blocos: **Cálculo por preço** (informa o preço e mostra a margem) e **Cálculo por margem** (informa a margem alvo e mostra o preço de venda necessário).
 
-## O que mudou
+## 1. Abrir no computador
 
-- Tela com dois blocos: “Preço e custos” e “Resultado”. Em retrato ficam empilhados; em computador e celular deitado ficam lado a lado.
-- Abas com os três logos enviados, destaque da aba ativa e nome em texto se a imagem falhar.
-- Lucro e margem grandes. Meta compartilhada entre abas, salva no navegador quando permitido, e preço para atingir a meta mesmo sem preço de venda preenchido.
-- Com meta: verde ao atingir; abaixo dela, vermelho se a margem ficar abaixo de `marginColors.low` e amarelo nos demais casos. Sem meta: vermelho abaixo de 10%, amarelo de 10% a 20% e verde acima de 20%.
-- Barra fina com composição; “Detalhes” abre os valores em um painel sobreposto. Fecha no ×, com Esc ou ao tocar fora.
-- Engrenagem em “Preço e custos” abre o frete manual. Ao ativar, o valor substitui o frete automático como antes.
-- Removidos botão de copiar, rodapé, subtítulos e textos decorativos. O modo claro/escuro acompanha o dispositivo.
+1. Baixe `sellneeds-calculadora.zip`.
+2. Clique com o botão direito e escolha **Extrair tudo**.
+3. Entre na pasta extraída e abra `index.html` com Chrome, Edge, Firefox ou Safari atualizado.
+4. Escolha o marketplace tocando na logo (Mercado Livre, Shopee ou TikTok Shop). A simulação já vem preenchida como exemplo.
+5. No bloco **Cálculo por preço**, digite preço e custo para ver a margem de contribuição e o gráfico "Para onde vai o dinheiro".
+6. No bloco **Cálculo por margem**, digite a margem alvo e o custo para ver o menor preço que atinge a meta. Cada bloco tem os próprios campos.
+7. No Mercado Livre, o botão **Frete manual** troca o peso por um valor de frete em R$. O ícone **i** no topo abre as faixas aplicadas e os avisos secundários.
 
-## Decisão sobre as dimensões
+Mantenha `index.html`, `style.css`, `script.js`, `config.js`, `logo-sellneeds.png` e as três logos dos marketplaces juntos. O site funciona sem internet após o download; sem conexão, usa uma fonte do sistema no lugar das Google Fonts. A opção de tema é salva no navegador. Os valores dos produtos não são salvos nem enviados a um servidor.
 
-Foi preservada a alteração anterior solicitada: no Mercado Livre, o cálculo usa SOMENTE O PESO INFORMADO. Comprimento, largura, altura e cubagem não foram reintroduzidos. Assim, o novo layout tem Preço | Custo e Peso | Frete rápido. Restaurar cubagem alteraria a regra atual e exigiria uma mudança de cálculo, que você pediu para evitar.
+## 2. Arquivos
 
-Isso descreve a regra deste simulador. Não é uma afirmação sobre todas as modalidades de envio do Mercado Livre.
+| Arquivo | Função |
+| --- | --- |
+| index.html | Estrutura, campos, cartões e logo |
+| style.css | Cores, fontes, responsividade e animações |
+| config.js | Todas as taxas, faixas, tabela de frete e limites |
+| script.js | Cálculos, preço por margem e funcionamento da tela (componente dos dois blocos) |
+| logo-sellneeds.png | Cópia da logo original enviada |
+| logo-mercado-livre.webp, logo-shopee.webp, logo-tiktok.webp | Logos dos botões dos marketplaces (160×160 px, 2 a 4 KB cada) |
+| testes.js | Verificação opcional dos cálculos; não é necessário para o site |
+| TESTES.md | Resultados dos testes executados |
+| CODIGO_COMPLETO.md | Código integral dos quatro arquivos, separado em blocos para copiar |
+| referencias/ | Esboço do layout e scripts opcionais de teste no navegador (não fazem parte do site) |
 
-## Arquivos para publicar
+## 3. Publicar no GitHub Pages, do zero
 
-Coloque na mesma pasta:
+1. Entre em [github.com](https://github.com). Crie sua conta, se necessário, e confirme seu e-mail.
+2. No botão **+**, escolha **New repository**.
+3. Digite `sellneeds-calculadora` em **Repository name**.
+4. Marque **Public** para usar GitHub Pages no plano gratuito. Ative a criação de um README e clique em **Create repository**.
+5. Na aba **Code**, escolha **Add file → Upload files**.
+6. Na pasta que você extraiu, selecione os oito arquivos essenciais: `index.html`, `style.css`, `script.js`, `config.js`, `logo-sellneeds.png`, `logo-mercado-livre.webp`, `logo-shopee.webp` e `logo-tiktok.webp`. Arraste-os para o GitHub. Envie os arquivos extraídos; não envie o ZIP como se fosse o site.
+7. Escreva uma mensagem, como “Adicionar calculadora Sellneeds”, e confirme o envio com **Commit changes**. Se a interface abrir uma proposta de alteração em outra branch, conclua o pull request e o merge para `main`.
+8. Confira que `index.html` aparece diretamente na lista principal de arquivos, sem uma pasta extra envolvendo o site.
+9. Abra **Settings → Pages**.
+10. Em **Build and deployment → Source**, selecione **Deploy from a branch**.
+11. Em **Branch**, escolha **main**; na pasta, escolha **/(root)**. Clique em **Save**.
+12. Aguarde a publicação e volte a **Settings → Pages**. Abra o endereço exibido pelo GitHub em **Visit site**. O formato normalmente será `https://SEU-USUARIO.github.io/sellneeds-calculadora/` — substitua pelo endereço real informado pelo GitHub.
+13. Abra esse endereço no celular e faça uma simulação de conferência.
 
-- `index.html`
-- `style.css`
-- `script.js`
-- `config.js`
-- `logo-sellneeds.png`
-- `img/mercadolivre.webp`
-- `img/shopee.webp`
-- `img/tiktok.webp`
+O site ainda não foi publicado por esta entrega. Não é necessário contratar backend, banco de dados ou servidor.
 
-O ZIP já contém essa organização. Os documentos e `testes.js` são opcionais para a publicação. Não envie o ZIP fechado para tentar publicar o site: extraia o conteúdo primeiro.
+### Atualizar um site que já está publicado (novo layout)
 
-`CODIGO_COMPLETO.md` reúne o código integral dos quatro arquivos em blocos separados, pronto para copiar. Se o download individual acrescentar “(1)” ao nome de algum arquivo, retire esse sufixo antes de publicar. No ZIP os nomes já estão corretos.
+1. No repositório do GitHub, abra a aba **Code** e escolha **Add file → Upload files**.
+2. Arraste os arquivos novos: `index.html`, `style.css`, `script.js` e `config.js`. Com o mesmo nome, eles **substituem** os antigos.
+3. Arraste também as três logos novas, que ainda não existem no repositório: `logo-mercado-livre.webp`, `logo-shopee.webp` e `logo-tiktok.webp`. Sem elas, os botões mostram o nome do marketplace em texto.
+4. Confirme com **Commit changes** na branch `main`.
+5. Aguarde um ou dois minutos e abra o site com Ctrl+F5 (no celular, feche e reabra a aba) para não ver a versão antiga em cache.
 
-## Logos: quais arquivos usar
+Os nomes dos arquivos precisam ser exatamente esses, em minúsculas. Os arquivos de `referencias/` não precisam ser enviados.
 
-| Imagem enviada | Caminho no site |
-|---|---|
-| mercado-livre-orbita(1).webp | img/mercadolivre.webp |
-| shopee-orbita(1).webp | img/shopee.webp |
-| tiktok-orbita.webp | img/tiktok.webp |
+**Se aparecer 404:** confira se `index.html` está na raiz, se a branch é `main` e se a pasta selecionada é `/(root)`. Na aba **Actions**, veja se o processo de Pages terminou. Após alterar arquivos, a atualização é publicada novamente; use Ctrl+F5 se o navegador continuar mostrando a versão anterior.
 
-As três imagens originais são WebP, 160 × 160 pixels. Mantive a extensão e os bytes originais; não foram convertidas para PNG. Os caminhos são relativos, para funcionar também em um endereço de projeto do GitHub Pages.
+**Fontes oficiais consultadas em 22/10/2026:**
+- [Enviar arquivos para o repositório](https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository).
+- [Configurar a origem de publicação do Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site).
 
-Para futuras substituições, prefira imagens quadradas de 256 × 256 pixels ou maiores, com pouca margem interna. As imagens de 160 × 160 enviadas funcionam no tamanho utilizado. Não renomeie `.webp` para `.png` sem converter a imagem de verdade.
+## 4. Alterar taxas e tabela de frete
 
-## Atualizar o site que já existe no GitHub Pages
+Abra `config.js` no Bloco de Notas ou em um editor de código. No GitHub, também é possível abrir esse arquivo e clicar no lápis para editar. Salve e confirme a alteração para republicar.
 
-1. Baixe e extraia `sellneeds-calculadora.zip`.
-2. Abra o repositório da calculadora no GitHub, na aba **Code**. Use a pasta que já contém o `index.html` publicado.
-3. Clique em **Add file → Upload files**.
-4. Arraste os quatro arquivos do site, `logo-sellneeds.png` e a pasta **img inteira**. Não arraste a pasta externa “sellneeds-calculadora”: o `index.html` precisa ficar na pasta publicada.
-5. Confira se os arquivos aparecem como `index.html`, `style.css`, `script.js`, `config.js` e `img/mercadolivre.webp`, `img/shopee.webp`, `img/tiktok.webp`.
-6. Escreva uma mensagem como “Atualiza layout e logos da calculadora” e salve com **Commit changes**. Se o repositório exigir pull request, conclua a aprovação e o merge para a branch publicada.
-7. Confira **Settings → Pages**. Para este site estático, use **Deploy from a branch**, a branch publicada (normalmente `main`) e a pasta correta (`/(root)` quando o `index.html` está na raiz; `/docs` se você já publica dessa pasta).
-8. Aguarde a execução de publicação na aba **Actions**. Depois abra o endereço mostrado em **Settings → Pages**.
-9. Se aparecer a versão antiga, atualize a página com Ctrl+F5 no computador ou feche e reabra a aba no celular.
+Use **ponto decimal no código**. Uma comissão de 12% é `0.12`; R$ 6,85 é `6.85`. Não escreva `12%`, `R$` nem vírgula decimal dentro dos números de configuração.
 
-Não é necessário desativar o site ou criar outro repositório para atualizar.
+| O que mudar | Local em config.js |
+| --- | --- |
+| Comissão Mercado Livre | `mercadoLivre.commission` |
+| Início do frete obrigatório | `mercadoLivre.mandatoryFreeShippingFrom` |
+| Limite de preço do teto, atualmente 19 | `mercadoLivre.cheapShippingCap.below` |
+| Teto de 50% | `mercadoLivre.cheapShippingCap.rate` |
+| Faixas de preço do ML | `mercadoLivre.priceBands` |
+| Valores de frete por peso/preço | `mercadoLivre.shippingTable` |
+| Coluna usada no frete rápido | `mercadoLivre.fastShippingColumn` — `3` significa P4 |
+| Comissão e taxa fixa Shopee | `shopee.bands` |
+| Comissão, taxa fixa e frete TikTok | `tiktok.bands` |
+| Limites das cores | `marginColors.low` e `marginColors.high` |
+| Valores iniciais dos campos | `defaults` |
+| Descrição/data das regras | `version` |
 
-## Publicar do zero
+Cada linha da matriz é `[pesoMáximo, P1, P2, P3, P4, P5, P6, P7, P8]`. Os pesos precisam estar em ordem crescente. A tabela de frete rápido reutiliza P4, sem valores duplicados.
 
-1. No GitHub, crie um novo repositório com **New repository**. Exemplo de nome: `calculadora-sellneeds`.
-2. Para GitHub Free, use um repositório público e inicialize com README.
-3. Envie os arquivos e a pasta `img` conforme os passos acima.
-4. Em **Settings → Pages → Build and deployment**, escolha **Deploy from a branch**, `main`, `/(root)` e **Save**.
-5. Espere a publicação terminar e abra o endereço exibido pelo GitHub.
+Em todas as faixas, `min` é incluso e `max` é exclusivo. Por exemplo, `min: 80, max: 100` cobre de R$ 80,00 até R$ 99,99. O último `max: null` significa sem limite superior. Mantenha as faixas contínuas, sem lacunas. O peso máximo aceito é o da última linha da tabela, sem limite duplicado na lógica.
 
-Referências oficiais consultadas em 23/10/2026:
+Se a plataforma mudar as faixas, atualize os limites e a matriz correspondente. Alterar somente a data da versão não atualiza taxas. O site mostra uma mensagem de configuração inválida quando identifica uma tabela inconsistente.
 
-- https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository
-- https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site
+## 5. Alterar cores, fonte e logo
 
-## Personalizar
+As cores e fontes estão no início de `style.css`, dentro de `:root`:
 
-- **Cores e fontes:** edite as variáveis no `:root` de `style.css`. O bloco `:root[data-theme='dark']` define as cores do modo escuro.
-- **Limites de cor:** `marginColors.low` e `marginColors.high`, no `config.js`. No código, 10% é `0.10`. Com meta preenchida, atingir a meta tem prioridade sobre esses limites.
-- **Logos:** caminhos e dimensões em `config.js → logos`; os atributos iniciais também ficam no HTML. Ao trocar nomes ou extensão, atualize ambos.
-- **Taxas e tabela:** continuam centralizadas em `config.js`; não foram alteradas nesta atualização. Só os caminhos dos logos e as dimensões do novo logo TikTok mudaram nesse arquivo.
-- **Divisor de cubagem:** não existe nesta versão, pois a regra atual usa somente peso informado.
+- `--brand`, `--brand-soft`, `--brand-ink`: verde principal e suas variações.
+- `--bg`, `--surface`, `--text`, `--muted`, `--line`: fundo, cartões e textos.
+- `--good`, `--warn`, `--bad`: cores de margem; o limite percentual fica em `config.js`.
+- `--ml`, `--ml-border`, `--shopee`, `--tiktok`, `--tiktok-glow`: borda e brilho da aba ativa de cada marketplace.
+- `--font-body` e `--font-display`: fontes.
+- `:root[data-theme='dark']`: cores específicas do modo escuro.
 
-## Testes e limites
+Se escolher outra Google Font, ajuste também o endereço da fonte no `<head>` de `index.html`. Para trocar a logo, substitua `logo-sellneeds.png` por uma imagem com o mesmo nome. A logo enviada foi preservada, sem recriação.
 
-O arquivo original `testes.js` foi mantido sem mudanças. Execute `node testes.js` se desejar repetir os 319 testes. Node não é necessário para usar ou publicar o site. Veja `TESTES.md` para os resultados.
+**Logos dos marketplaces:** para trocar, substitua `logo-mercado-livre.webp`, `logo-shopee.webp` ou `logo-tiktok.webp` por outra imagem quadrada com o mesmo nome e formato. Para usar outro formato (por exemplo PNG), ajuste também o nome do arquivo em `index.html`. Use cerca de 160×160 px e poucos KB; a imagem é exibida com `object-fit: contain`, sem distorcer, sobre um fundo claro arredondado legível nos dois temas. A aba ativa recebe borda e brilho na cor do marketplace (variáveis `--ml`, `--ml-border`, `--shopee`, `--tiktok` e `--tiktok-glow`).
 
-A interface foi medida em viewports de 360×640, 390×844, 412×915, 844×390, 768×1024, 1366×768 e 1920×1080, nas três abas. Não houve rolagem nem controles fora da área útil nos estados verificados. Campos e botões têm pelo menos 40 px de altura e inputs usam fonte de pelo menos 16 px. Também foram conferidos os painéis de detalhes em 360×640 e 844×390, sem rolagem interna.
 
-Essas medidas representam a área útil da página, com zoom de 100% e sem teclado virtual. “Qualquer dispositivo” não é uma garantia física: zoom alto, fontes de acessibilidade muito ampliadas, teclado aberto ou áreas úteis menores que as testadas podem impedir que tudo caiba simultaneamente. O CSS bloqueia a rolagem conforme solicitado; nesses casos extremos parte do conteúdo pode ficar fora da área visível. Não escondi informação para passar os sete tamanhos testados.
+## 6. Como funciona
 
-As taxas são as fornecidas pela Sellneeds e não são atualizadas automaticamente. O resultado continua sendo a margem de contribuição definida nas fórmulas existentes; impostos, Ads, embalagem e outras despesas não foram acrescentados.
+**Lucro de contribuição:** preço de venda menos custo do produto, comissão, taxa fixa, frete e afiliado aplicáveis. **Margem:** lucro dividido pelo preço de venda, multiplicado por 100.
+
+**Mercado Livre:** usa exclusivamente o peso do pacote informado, conforme ajuste solicitado pela Sellneeds. Os campos de dimensões e o cálculo de cubagem foram removidos. Seleciona a primeira linha que comporta o peso, inclusive o limite exato. Escolhe a coluna de preço, considerando frete rápido abaixo de R$ 79,00. Aplica o teto para preço estritamente menor que R$ 19,00, se ele reduzir o frete. O frete manual substitui tudo isso e permite simular pacotes acima do limite da tabela.
+
+**Tela única:** tudo cabe na tela, sem rolagem, usando tamanhos fluidos. Pontos de corte: computador, notebook e tablet deitado (largura ≥ 700 px e tela mais larga que alta, ou largura ≥ 1000 px) mostram os dois blocos empilhados, com entradas à esquerda e resultado à direita; com largura ≥ 900 px o cabeçalho fica em uma linha. Celular em pé e tablet em pé mostram os blocos empilhados e compactos. Tela deitada com altura ≤ 600 px mostra os blocos lado a lado. Tela em pé com altura < 740 px (ex.: 360×640) ou qualquer tela com altura < 341 px mostra o seletor **Por preço | Por margem**, com um bloco por vez; o mesmo seletor aparece automaticamente se, em algum aparelho, os dois blocos não couberem. Com o teclado do celular aberto, só a área dos blocos pode rolar, para o campo em foco não ficar escondido.
+
+**Preço por margem (bloco 2):** resolve todas as faixas e os trechos do teto de frete, arredonda para cima ao centavo e confere o resultado. Retorna o menor preço válido. Não usa uma busca global que pressuponha margem sempre crescente. Na Shopee, por exemplo, subir de R$ 79,99 para R$ 80,00 pode reduzir a margem. Recalcule quando alterar o preço.
+
+**Composição ("Para onde vai o dinheiro"):** linhas com valor zero são ocultadas, exceto custo e lucro. Em vendas positivas, a barra divide o preço entre custos e lucro. Em prejuízo, a barra representa o total dos custos, e o déficit é mostrado à parte. Os percentuais das linhas sempre usam o preço de venda como base.
+
+## 7. Suposições e limites
+
+- Esta versão é uma simulação somente por peso informado, a pedido da Sellneeds. Isso não confirma que dimensões nunca afetam a cobrança real: a orientação oficial do Mercado Livre menciona peso volumétrico quando supera o físico. Consulte o peso tarifado ou informe o frete manual para reproduzir uma cobrança específica. [Orientação oficial](https://vendedores.mercadolivre.com.br/aprender/nota/como-o-peso-do-seu-pacote-influencia-no-custo-de-envio).
+
+- As taxas são exatamente as fornecidas no pedido, não uma validação das regras atuais das plataformas. Não existe atualização automática. Confirme a tabela e as condições da conta quando elas mudarem.
+- Shopee: como o texto dizia “acima de R$ 200” e a faixa anterior terminava em R$ 199,99, R$ 200,00 foi incluído na última faixa: 14% + R$ 26,00.
+- TikTok: afiliado e frete percentual incidem sobre o preço de venda. O percentual de afiliado é informado na tela; o padrão é zero.
+- No bloco **Cálculo por preço**, o seletor de frete grátis rápido só aparece com preço abaixo de R$ 79,00. No bloco **Cálculo por margem**, ele aparece sempre, porque o preço ainda é desconhecido; abaixo de R$ 79,00 a meta usa essa escolha. No modo manual, a meta mantém o mesmo frete informado em todos os preços.
+- Os cálculos usam precisão completa; as saídas monetárias são arredondadas na exibição. Campos monetários são formatados em duas casas ao sair do campo. O preço por margem sempre usa centavos. Pode haver diferenças de centavos em relação a plataformas que arredondam cada parcela de outra forma.
+- Aceita vírgula ou ponto decimal; para valores com milhar, use `1.234,56` ou `1,234.56`. Um único separador é interpretado como decimal.
+- O peso precisa ser positivo no frete automático. Frete e custo podem ser zero. A meta e o afiliado aceitam de 0% a 100%, com "—" e uma frase curta quando a meta não é viável. Erros de campo aparecem com borda vermelha e uma mensagem curta sobre a borda, sem mover o layout. O limite numérico de entrada é R$ 1 bilhão, editável em `maxInput`.
+- Não inclui impostos, Ads, embalagem, descontos, devoluções, subsídios não informados nem despesas operacionais. Portanto, não representa lucro líquido.
+- GitHub Pages publica uma página acessível na internet. Código, taxas e logo ficam públicos. Os valores digitados são calculados apenas no navegador; nenhuma base de custos reais foi incorporada ao projeto. Apenas a preferência claro/escuro é persistida.
+- Google Fonts é o único recurso externo usado pela página; pode haver requisições ao Google para carregar as fontes. Não há analytics, login ou integração com contas dos marketplaces.
+
+## 8. Testes e manutenção
+
+Veja `TESTES.md`. Os scripts opcionais de teste no navegador ficam em `referencias/ferramentas-teste/` e usam Playwright, instalado fora do site; o site continua sem dependências. Para executar os testes novamente, se já tiver Node.js instalado, abra um terminal na pasta e rode `node testes.js`. Node não é necessário para abrir ou publicar o site.
+
+Depois de mudar taxas, exemplos antigos podem falhar intencionalmente, pois verificam as regras originais. Atualize os resultados esperados de acordo com as novas regras e confira simulações na plataforma.
+
+Uma melhoria futura possível é incluir impostos, anúncios e embalagem como custos opcionais por venda.
