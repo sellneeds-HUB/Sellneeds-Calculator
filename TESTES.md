@@ -1,6 +1,19 @@
 # Testes da calculadora Sellneeds
 
-Executados em 23/10/2026, na versão com o novo layout de tela única (blocos **Cálculo por preço** e **Cálculo por margem**, logos nos botões dos marketplaces). As regras de cálculo, taxas, tabela de frete e `config.js` não foram alteradas.
+## 0. Custos por SKU (30/10/2026)
+
+Rodada da nova função de custos por SKU (`custos.js`). Taxas, faixas e frete não mudaram; `config.js` só ganhou `cloud`.
+
+- **`node testes.js`: APROVADO, 357 verificações** (as 323 anteriores + 34 novas): leitura da planilha (vírgula decimal, colunas em qualquer ordem, SKU repetido, linhas inválidas), planilha baixada lida de volta, pesquisa sem acento/hífen e por palavras separadas, armazenamento no aparelho e **nuvem simulada** (login certo e errado, login salvo ao reabrir, leitura de mais de 1.000 SKUs em páginas, renovação do token vencido ou recusado, criar/alterar pelo SKU, Sair apaga o login).
+- **Planilha real** `atributos-produtos (16).csv`: 974 SKUs lidos, 0 linhas ignoradas, nenhum SKU repetido (253 com custo 0).
+- **Navegador do app (Chrome), com os 974 SKUs carregados no modo "só neste aparelho":** botão SKU → pesquisa "acqua 002" → alterar ACQUABIOS-002PRETO para 42,50 → Usar: custo salvo, bloco recalculado (margem 29,35%). Alterar no painel da lupa atualiza o bloco que usa o SKU; digitar o custo à mão desfaz a ligação; SKU inexistente oferece "Novo SKU"; modo consulta sem botões "Usar"; nenhum erro no console.
+- **Layout:** 8 tamanhos (320×568 até 1920×1080) × claro e escuro, sem e com um SKU longo escolhido nos dois blocos: **32/32 sem rolagem, sem bloco cortado e sem texto com reticências**; o painel de custos cabe na tela em todos. Medido no navegador do app (mesma lógica de `teste-visual.js`), porque o Playwright não está instalado neste computador.
+
+**Não verificado nesta rodada:** Supabase real (a nuvem foi testada só com respostas simuladas; o projeto ainda não foi criado), gerenciador de senhas salvando o login, importar planilha pelo seletor de arquivos (a leitura foi testada pelo código, não pelo botão), Firefox/Safari e aparelhos reais. Os scripts Playwright de `referencias/ferramentas-teste/` não foram rodados.
+
+---
+
+Rodada anterior, executada em 23/10/2026, na versão com o novo layout de tela única (blocos **Cálculo por preço** e **Cálculo por margem**, logos nos botões dos marketplaces). As regras de cálculo, taxas, tabela de frete e `config.js` não foram alteradas.
 
 ## 1. Cálculos (`node testes.js`)
 

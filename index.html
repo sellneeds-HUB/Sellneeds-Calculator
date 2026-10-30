@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./style.css">
   <script src="./config.js" defer></script>
   <script src="./script.js" defer></script>
+  <script src="./custos.js" defer></script>
 </head>
 <body>
   <div class="app">
@@ -27,6 +28,7 @@
         <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-label="TikTok Shop" aria-selected="false" aria-controls="blocks" tabindex="-1"><img src="./logo-tiktok.webp" width="160" height="160" alt="TikTok Shop" onerror="this.parentNode.classList.add('logo-failed')"><span class="logo-fallback" aria-hidden="true">TikTok Shop</span></button>
       </nav>
       <div class="top-actions">
+        <button id="sku-button" class="icon-button" type="button" aria-label="Custos por SKU" title="Custos por SKU" aria-haspopup="dialog" aria-controls="sku-dialog"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg></button>
         <button id="info-button" class="icon-button" type="button" aria-label="Informações e avisos" aria-haspopup="dialog" aria-controls="info-dialog"><span aria-hidden="true">i</span></button>
         <button id="theme-toggle" class="icon-button" type="button" aria-label="Ativar modo escuro" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span></button>
       </div>
@@ -41,6 +43,30 @@
   <dialog id="info-dialog" class="info-dialog" aria-labelledby="info-title">
     <div class="info-head"><h2 id="info-title">Informações</h2><button id="info-close" class="icon-button" type="button" aria-label="Fechar informações"><span aria-hidden="true">×</span></button></div>
     <div id="info-content" class="info-content" tabindex="-1" autofocus></div>
+  </dialog>
+  <dialog id="sku-dialog" class="info-dialog sku-dialog" aria-labelledby="sku-title">
+    <div class="info-head"><h2 id="sku-title">Custos por SKU</h2><button id="sku-close" class="icon-button" type="button" aria-label="Fechar custos"><span aria-hidden="true">×</span></button></div>
+    <form id="sku-login" class="sku-login" hidden>
+      <p class="muted">Entre para consultar e alterar os custos salvos na nuvem. O login fica salvo neste navegador.</p>
+      <label for="sku-email">E-mail</label>
+      <div class="input-wrap"><input id="sku-email" type="email" autocomplete="username" required></div>
+      <label for="sku-password">Senha</label>
+      <div class="input-wrap"><input id="sku-password" type="password" autocomplete="current-password" required></div>
+      <p id="sku-login-error" class="sku-error" role="alert"></p>
+      <button class="sku-primary" type="submit">Entrar</button>
+    </form>
+    <div id="sku-main" class="sku-main">
+      <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="sku-query" type="text" placeholder="Pesquisar SKU" aria-label="Pesquisar SKU" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
+      <p id="sku-status" class="sku-status" aria-live="polite"></p>
+      <ul id="sku-list" class="sku-list" aria-label="Custos encontrados"></ul>
+      <p id="sku-more" class="sku-status" hidden></p>
+      <div class="sku-actions">
+        <button id="sku-import" class="chip" type="button">Importar planilha</button>
+        <input id="sku-file" type="file" accept=".csv,text/csv,text/plain" hidden>
+        <button id="sku-export" class="chip" type="button">Baixar planilha</button>
+        <button id="sku-logout" class="chip" type="button" hidden>Sair</button>
+      </div>
+    </div>
   </dialog>
   <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>
   <noscript><p class="notice danger">Ative o JavaScript do navegador para usar a calculadora.</p></noscript>

@@ -113,4 +113,66 @@ const porPreco=calculate('mercadoLivre',{...bloco2,price:porMargem.price});
 ok((porPreco.margin*100).toFixed(2)==='20.00','Bloco 1 com R$ 93,90: margem 20,00% (obtido '+(porPreco.margin*100).toFixed(4)+'%)');
 ok(calculate('mercadoLivre',{...bloco2,price:93.89}).margin<0.20,'Bloco 1 com R$ 93,89 fica abaixo de 20%');
 console.log('Bloco 2: preço '+porMargem.price.toFixed(2)+' | bloco 1 nesse preço: margem '+(porPreco.margin*100).toFixed(2)+'%');
-console.log('\nAPROVADO: '+checks+' verificações, incluindo '+scenarios+' comparações de preço mínimo com busca independente centavo por centavo.');
+// Custos por SKU: leitura da planilha, pesquisa e armazenamento (nuvem simulada, sem internet).
+const { parseCsv, toCsv, search, normalizeSku, createStore } = require('./custos.js');
+const planilha=parseCsv('﻿CUSTO;SKU\r\n44;RM-001GG\r\n44;RM-001G\r\n48,5;FLASH-001\r\n17;CAFÉ-001\r\n;SEM-CUSTO\r\nabc;Y\r\n0;SKU DFQ-007\r\n12;RM-001G\r\n');
+ok(planilha.items.length===5&&planilha.skipped===2,'Planilha: 5 SKUs válidos e 2 linhas ignoradas');
+equal(planilha.items.find(i=>i.sku==='FLASH-001').cost,48.5,'Planilha: vírgula decimal');
+equal(planilha.items.find(i=>i.sku==='RM-001G').cost,12,'Planilha: SKU repetido usa a última linha');
+equal(parseCsv('SKU;Custo do produto\nA-1;1.234,56').items[0].cost,1234.56,'Planilha: colunas em outra ordem');
+assert.throws(()=>parseCsv('PRODUTO;VALOR\nA;1'),/CUSTO e SKU/); checks++;
+ok(parseCsv(toCsv(planilha.items)).items.length===5,'Planilha baixada volta a ser lida');
+ok(toCsv([{sku:'A',cost:48.5}]).endsWith('48,50;A\r\n'),'Planilha baixada usa vírgula decimal');
+ok(normalizeSku('café-001')==='CAFE001','SKU sem acento, hífen e minúsculas');
+ok(search(planilha.items,'rm 001').total===2,'Pesquisa "rm 001" encontra RM-001GG e RM-001G');
+ok(search(planilha.items,'cafe').items[0].sku==='CAFÉ-001','Pesquisa ignora acento');
+ok(search([{sku:'ACQUABIOS-002PRETO',cost:1},{sku:'ACQUABIOS-001',cost:1}],'acqua 002').total===1,'Pesquisa por palavras separadas');
+ok(search(planilha.items,'001').items[0].sku==='CAFÉ-001'&&search(planilha.items,'FLASH').total===1,'Pesquisa por trecho');
+ok(search(planilha.items,'',2).items.length===2&&search(planilha.items,'',2).total===5,'Pesquisa vazia respeita limite');
+function fakeStorage(){const m=new Map();return{getItem:k=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,String(v)),removeItem:k=>m.delete(k),m};}
+async function testesCustos(){
+ const local=createStore({url:'',key:''},fakeStorage());
+ ok(local.mode==='local'&&!local.needsLogin(),'Sem nuvem: custos no aparelho');
+ await local.save(planilha.items); await local.save([{sku:'RM-001G',cost:45}]);
+ const lidos=await local.load();
+ ok(lidos.length===5&&lidos.find(i=>i.sku==='RM-001G').cost===45,'Aparelho: salva e altera custo');
+ // Nuvem simulada: registra os pedidos e responde como o Supabase.
+ const calls=[]; const db=new Map(Array.from({length:1002},(_,i)=>['SKU-'+i,i]));
+ let tokens=0, expiredOnce=true;
+ const reply=(status,body)=>({ok:status<300,status,json:async()=>body});
+ const http=async(url,o)=>{
+  calls.push({url,o});
+  if(url.includes('grant_type=password')) return JSON.parse(o.body).password==='certa'?reply(200,{access_token:'t'+(++tokens),refresh_token:'r',expires_in:3600,user:{email:'loja@exemplo.com'}}):reply(400,{});
+  if(url.includes('grant_type=refresh_token')) return reply(200,{access_token:'t'+(++tokens),refresh_token:'r2',expires_in:3600});
+  if(url.includes('/auth/v1/logout')) return reply(204,{});
+  ok(o.headers.apikey==='pub'&&o.headers.Authorization.startsWith('Bearer t'),'Pedido com chave pública e token do login');
+  if(o.headers.Authorization==='Bearer t1'&&expiredOnce){expiredOnce=false;return reply(401,{});}
+  if(o.method==='POST'){JSON.parse(o.body).forEach(r=>db.set(r.sku,r.custo));return reply(201,null);}
+  const offset=+new URL(url).searchParams.get('offset'); const rows=[...db].slice(offset,offset+1000).map(([sku,custo])=>({sku,custo:String(custo)}));
+  return reply(200,rows);
+ };
+ const storage=fakeStorage();
+ const nuvem=createStore({url:'https://exemplo.supabase.co/',key:'pub',table:'custos'},storage,http);
+ ok(nuvem.mode==='cloud'&&nuvem.needsLogin(),'Nuvem: pede login');
+ await assert.rejects(()=>nuvem.load(),e=>e.login===true); checks++;
+ await assert.rejects(()=>nuvem.login('loja@exemplo.com','errada'),/incorretos/); checks++;
+ await nuvem.login('loja@exemplo.com','certa');
+ ok(!nuvem.needsLogin()&&nuvem.email()==='loja@exemplo.com','Nuvem: login aceito');
+ ok(!createStore({url:'https://exemplo.supabase.co',key:'pub'},storage,http).needsLogin(),'Nuvem: login continua salvo ao reabrir');
+ const todos=await nuvem.load();
+ ok(todos.length===1002&&todos[1001].cost===1001,'Nuvem: lê mais de 1.000 SKUs em páginas');
+ ok(calls.some(c=>c.url.includes('grant_type=refresh_token')),'Nuvem: token recusado é renovado e o pedido repetido');
+ await nuvem.save([{sku:'SKU-5',cost:7.5},{sku:'NOVO-1',cost:3}]);
+ const post=calls.filter(c=>c.o.method==='POST'&&c.url.includes('/rest/v1/')).at(-1);
+ ok(post.url.endsWith('/rest/v1/custos?on_conflict=sku')&&post.o.headers.Prefer.includes('merge-duplicates'),'Nuvem: salvar cria ou atualiza pelo SKU');
+ ok(db.get('SKU-5')===7.5&&db.get('NOVO-1')===3,'Nuvem: custos alterados e SKU novo gravados');
+ const sessao=JSON.parse(storage.getItem('sellneeds-sessao')); sessao.expires=0; storage.setItem('sellneeds-sessao',JSON.stringify(sessao));
+ const reaberta=createStore({url:'https://exemplo.supabase.co',key:'pub'},storage,http); const antes=tokens;
+ await reaberta.load(); ok(tokens===antes+1,'Nuvem: sessão vencida é renovada sozinha');
+ await reaberta.logout();
+ ok(reaberta.needsLogin()&&storage.getItem('sellneeds-sessao')===null,'Nuvem: Sair apaga o login salvo');
+}
+testesCustos().then(()=>{
+ console.log('Custos por SKU: planilha, pesquisa, aparelho e nuvem simulada conferidos.');
+ console.log('\nAPROVADO: '+checks+' verificações, incluindo '+scenarios+' comparações de preço mínimo com busca independente centavo por centavo.');
+}).catch(e=>{console.error(e);process.exit(1);});

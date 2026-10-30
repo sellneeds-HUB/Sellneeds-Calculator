@@ -186,8 +186,8 @@
       '<input id="' + p + '-' + key + '" type="text" inputmode="decimal" autocomplete="off" aria-describedby="' + p + '-' + key + '-error">' + after +
       '<small id="' + p + '-' + key + '-error" class="field-error"></small></div>';
   }
-  function fieldHtml(p, key, label, unit, extraClass = '') {
-    return '<div class="field ' + extraClass + '"><div class="field-head"><label for="' + p + '-' + key + '">' + label + '</label></div>' + inputHtml(p, key, unit) + '</div>';
+  function fieldHtml(p, key, label, unit, extraClass = '', chip = '') {
+    return '<div class="field ' + extraClass + '"><div class="field-head"><label for="' + p + '-' + key + '">' + label + '</label>' + chip + '</div>' + inputHtml(p, key, unit) + '</div>';
   }
 
   function createBlock(p, kind) {
@@ -201,7 +201,7 @@
       '<h2 id="' + p + '-title" class="block-title">' + t.title + '</h2>' +
       '<div class="block-body"><form class="inputs" novalidate>' +
         fieldHtml(p, t.main, t.mainLabel, t.unit) +
-        fieldHtml(p, 'cost', 'Custo do produto', 'R$') +
+        fieldHtml(p, 'cost', 'Custo do produto', 'R$', '', '<button id="' + p + '-sku" class="chip sku-chip" type="button" aria-pressed="false" aria-haspopup="dialog">SKU</button>') +
         '<div class="field ml-only"><div class="field-head"><label id="' + p + '-ship-label" for="' + p + '-weight">Peso</label>' +
           '<button id="' + p + '-manual" class="chip" type="button" aria-pressed="false">Frete manual</button></div>' +
           inputHtml(p, 'weight', 'kg') + inputHtml(p, 'manualShipping', 'R$', true) + '</div>' +
@@ -218,7 +218,7 @@
 
     const el = id => $(p + '-' + id);
     const keys = [t.main, 'cost', 'weight', 'manualShipping', 'affiliate'];
-    const state = { fast: C.defaults.fastShipping, manual: C.defaults.manualMode, shown: 0, frame: 0, quote: null, notes: [] };
+    const state = { fast: C.defaults.fastShipping, manual: C.defaults.manualMode, sku: null, shown: 0, frame: 0, quote: null, notes: [] };
     keys.forEach(k => { el(k).value = cashFields.includes(k) ? decimal(C.defaults[k]) : String(C.defaults[k]).replace('.', ','); });
 
     function read() {
@@ -254,6 +254,16 @@
       state.fast = value;
       el('fast-no').setAttribute('aria-pressed', String(!value));
       el('fast-yes').setAttribute('aria-pressed', String(value));
+    }
+    // O botão do custo mostra o SKU escolhido; digitar outro custo desfaz a ligação.
+    // Com SKU, o rótulo encurta para "Custo" e o SKU ganha espaço no celular.
+    function setSku(sku) {
+      state.sku = sku;
+      section.querySelector('label[for="' + p + '-cost"]').textContent = sku ? 'Custo' : 'Custo do produto';
+      el('sku').textContent = sku || 'SKU';
+      el('sku').title = sku ? 'Custo do SKU ' + sku + ' · trocar' : 'Buscar o custo pelo SKU';
+      el('sku').setAttribute('aria-label', el('sku').title);
+      el('sku').setAttribute('aria-pressed', String(!!sku));
     }
     function visibility(data) {
       section.querySelector('[data-input="weight"]').hidden = state.manual;
@@ -366,7 +376,18 @@
       refresh(); fit();
       el(state.manual ? 'manualShipping' : 'weight').focus();
     });
+    el('sku').addEventListener('click', () => {
+      if (!root.SellneedsCustos || !root.SellneedsCustos.open) return;
+      root.SellneedsCustos.open({ pick: (sku, cost) => { el('cost').value = decimal(cost); setSku(sku); refresh(); } });
+    });
+    el('cost').addEventListener('input', () => setSku(null));
+    document.addEventListener('sellneeds:custo', e => {
+      if (state.sku !== e.detail.sku) return;
+      el('cost').value = decimal(e.detail.cost);
+      refresh();
+    });
     setFast(state.fast);
+    setSku(null);
     return { id: p, title: t.title, section, update, state };
   }
 

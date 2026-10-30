@@ -114,8 +114,8 @@ h1, h2, h3, p, ul { margin: 0; }
 .input-wrap:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
 .input-wrap:has([aria-invalid='true']) { border-color: var(--bad); }
 .input-wrap > span { color: var(--muted); font-size: .76rem; }
-input[type='text'] { width: 100%; min-width: 0; background: transparent; color: var(--text); border: 0; outline: 0; padding: 0; font-weight: 600; font-size: max(1.02rem, 16px); font-variant-numeric: tabular-nums; }
-input[type='text']:focus-visible { outline: none; }
+input[type='text'], input[type='email'], input[type='password'] { width: 100%; min-width: 0; background: transparent; color: var(--text); border: 0; outline: 0; padding: 0; font-weight: 600; font-size: max(1.02rem, 16px); font-variant-numeric: tabular-nums; }
+input:is([type='text'], [type='email'], [type='password']):focus-visible { outline: none; }
 /* Erro de campo: fica sobre a borda inferior, sem empurrar o layout. */
 .field-error { position: absolute; right: .45rem; bottom: -.5rem; max-width: calc(100% - .9rem); padding: .05rem .3rem; border-radius: .3rem; background: var(--surface); color: var(--bad); font-size: .64rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
 .field-error:empty { display: none; }
@@ -154,6 +154,32 @@ input[type='text']:focus-visible { outline: none; }
 .info-content h3 { font: 800 .9rem var(--font-display); margin: .8rem 0 .3rem; }
 .info-content p { margin: 0 0 .45rem; line-height: 1.5; }
 .info-content .muted { color: var(--muted); }
+
+/* Custos por SKU: botão no campo de custo e painel de pesquisa (rola só a lista). */
+.sku-chip { min-width: 0; max-width: 72%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.icon-button svg { display: block; }
+.sku-dialog { height: min(38rem, 88dvh); }
+.sku-dialog[open] { display: flex; flex-direction: column; }
+.sku-dialog:has(.sku-login:not([hidden])) { height: auto; }
+.sku-main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .45rem; padding: .7rem 1rem .9rem; }
+.sku-search { flex-shrink: 0; color: var(--muted); }
+.sku-status { flex-shrink: 0; min-height: 1.3em; color: var(--muted); font-size: .8rem; }
+.sku-status[data-tone='error'], .sku-error { color: var(--bad); font-weight: 600; }
+.sku-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+.sku-row { display: grid; grid-template-columns: minmax(0, 1fr) 7.6rem auto; align-items: center; gap: .5rem; padding: .35rem .1rem; border-bottom: 1px solid var(--line); }
+.sku-row.is-new { background: var(--brand-soft); padding-inline: .5rem; border-radius: .5rem; }
+.sku-code { font-weight: 600; overflow-wrap: anywhere; line-height: 1.25; }
+.sku-code small { display: block; color: var(--brand); font-size: .7rem; }
+.sku-cost { height: 2.3rem; }
+.sku-cost input[type='text'] { font-size: max(.95rem, 16px); }
+.sku-action, .sku-primary { height: 2.3rem; padding: 0 .8rem; border: 0; border-radius: .6rem; background: var(--brand); color: var(--surface); font-weight: 700; }
+.sku-actions { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: .45rem; padding-top: .2rem; }
+.sku-actions .chip { font-size: .78rem; padding: .4rem .7rem; }
+.sku-login { display: grid; gap: .35rem; padding: 1rem; }
+.sku-login label { font-size: .8rem; font-weight: 600; margin-top: .3rem; }
+.sku-login .muted { color: var(--muted); }
+.sku-login .sku-primary { margin-top: .4rem; height: 2.6rem; }
+.sku-error:empty { display: none; }
 
 .notice { font-size: .8rem; padding: .7rem .9rem; border-radius: .6rem; color: var(--warn); background: var(--warn-soft); }
 .notice.danger { color: var(--bad); background: var(--bad-soft); }
