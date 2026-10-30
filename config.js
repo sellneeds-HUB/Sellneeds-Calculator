@@ -12,6 +12,9 @@
     locale: 'pt-BR',
     marginColors: { low: 0.10, high: 0.20 }, // Vermelho <10%; amarelo 10–20%; verde >20%.
     maxInput: 1000000000, // Protege a precisão numérica dos campos.
+    // Custos por SKU na nuvem (Supabase). Vazio = custos salvos só no navegador de cada aparelho.
+    // url: "Project URL"; key: chave pública "anon" ou "publishable". NUNCA use a chave secreta (service_role/secret).
+    cloud: { url: 'https://qtxuseujdsvrhemghmgv.supabase.co/rest/v1/', key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0eHVzZXVqZHN2cmhlbWdobWd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzNzQ4MDQsImV4cCI6MjEwODk1MDgwNH0.pNdTyx_lRXo4LlYd5EMACs9m0lDRaonV0kTx6JX37AQ', table: 'custos' },
     defaults: {
       price: 100, cost: 50,
       weight: 0.4, affiliate: 0, target: 20, manualShipping: 0,
