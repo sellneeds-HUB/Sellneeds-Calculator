@@ -1,8 +1,8 @@
 # Código completo · Sellneeds
 
-Versão com layout de tela única (blocos "Cálculo por preço" e "Cálculo por margem") e custos por SKU (pesquisa, edição, planilha e nuvem opcional).
+Versão com layout de tela única (blocos "Cálculo por preço" e "Cálculo por margem"), taxa por item nova da Shopee (03/11/2026) e custos por SKU somente leitura (importar planilha, pesquisar e usar; sem login e sem nuvem).
 
-Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `logo-sellneeds.png` e as três logos dos marketplaces (`logo-mercado-livre.webp`, `logo-shopee.webp`, `logo-tiktok.webp`) juntos. As imagens não estão neste documento. O roteiro da nuvem fica em `referencias/supabase.sql`.
+Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `logo-sellneeds.png` e as três logos dos marketplaces (`logo-mercado-livre.webp`, `logo-shopee.webp`, `logo-tiktok.webp`) juntos. As imagens não estão neste documento.
 
 ## index.html
 
@@ -55,16 +55,7 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `l
   </dialog>
   <dialog id="sku-dialog" class="info-dialog sku-dialog" aria-labelledby="sku-title">
     <div class="info-head"><h2 id="sku-title">Custos por SKU</h2><button id="sku-close" class="icon-button" type="button" aria-label="Fechar custos"><span aria-hidden="true">×</span></button></div>
-    <form id="sku-login" class="sku-login" hidden>
-      <p class="muted">Entre para consultar e alterar os custos salvos na nuvem. O login fica salvo neste navegador.</p>
-      <label for="sku-email">E-mail</label>
-      <div class="input-wrap"><input id="sku-email" type="email" autocomplete="username" required></div>
-      <label for="sku-password">Senha</label>
-      <div class="input-wrap"><input id="sku-password" type="password" autocomplete="current-password" required></div>
-      <p id="sku-login-error" class="sku-error" role="alert"></p>
-      <button class="sku-primary" type="submit">Entrar</button>
-    </form>
-    <div id="sku-main" class="sku-main">
+    <div class="sku-main">
       <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="sku-query" type="text" placeholder="Pesquisar SKU" aria-label="Pesquisar SKU" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
       <p id="sku-status" class="sku-status" aria-live="polite"></p>
       <ul id="sku-list" class="sku-list" aria-label="Custos encontrados"></ul>
@@ -72,8 +63,6 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `l
       <div class="sku-actions">
         <button id="sku-import" class="chip" type="button">Importar planilha</button>
         <input id="sku-file" type="file" accept=".csv,text/csv,text/plain" hidden>
-        <button id="sku-export" class="chip" type="button">Baixar planilha</button>
-        <button id="sku-logout" class="chip" type="button" hidden>Sair</button>
       </div>
     </div>
   </dialog>
@@ -202,8 +191,8 @@ h1, h2, h3, p, ul { margin: 0; }
 .input-wrap:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
 .input-wrap:has([aria-invalid='true']) { border-color: var(--bad); }
 .input-wrap > span { color: var(--muted); font-size: .76rem; }
-input[type='text'], input[type='email'], input[type='password'] { width: 100%; min-width: 0; background: transparent; color: var(--text); border: 0; outline: 0; padding: 0; font-weight: 600; font-size: max(1.02rem, 16px); font-variant-numeric: tabular-nums; }
-input:is([type='text'], [type='email'], [type='password']):focus-visible { outline: none; }
+input[type='text'] { width: 100%; min-width: 0; background: transparent; color: var(--text); border: 0; outline: 0; padding: 0; font-weight: 600; font-size: max(1.02rem, 16px); font-variant-numeric: tabular-nums; }
+input[type='text']:focus-visible { outline: none; }
 /* Erro de campo: fica sobre a borda inferior, sem empurrar o layout. */
 .field-error { position: absolute; right: .45rem; bottom: -.5rem; max-width: calc(100% - .9rem); padding: .05rem .3rem; border-radius: .3rem; background: var(--surface); color: var(--bad); font-size: .64rem; font-weight: 600; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
 .field-error:empty { display: none; }
@@ -248,26 +237,22 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
 .icon-button svg { display: block; }
 .sku-dialog { height: min(38rem, 88dvh); }
 .sku-dialog[open] { display: flex; flex-direction: column; }
-.sku-dialog:has(.sku-login:not([hidden])) { height: auto; }
 .sku-main { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: .45rem; padding: .7rem 1rem .9rem; }
 .sku-search { flex-shrink: 0; color: var(--muted); }
 .sku-status { flex-shrink: 0; min-height: 1.3em; color: var(--muted); font-size: .8rem; }
-.sku-status[data-tone='error'], .sku-error { color: var(--bad); font-weight: 600; }
+.sku-status[data-tone='error'] { color: var(--bad); font-weight: 600; }
 .sku-list { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
-.sku-row { display: grid; grid-template-columns: minmax(0, 1fr) 7.6rem auto; align-items: center; gap: .5rem; padding: .35rem .1rem; border-bottom: 1px solid var(--line); }
-.sku-row.is-new { background: var(--brand-soft); padding-inline: .5rem; border-radius: .5rem; }
+/* Lista somente leitura: SKU e custo; no modo escolha, a linha inteira é o botão "Usar". */
+.sku-row, .sku-pick { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .5rem; }
+.sku-row { min-height: 2.6rem; padding: .35rem .1rem; border-bottom: 1px solid var(--line); }
+.sku-row:has(.sku-pick) { padding: 0; }
+.sku-pick { grid-template-columns: minmax(0, 1fr) auto auto; width: 100%; min-height: 2.9rem; padding: .3rem .1rem; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.sku-pick:hover, .sku-pick:focus-visible { background: var(--brand-soft); }
 .sku-code { font-weight: 600; overflow-wrap: anywhere; line-height: 1.25; }
-.sku-code small { display: block; color: var(--brand); font-size: .7rem; }
-.sku-cost { height: 2.3rem; }
-.sku-cost input[type='text'] { font-size: max(.95rem, 16px); }
-.sku-action, .sku-primary { height: 2.3rem; padding: 0 .8rem; border: 0; border-radius: .6rem; background: var(--brand); color: var(--surface); font-weight: 700; }
+.sku-cost { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sku-action { display: inline-flex; align-items: center; height: 2.1rem; padding: 0 .8rem; border-radius: .6rem; background: var(--brand); color: var(--surface); font-weight: 700; }
 .sku-actions { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: .45rem; padding-top: .2rem; }
 .sku-actions .chip { font-size: .78rem; padding: .4rem .7rem; }
-.sku-login { display: grid; gap: .35rem; padding: 1rem; }
-.sku-login label { font-size: .8rem; font-weight: 600; margin-top: .3rem; }
-.sku-login .muted { color: var(--muted); }
-.sku-login .sku-primary { margin-top: .4rem; height: 2.6rem; }
-.sku-error:empty { display: none; }
 
 .notice { font-size: .8rem; padding: .7rem .9rem; border-radius: .6rem; color: var(--warn); background: var(--warn-soft); }
 .notice.danger { color: var(--bad); background: var(--bad-soft); }
@@ -361,7 +346,7 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     checkBands(ml.priceBands);
     [C.shopee, C.tiktok].forEach(m => {
       checkBands(m.bands);
-      m.bands.forEach(b => { if (!ratio(b.commission) || !nonnegative(b.fixed)) throw Error('Comissão ou taxa fixa inválida.'); });
+      m.bands.forEach(b => { if (!ratio(b.commission) || !nonnegative(b.fixed) || !ratio(b.fixedRate || 0)) throw Error('Comissão ou taxa fixa inválida.'); });
     });
     C.tiktok.bands.forEach(b => { if (!ratio(b.shippingRate) || !nonnegative(b.shippingFixed)) throw Error('Frete TikTok inválido.'); });
     if (!Number.isInteger(ml.fastShippingColumn) || ml.fastShippingColumn < 0 || ml.fastShippingColumn >= ml.priceBands.length) throw Error('Coluna de frete rápido inválida.');
@@ -396,15 +381,15 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
   function charges(market, price, data, ctx) {
     if (market === 'mercadoLivre') {
       const m = C.mercadoLivre;
-      if (data.manualMode) return { commission: m.commission, fixed: 0, shippingRate: 0, shippingFixed: data.manualShipping, affiliate: 0, manual: true, bandLabel: 'Frete manual', capped: false };
+      if (data.manualMode) return { commission: m.commission, fixed: 0, fixedRate: 0, shippingRate: 0, shippingFixed: data.manualShipping, affiliate: 0, manual: true, bandLabel: 'Frete manual', capped: false };
       const fast = price < m.mandatoryFreeShippingFrom && data.fastShipping;
       const index = fast ? m.fastShippingColumn : m.priceBands.findIndex(b => inBand(price, b));
       const tableShipping = ctx.row[index + 1];
       const capped = price < m.cheapShippingCap.below && tableShipping > price * m.cheapShippingCap.rate + EPS;
-      return { commission: m.commission, fixed: 0, shippingRate: capped ? m.cheapShippingCap.rate : 0, shippingFixed: capped ? 0 : tableShipping, affiliate: 0, manual: false, capped, tableShipping, bandLabel: fast ? 'Frete grátis rápido · ' + m.priceBands[index].label : m.priceBands[index].label };
+      return { commission: m.commission, fixed: 0, fixedRate: 0, shippingRate: capped ? m.cheapShippingCap.rate : 0, shippingFixed: capped ? 0 : tableShipping, affiliate: 0, manual: false, capped, tableShipping, bandLabel: fast ? 'Frete grátis rápido · ' + m.priceBands[index].label : m.priceBands[index].label };
     }
     const b = C[market].bands.find(item => inBand(price, item));
-    return { commission: b.commission, fixed: b.fixed, shippingRate: b.shippingRate || 0, shippingFixed: b.shippingFixed || 0, affiliate: market === 'tiktok' ? data.affiliate / 100 : 0, bandLabel: money(b.min) + (b.max === null ? ' ou mais' : ' a ' + money(b.max - 0.01)) };
+    return { commission: b.commission, fixed: b.fixed, fixedRate: b.fixedRate || 0, shippingRate: b.shippingRate || 0, shippingFixed: b.shippingFixed || 0, affiliate: market === 'tiktok' ? data.affiliate / 100 : 0, bandLabel: money(b.min) + (b.max === null ? ' ou mais' : ' a ' + money(b.max - 0.01)) };
   }
 
   function calculate(market, data) {
@@ -416,11 +401,12 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     const commission = data.price * r.commission;
     const shipping = data.price * r.shippingRate + r.shippingFixed;
     const affiliate = data.price * r.affiliate;
-    const total = data.cost + commission + r.fixed + shipping + affiliate;
+    const fixed = data.price * r.fixedRate + r.fixed;
+    const total = data.cost + commission + fixed + shipping + affiliate;
     const profit = data.price - total;
     const margin = profit / data.price;
     const tone = margin < C.marginColors.low - EPS ? 'bad' : margin <= C.marginColors.high + EPS ? 'warn' : 'good';
-    return { ok: true, price: data.price, cost: data.cost, commission, fixed: r.fixed, shipping, affiliate, total, profit, margin, tone, rules: r, weights: ctx.weights };
+    return { ok: true, price: data.price, cost: data.cost, commission, fixed, shipping, affiliate, total, profit, margin, tone, rules: r, weights: ctx.weights };
   }
 
   // Não usa busca binária global: a margem pode cair ao mudar a faixa.
@@ -447,7 +433,7 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
       const low = sorted[i], high = sorted[i + 1] ?? Infinity;
       const probe = finite(high) ? (low + high) / 2 : low + 1;
       const r = charges(market, probe, data, ctx);
-      const availableRate = 1 - r.commission - r.shippingRate - r.affiliate - target;
+      const availableRate = 1 - r.commission - r.fixedRate - r.shippingRate - r.affiliate - target;
       const fixedCosts = data.cost + r.fixed + r.shippingFixed;
       if (availableRate < -EPS || (Math.abs(availableRate) <= EPS && fixedCosts > EPS)) continue;
       const raw = availableRate > EPS ? fixedCosts / availableRate : 0;
@@ -643,7 +629,7 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
         else notes.push('Faixa ' + r.rules.bandLabel + ' · faixa de peso até ' + decimal(context(market, data).row[0], 1) + ' kg (somente o peso informado).');
         if (r.rules.capped) notes.push('Frete limitado a ' + decimal(ML.cheapShippingCap.rate * 100, 0) + '% do preço: tabela ' + money(r.rules.tableShipping) + ' → aplicado ' + money(r.shipping) + '.');
         if (r.price >= ML.mandatoryFreeShippingFrom) notes.push('Frete grátis obrigatório a partir de ' + money(ML.mandatoryFreeShippingFrom) + '.');
-      } else notes.push('Faixa vigente: ' + r.rules.bandLabel + '. Taxas sobre o preço de venda.');
+      } else notes.push('Faixa vigente: ' + r.rules.bandLabel + '. Taxas sobre o preço de venda' + (r.rules.fixedRate ? '; taxa por item de ' + rate(r.rules.fixedRate) + ' do preço.' : '.'));
       if (r.profit < -EPS) notes.push('Os custos excedem a venda em ' + money(-r.profit) + '. A barra representa o total dos custos; os percentuais usam o preço de venda.');
       if (kind === 'margin') {
         notes.push('Menor preço, em centavos, que atinge ' + decimal(data.target) + '% (margem obtida: ' + percent(r.margin) + '). Ao aumentar o preço, recalcule: uma nova faixa de taxas pode reduzir a margem.');
@@ -719,7 +705,7 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     add('h3', 'Sobre o cálculo');
     add('p', 'Margem de contribuição não é lucro líquido. A simulação considera somente os custos e taxas exibidos. Impostos, anúncios, embalagem e despesas operacionais não estão incluídos.');
     add('p', 'Mercado Livre: o frete usa somente o peso informado. Frete grátis rápido é opcional abaixo de ' + money(ML.mandatoryFreeShippingFrom) + '. Abaixo de ' + money(ML.cheapShippingCap.below) + ', o frete fica limitado a ' + decimal(ML.cheapShippingCap.rate * 100, 0) + '% do preço. O frete manual substitui a tabela.');
-    add('p', 'Shopee: R$ 200,00 foi incluído na última faixa. TikTok: frete percentual e afiliado incidem sobre o preço de venda.');
+    add('p', 'Shopee: abaixo de ' + money(C.shopee.bands[1].min) + ', a taxa por item é ' + rate(C.shopee.bands[0].fixedRate || 0) + ' do preço; R$ 200,00 foi incluído na última faixa. TikTok: frete percentual e afiliado incidem sobre o preço de venda.');
     add('p', 'As taxas seguem os valores informados pela Sellneeds, sem consulta automática aos marketplaces. Os cálculos usam precisão completa; o preço por margem é arredondado para cima ao centavo.', 'muted');
     add('p', 'Regras: ' + C.version + '.', 'muted');
   }
@@ -831,7 +817,7 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
 ## custos.js
 
 ```javascript
-/* SELLNEEDS · Custos por SKU: pesquisa, edição, importação da planilha e nuvem (Supabase) sem bibliotecas. */
+/* SELLNEEDS · Custos por SKU: importação da planilha e pesquisa, sem bibliotecas. Os custos ficam só no navegador. */
 (function (root) {
   'use strict';
   const C = root.SELLNEEDS_CONFIG || (typeof require === 'function' ? require('./config.js') : null);
@@ -862,9 +848,6 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     return { items: [...bySku.values()], skipped };
   }
 
-  // Mesmo formato da planilha original; o BOM faz o Excel ler os acentos corretamente.
-  const toCsv = items => '﻿CUSTO;SKU\r\n' + items.map(i => i.cost.toFixed(2).replace('.', ',') + ';' + i.sku + '\r\n').join('');
-
   // Cada palavra pesquisada precisa aparecer no SKU ("acqua 002" acha ACQUABIOS-002); quem começa com a primeira vem antes.
   function search(items, query, limit = 50) {
     const words = String(query ?? '').split(/\s+/).map(normalizeSku).filter(Boolean);
@@ -874,110 +857,37 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     return { total: found.length, items: found.slice(0, limit).map(x => x.item) };
   }
 
-  const readJson = (storage, key) => { try { return JSON.parse(storage.getItem(key)); } catch (_) { return null; } };
-  function writeJson(storage, key, value) {
-    try { if (value === null) storage.removeItem(key); else storage.setItem(key, JSON.stringify(value)); return true; }
-    catch (_) { return false; }
-  }
-
-  // Sem nuvem configurada: os custos ficam só neste navegador.
-  function localStore(storage) {
+  // A lista fica só neste navegador. Importar uma planilha substitui a lista inteira.
+  function createStore(storage) {
     const KEY = 'sellneeds-custos';
+    let memory = [];
+    try { storage.removeItem('sellneeds-sessao'); } catch (_) { /* Login antigo da nuvem, não é mais usado. */ }
     return {
-      mode: 'local',
-      needsLogin: () => false,
-      email: () => null,
-      async load() { return Object.entries(readJson(storage, KEY) || {}).map(([sku, cost]) => ({ sku, cost })); },
-      async save(list) {
-        const data = readJson(storage, KEY) || {};
-        list.forEach(i => { data[i.sku] = i.cost; });
-        if (!writeJson(storage, KEY, data)) throw Error('Este navegador bloqueou o armazenamento. Não foi possível salvar.');
+      load() {
+        try { const data = JSON.parse(storage.getItem(KEY)); if (data) memory = Object.entries(data).map(([sku, cost]) => ({ sku, cost })); } catch (_) { /* Sem armazenamento: usa a lista da memória. */ }
+        return memory;
       },
-      async logout() {}
-    };
-  }
-
-  // Supabase pela API REST. A sessão fica salva no navegador e é renovada sozinha.
-  function cloudStore(cfg, storage, http) {
-    const KEY = 'sellneeds-sessao', base = cfg.url.replace(/\/+$/, ''), table = cfg.table || 'custos';
-    let session = readJson(storage, KEY);
-    const headers = token => ({ apikey: cfg.key, 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) });
-    async function call(url, options) {
-      try { return await http(url, options); } catch (_) { throw Error('Sem conexão com a nuvem. Confira a internet e tente de novo.'); }
-    }
-    function keep(json) {
-      session = { access: json.access_token, refresh: json.refresh_token, expires: json.expires_at || Math.floor(Date.now() / 1000) + (json.expires_in || 3600), email: (json.user && json.user.email) || (session && session.email) };
-      writeJson(storage, KEY, session);
-    }
-    function forget() { session = null; writeJson(storage, KEY, null); }
-    const loginError = message => Object.assign(Error(message), { login: true });
-    async function token(force) {
-      if (!session) throw loginError('Entre para ver os custos.');
-      if (force || session.expires - 60 < Date.now() / 1000) {
-        const res = await call(base + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: headers(), body: JSON.stringify({ refresh_token: session.refresh }) });
-        if (!res.ok) { forget(); throw loginError('Sua sessão expirou. Entre novamente.'); }
-        keep(await res.json());
-      }
-      return session.access;
-    }
-    async function rest(path, options = {}, retried = false) {
-      const res = await call(base + '/rest/v1/' + path, { ...options, headers: { ...headers(await token(retried)), ...options.headers } });
-      if (res.status === 401 && !retried) return rest(path, options, true);
-      if (res.status === 401 || res.status === 403) throw Error('Este login não tem permissão para os custos. Confira o e-mail autorizado no Supabase.');
-      if (!res.ok) throw Error('A nuvem recusou o pedido (erro ' + res.status + ').');
-      return res;
-    }
-    return {
-      mode: 'cloud',
-      needsLogin: () => !session,
-      email: () => session && session.email,
-      async login(email, password) {
-        const res = await call(base + '/auth/v1/token?grant_type=password', { method: 'POST', headers: headers(), body: JSON.stringify({ email, password }) });
-        if (!res.ok) throw Error(res.status === 400 ? 'E-mail ou senha incorretos.' : 'Não foi possível entrar (erro ' + res.status + ').');
-        keep(await res.json());
-      },
-      async logout() {
-        const access = session && session.access;
-        forget();
-        if (access) await call(base + '/auth/v1/logout', { method: 'POST', headers: headers(access) }).catch(() => {});
-      },
-      // Lê em páginas: o Supabase limita a quantidade de linhas por resposta.
-      async load() {
-        const items = [];
-        for (;;) {
-          const rows = await (await rest(table + '?select=sku,custo&order=sku.asc&limit=1000&offset=' + items.length)).json();
-          rows.forEach(r => items.push({ sku: r.sku, cost: Number(r.custo) }));
-          if (!rows.length) return items;
-        }
-      },
-      // Cria ou atualiza pelo SKU (upsert), em lotes.
-      async save(list) {
-        const now = new Date().toISOString();
-        for (let i = 0; i < list.length; i += 500) {
-          const body = list.slice(i, i + 500).map(x => ({ sku: x.sku, custo: x.cost, atualizado_em: now }));
-          await rest(table + '?on_conflict=sku', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(body) });
-        }
+      // Retorna false quando o navegador bloqueia o armazenamento: a lista vale só enquanto a página estiver aberta.
+      replace(list) {
+        memory = list.slice();
+        try { storage.setItem(KEY, JSON.stringify(Object.fromEntries(list.map(i => [i.sku, i.cost])))); return true; } catch (_) { return false; }
       }
     };
   }
 
-  const createStore = (cloud, storage, http) => cloud && cloud.url && cloud.key ? cloudStore(cloud, storage, http) : localStore(storage);
-
-  const api = { normalizeSku, parseCsv, toCsv, search, createStore };
+  const api = { normalizeSku, parseCsv, search, createStore };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SellneedsCustos = api;
   if (typeof document === 'undefined' || !document.getElementById('sku-dialog')) return;
 
   const $ = id => document.getElementById(id);
   const dialog = $('sku-dialog');
-  const decimal = n => new Intl.NumberFormat(C.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   const money = n => new Intl.NumberFormat(C.locale, { style: 'currency', currency: C.currency }).format(n);
   let storage = null;
   try { storage = root.localStorage; } catch (_) { /* Sem armazenamento: só funciona enquanto a página estiver aberta. */ }
-  const store = createStore(C.cloud, storage, (...args) => fetch(...args));
+  const store = createStore(storage);
   const LIMIT = 50;
-  const pending = new Map();
-  let items = [], pick = null, message = null;
+  let items = store.load(), pick = null, message = null;
 
   function status(text, error) {
     message = text;
@@ -985,8 +895,7 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     $('sku-status').dataset.tone = error ? 'error' : '';
   }
   function summary() {
-    const where = store.mode === 'cloud' ? ' na nuvem · ' + (store.email() || 'conectado') : ' salvos só neste aparelho';
-    return items.length ? items.length.toLocaleString(C.locale) + ' SKUs' + where : 'Nenhum custo cadastrado. Toque em Importar planilha (colunas CUSTO e SKU).';
+    return items.length ? items.length.toLocaleString(C.locale) + ' SKUs importados neste aparelho.' : 'Nenhum custo importado. Toque em Importar planilha (colunas CUSTO e SKU).';
   }
   function node(tag, cls, text) {
     const n = document.createElement(tag);
@@ -994,117 +903,41 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     if (text !== undefined) n.textContent = text;
     return n;
   }
-  function failed(e) {
-    if (e.login) { showLogin(e.message); return; }
-    status(e.message, true);
-  }
 
-  // Salva ao sair do campo ou com Enter. Retorna o custo salvo, ou null se não salvou.
-  async function commit(item, input) {
-    if (pending.has(item.sku)) await pending.get(item.sku);
-    const cost = calc.parseNumber(input.value);
-    if (!validCost(cost)) { input.setAttribute('aria-invalid', 'true'); status('Custo inválido para ' + item.sku + '.', true); return null; }
-    input.setAttribute('aria-invalid', 'false');
-    const value = round2(cost);
-    input.value = decimal(value);
-    if (item.cost === value) return value;
-    status('Salvando ' + item.sku + '…');
-    const job = store.save([{ sku: item.sku, cost: value }]);
-    pending.set(item.sku, job.catch(() => {}));
-    try { await job; } catch (e) { failed(e); return null; } finally { pending.delete(item.sku); }
-    const isNew = item.cost === null;
-    item.cost = value;
-    if (isNew) items.push(item);
-    document.dispatchEvent(new CustomEvent('sellneeds:custo', { detail: { sku: item.sku, cost: value } }));
-    status(item.sku + ' salvo: ' + money(value) + '.');
-    if (isNew) render();
-    return value;
-  }
-
+  // Somente leitura: no modo escolha, a linha inteira é um botão que usa o custo.
   function row(item) {
-    const li = node('li', 'sku-row' + (item.cost === null ? ' is-new' : ''));
-    const code = node('span', 'sku-code', item.sku);
-    if (item.cost === null) code.prepend(node('small', '', 'Novo SKU'));
-    const wrap = node('div', 'input-wrap sku-cost');
-    const input = document.createElement('input');
-    Object.assign(input, { type: 'text', inputMode: 'decimal', autocomplete: 'off', value: item.cost === null ? '' : decimal(item.cost) });
-    input.setAttribute('aria-label', 'Custo de ' + item.sku);
-    if (item.cost === 0) input.placeholder = '0,00';
-    wrap.append(node('span', '', 'R$'), input);
-    input.addEventListener('change', () => commit(item, input));
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); input.blur(); } });
-    li.append(code, wrap);
-    if (pick || item.cost === null) {
-      const action = node('button', 'sku-action', pick ? 'Usar' : 'Salvar');
-      action.type = 'button';
-      action.setAttribute('aria-label', (pick ? 'Usar custo de ' : 'Salvar custo de ') + item.sku);
-      action.addEventListener('click', async () => {
-        const value = await commit(item, input);
-        if (value === null || !pick) return;
-        pick(item.sku, value);
-        dialog.close();
-      });
-      li.append(action);
-    }
+    const li = node('li', 'sku-row');
+    const content = [node('span', 'sku-code', item.sku), node('span', 'sku-cost', money(item.cost))];
+    if (!pick) { li.append(...content); return li; }
+    const button = node('button', 'sku-pick');
+    button.type = 'button';
+    button.setAttribute('aria-label', 'Usar custo de ' + item.sku + ': ' + money(item.cost));
+    button.append(...content, node('span', 'sku-action', 'Usar'));
+    button.addEventListener('click', () => { pick(item.sku, item.cost); dialog.close(); });
+    li.append(button);
     return li;
   }
 
   function render() {
-    const query = $('sku-query').value.trim();
-    const result = search(items, query, LIMIT);
-    const list = $('sku-list');
-    list.replaceChildren(...result.items.map(row));
-    // Nenhum SKU parecido: oferece cadastrar o que foi digitado.
-    if (query && !result.total) list.append(row({ sku: query.toUpperCase(), cost: null }));
-    if (!message) status(null);
+    const result = search(items, $('sku-query').value.trim(), LIMIT);
+    $('sku-list').replaceChildren(...result.items.map(row));
+    if (!message) status(items.length && !result.total ? 'Nenhum SKU encontrado.' : null);
     const more = $('sku-more');
     more.hidden = result.total <= LIMIT;
     more.textContent = 'Mostrando ' + LIMIT + ' de ' + result.total.toLocaleString(C.locale) + '. Digite mais do SKU para filtrar.';
-  }
-
-  async function reload() {
-    if (!items.length) status('Carregando custos…');
-    try {
-      items = await store.load();
-      message = null;
-      render();
-    } catch (e) { failed(e); }
-  }
-
-  function showLogin(text) {
-    $('sku-login').hidden = false;
-    $('sku-main').hidden = true;
-    $('sku-login-error').textContent = text && !/^Entre para/.test(text) ? text : '';
-    $('sku-email').focus();
-  }
-  function showMain() {
-    $('sku-login').hidden = true;
-    $('sku-main').hidden = false;
-    $('sku-logout').hidden = store.mode !== 'cloud';
-    $('sku-query').value = '';
-    message = null;
-    render();
-    $('sku-query').focus();
-    reload();
   }
 
   function open(options = {}) {
     pick = options.pick || null;
     $('sku-title').textContent = pick ? 'Escolher custo pelo SKU' : 'Custos por SKU';
     dialog.showModal();
-    if (store.needsLogin()) showLogin(); else showMain();
+    $('sku-query').value = '';
+    message = null;
+    render();
+    $('sku-query').focus();
   }
   api.open = open;
 
-  $('sku-login').addEventListener('submit', async e => {
-    e.preventDefault();
-    const button = $('sku-login').querySelector('button[type="submit"]');
-    button.disabled = true;
-    $('sku-login-error').textContent = '';
-    try { await store.login($('sku-email').value.trim(), $('sku-password').value); $('sku-password').value = ''; showMain(); }
-    catch (err) { $('sku-login-error').textContent = err.message; }
-    finally { button.disabled = false; }
-  });
   $('sku-query').addEventListener('input', () => { message = null; render(); });
   $('sku-import').addEventListener('click', () => $('sku-file').click());
   $('sku-file').addEventListener('change', async () => {
@@ -1114,23 +947,16 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     try {
       const parsed = parseCsv(await file.text());
       if (!parsed.items.length) throw Error('Nenhuma linha válida na planilha.');
-      if (items.length && !confirm('Importar ' + parsed.items.length + ' SKUs? Os custos dos SKUs que já existem serão substituídos pelos da planilha.')) return;
-      status('Enviando ' + parsed.items.length + ' SKUs…');
-      await store.save(parsed.items);
-      await reload();
-      status(parsed.items.length + ' SKUs importados' + (parsed.skipped ? ' · ' + parsed.skipped + ' linhas ignoradas (sem SKU ou custo inválido)' : '') + '.');
-    } catch (e) { failed(e); }
+      if (items.length && !confirm('Importar ' + parsed.items.length + ' SKUs? A lista atual (' + items.length + ' SKUs) será substituída pela da planilha.')) return;
+      const saved = store.replace(parsed.items);
+      items = parsed.items;
+      // Blocos que já usam um SKU recebem o custo novo.
+      items.forEach(i => document.dispatchEvent(new CustomEvent('sellneeds:custo', { detail: { sku: i.sku, cost: i.cost } })));
+      message = null;
+      render();
+      status(parsed.items.length + ' SKUs importados' + (parsed.skipped ? ' · ' + parsed.skipped + ' linhas ignoradas (sem SKU ou custo inválido)' : '') + (saved ? '.' : '. O navegador bloqueou o armazenamento: importe de novo ao reabrir.'), !saved);
+    } catch (e) { status(e.message, true); }
   });
-  $('sku-export').addEventListener('click', () => {
-    if (!items.length) { status('Não há custos para baixar.', true); return; }
-    const sorted = [...items].sort((a, b) => a.sku.localeCompare(b.sku, 'pt-BR', { numeric: true }));
-    const link = node('a');
-    link.href = URL.createObjectURL(new Blob([toCsv(sorted)], { type: 'text/csv;charset=utf-8' }));
-    link.download = 'custos-sellneeds.csv';
-    link.click();
-    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-  });
-  $('sku-logout').addEventListener('click', async () => { await store.logout(); items = []; showLogin(); });
   $('sku-button').addEventListener('click', () => open());
   $('sku-close').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
@@ -1149,14 +975,11 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
 (function (root) {
   'use strict';
   const config = {
-    version: '22/10/2026 · regras Sellneeds · ML somente peso informado',
+    version: '03/11/2026 · regras Sellneeds · Shopee nova taxa por item · ML somente peso informado',
     currency: 'BRL',
     locale: 'pt-BR',
     marginColors: { low: 0.10, high: 0.20 }, // Vermelho <10%; amarelo 10–20%; verde >20%.
     maxInput: 1000000000, // Protege a precisão numérica dos campos.
-    // Custos por SKU na nuvem (Supabase). Vazio = custos salvos só no navegador de cada aparelho.
-    // url: "Project URL"; key: chave pública "anon" ou "publishable". NUNCA use a chave secreta (service_role/secret).
-    cloud: { url: '', key: '', table: 'custos' },
     defaults: {
       price: 100, cost: 50,
       weight: 0.4, affiliate: 0, target: 20, manualShipping: 0,
@@ -1203,8 +1026,10 @@ input:is([type='text'], [type='email'], [type='password']):focus-visible { outli
     },
     shopee: {
       name: 'Shopee',
+      // fixedRate: taxa por item em percentual do preço (abaixo de R$ 9 = 50% do preço).
       bands: [
-        { min: 0, max: 80, commission: 0.20, fixed: 4 },
+        { min: 0, max: 9, commission: 0.20, fixed: 0, fixedRate: 0.50 },
+        { min: 9, max: 80, commission: 0.20, fixed: 4.5 },
         { min: 80, max: 100, commission: 0.14, fixed: 16 },
         { min: 100, max: 200, commission: 0.14, fixed: 20 },
         { min: 200, max: null, commission: 0.14, fixed: 26 }

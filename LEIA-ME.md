@@ -11,9 +11,9 @@ Site estático completo, em HTML, CSS e JavaScript puro. Não precisa instalar n
 5. No bloco **Cálculo por preço**, digite preço e custo para ver a margem de contribuição e o gráfico "Para onde vai o dinheiro".
 6. No bloco **Cálculo por margem**, digite a margem alvo e o custo para ver o menor preço que atinge a meta. Cada bloco tem os próprios campos.
 7. No Mercado Livre, o botão **Frete manual** troca o peso por um valor de frete em R$. O ícone **i** no topo abre as faixas aplicadas e os avisos secundários.
-8. Para puxar o custo de um produto, toque em **SKU** ao lado de "Custo do produto", pesquise e toque em **Usar**. A lupa no topo abre a mesma lista só para consultar e alterar custos. Veja a seção 9.
+8. Para puxar o custo de um produto, toque em **SKU** ao lado de "Custo do produto", pesquise e toque em **Usar**. A lupa no topo abre a mesma lista só para consultar. Os custos vêm da planilha importada e não podem ser alterados na tela. Veja a seção 9.
 
-Mantenha `index.html`, `style.css`, `script.js`, `custos.js`, `config.js`, `logo-sellneeds.png` e as três logos dos marketplaces juntos. O site funciona sem internet após o download; sem conexão, usa uma fonte do sistema no lugar das Google Fonts. A opção de tema é salva no navegador. Os valores digitados na calculadora não são salvos; só a lista de custos por SKU é guardada (na nuvem, se configurada, ou no navegador).
+Mantenha `index.html`, `style.css`, `script.js`, `custos.js`, `config.js`, `logo-sellneeds.png` e as três logos dos marketplaces juntos. O site funciona sem internet após o download; sem conexão, usa uma fonte do sistema no lugar das Google Fonts. A opção de tema é salva no navegador. Os valores digitados na calculadora não são salvos; só a lista de custos por SKU importada é guardada, no navegador de cada aparelho.
 
 ## 2. Arquivos
 
@@ -23,13 +23,13 @@ Mantenha `index.html`, `style.css`, `script.js`, `custos.js`, `config.js`, `logo
 | style.css | Cores, fontes, responsividade e animações |
 | config.js | Todas as taxas, faixas, tabela de frete e limites |
 | script.js | Cálculos, preço por margem e funcionamento da tela (componente dos dois blocos) |
-| custos.js | Custos por SKU: pesquisa, edição, importar/baixar planilha, login e nuvem (Supabase) |
+| custos.js | Custos por SKU: importar a planilha, pesquisar e usar o custo (somente leitura) |
 | logo-sellneeds.png | Cópia da logo original enviada |
 | logo-mercado-livre.webp, logo-shopee.webp, logo-tiktok.webp | Logos dos botões dos marketplaces (160×160 px, 2 a 4 KB cada) |
 | testes.js | Verificação opcional dos cálculos; não é necessário para o site |
 | TESTES.md | Resultados dos testes executados |
 | CODIGO_COMPLETO.md | Código integral dos cinco arquivos, separado em blocos para copiar |
-| referencias/ | Esboço do layout, scripts opcionais de teste no navegador e `supabase.sql` (roteiro da nuvem). Não fazem parte do site |
+| referencias/ | Esboço do layout e scripts opcionais de teste no navegador. Não fazem parte do site |
 
 ## 3. Publicar no GitHub Pages, do zero
 
@@ -80,11 +80,10 @@ Use **ponto decimal no código**. Uma comissão de 12% é `0.12`; R$ 6,85 é `6.
 | Faixas de preço do ML | `mercadoLivre.priceBands` |
 | Valores de frete por peso/preço | `mercadoLivre.shippingTable` |
 | Coluna usada no frete rápido | `mercadoLivre.fastShippingColumn` — `3` significa P4 |
-| Comissão e taxa fixa Shopee | `shopee.bands` |
+| Comissão e taxa por item Shopee | `shopee.bands` — `fixed` em R$; `fixedRate` em percentual do preço (abaixo de R$ 9 = `0.50`) |
 | Comissão, taxa fixa e frete TikTok | `tiktok.bands` |
 | Limites das cores | `marginColors.low` e `marginColors.high` |
 | Valores iniciais dos campos | `defaults` |
-| Nuvem dos custos por SKU (Supabase) | `cloud.url`, `cloud.key`, `cloud.table` — veja a seção 9 |
 | Descrição/data das regras | `version` |
 
 Cada linha da matriz é `[pesoMáximo, P1, P2, P3, P4, P5, P6, P7, P8]`. Os pesos precisam estar em ordem crescente. A tabela de frete rápido reutiliza P4, sem valores duplicados.
@@ -126,15 +125,15 @@ Se escolher outra Google Font, ajuste também o endereço da fonte no `<head>` d
 - Esta versão é uma simulação somente por peso informado, a pedido da Sellneeds. Isso não confirma que dimensões nunca afetam a cobrança real: a orientação oficial do Mercado Livre menciona peso volumétrico quando supera o físico. Consulte o peso tarifado ou informe o frete manual para reproduzir uma cobrança específica. [Orientação oficial](https://vendedores.mercadolivre.com.br/aprender/nota/como-o-peso-do-seu-pacote-influencia-no-custo-de-envio).
 
 - As taxas são exatamente as fornecidas no pedido, não uma validação das regras atuais das plataformas. Não existe atualização automática. Confirme a tabela e as condições da conta quando elas mudarem.
-- Shopee: como o texto dizia “acima de R$ 200” e a faixa anterior terminava em R$ 199,99, R$ 200,00 foi incluído na última faixa: 14% + R$ 26,00.
+- Shopee (tabela de 03/11/2026): taxa por item de 50% do preço abaixo de R$ 9,00; R$ 4,50 de R$ 9,00 a R$ 79,99; R$ 16,00 de R$ 80,00 a R$ 99,99; R$ 20,00 de R$ 100,00 a R$ 199,99; R$ 26,00 a partir de R$ 200,00. A comissão continua 20% abaixo de R$ 80,00 e 14% a partir daí, inclusive abaixo de R$ 9,00 (a tabela enviada só trazia a taxa por item). Como o texto dizia “acima de R$ 200” e a faixa anterior terminava em R$ 199,99, R$ 200,00 foi incluído na última faixa.
 - TikTok: afiliado e frete percentual incidem sobre o preço de venda. O percentual de afiliado é informado na tela; o padrão é zero.
 - No bloco **Cálculo por preço**, o seletor de frete grátis rápido só aparece com preço abaixo de R$ 79,00. No bloco **Cálculo por margem**, ele aparece sempre, porque o preço ainda é desconhecido; abaixo de R$ 79,00 a meta usa essa escolha. No modo manual, a meta mantém o mesmo frete informado em todos os preços.
 - Os cálculos usam precisão completa; as saídas monetárias são arredondadas na exibição. Campos monetários são formatados em duas casas ao sair do campo. O preço por margem sempre usa centavos. Pode haver diferenças de centavos em relação a plataformas que arredondam cada parcela de outra forma.
 - Aceita vírgula ou ponto decimal; para valores com milhar, use `1.234,56` ou `1,234.56`. Um único separador é interpretado como decimal.
 - O peso precisa ser positivo no frete automático. Frete e custo podem ser zero. A meta e o afiliado aceitam de 0% a 100%, com "—" e uma frase curta quando a meta não é viável. Erros de campo aparecem com borda vermelha e uma mensagem curta sobre a borda, sem mover o layout. O limite numérico de entrada é R$ 1 bilhão, editável em `maxInput`.
 - Não inclui impostos, Ads, embalagem, descontos, devoluções, subsídios não informados nem despesas operacionais. Portanto, não representa lucro líquido.
-- GitHub Pages publica uma página acessível na internet. Código, taxas e logo ficam públicos. Os custos por SKU **não** fazem parte do site: ficam no Supabase, protegidos por login, ou no navegador de cada aparelho. Não coloque a planilha de custos no repositório.
-- Recursos externos: Google Fonts (fontes) e, se configurado, o Supabase (custos e login). Não há analytics nem integração com contas dos marketplaces.
+- GitHub Pages publica uma página acessível na internet. Código, taxas e logo ficam públicos. Os custos por SKU **não** fazem parte do site: a planilha é lida no próprio aparelho e não é enviada para nenhum servidor. Não coloque a planilha de custos no repositório.
+- Recurso externo: só Google Fonts (fontes). Não há login, banco de dados, analytics nem integração com contas dos marketplaces.
 
 ## 8. Testes e manutenção
 
@@ -144,27 +143,16 @@ Depois de mudar taxas, exemplos antigos podem falhar intencionalmente, pois veri
 
 Uma melhoria futura possível é incluir impostos, anúncios e embalagem como custos opcionais por venda.
 
-## 9. Custos por SKU e nuvem
+## 9. Custos por SKU
 
 **Uso no dia a dia**
-- **Puxar o custo:** no campo "Custo do produto", toque em **SKU**, digite parte do código (maiúsculas, acentos, hífens e espaços não importam; "acqua 002" encontra ACQUABIOS-002PRETO) e toque em **Usar**. O botão passa a mostrar o SKU e o rótulo encurta para "Custo". Digitar outro custo à mão desfaz a ligação.
-- **Consultar e alterar:** toque na lupa no topo. Mude o valor e saia do campo (ou Enter): aparece "salvo". Se um bloco estiver usando esse SKU, o cálculo atualiza na hora.
-- **SKU novo:** pesquise um código que não existe e use a linha **Novo SKU** para cadastrá-lo.
-- **Importar planilha:** CSV do Excel com as colunas `CUSTO` e `SKU` (separadas por `;`, vírgula decimal). Cria os SKUs novos e substitui o custo dos que já existem; não apaga nenhum. Linhas sem SKU ou com custo inválido são ignoradas e contadas.
-- **Baixar planilha:** gera `custos-sellneeds.csv` no mesmo formato, para backup ou edição no Excel.
+- **Importar planilha:** toque na lupa no topo (ou em **SKU**) e em **Importar planilha**. Use o CSV do Excel com as colunas `CUSTO` e `SKU` (separadas por `;`, vírgula decimal, em qualquer ordem). Linhas sem SKU ou com custo inválido são ignoradas e contadas. Importar outra planilha **substitui a lista inteira**: para mudar um custo, corrija no Excel e importe de novo.
+- **Puxar o custo:** no campo "Custo do produto", toque em **SKU**, digite parte do código (maiúsculas, acentos, hífens e espaços não importam; "acqua 002" encontra ACQUABIOS-002PRETO) e toque na linha ou em **Usar**. O botão passa a mostrar o SKU e o rótulo encurta para "Custo". Digitar outro custo à mão desfaz a ligação.
+- **Consultar:** a lupa no topo abre a mesma lista só para ver o custo de cada SKU.
+- Os custos **não podem ser alterados na tela**; a única forma de mudar é importar a planilha corrigida. Se um bloco estiver usando um SKU, o cálculo atualiza ao importar a planilha nova.
 - A lista mostra até 50 resultados por vez; digite mais do SKU para filtrar.
 
 **Onde os custos ficam**
-- Com `cloud` vazio em `config.js`, os custos ficam só no navegador daquele aparelho (sem login). Limpar os dados do navegador apaga a lista; baixe a planilha como backup.
-- Com a nuvem configurada, os custos ficam no **Supabase** (banco de dados com login, plano gratuito). Qualquer aparelho que entrar com o seu e-mail e senha vê e altera a mesma lista. O login fica salvo no navegador e se renova sozinho; o botão **Sair** apaga o login daquele aparelho. A calculadora continua funcionando sem login, digitando o custo à mão.
-
-**Configurar a nuvem (uma vez)**
-1. Crie uma conta gratuita em [supabase.com](https://supabase.com) e clique em **New project**. Escolha um nome (ex.: `sellneeds`), uma senha forte para o banco e a região **South America (São Paulo)**. Aguarde a criação.
-2. Abra **SQL Editor → New query**. Cole todo o conteúdo de `referencias/supabase.sql`, troque `SEU-EMAIL@exemplo.com` pelo seu e-mail **em minúsculas** e clique em **Run**. Isso cria a tabela `custos` e libera acesso só para esse e-mail.
-3. Abra **Authentication → Users → Add user → Create new user**. Informe o mesmo e-mail e uma senha, marque **Auto Confirm User** e crie.
-4. Em **Authentication → Sign In / Providers** (ou **Settings**), desligue **Allow new users to sign up**. Assim ninguém cria conta sozinho.
-5. Em **Project Settings → API** (ou **Data API / API Keys**), copie o **Project URL** e a chave pública **anon** ou **publishable**. Nunca copie a chave **service_role** ou **secret**.
-6. Em `config.js`, preencha: `cloud: { url: 'https://xxxx.supabase.co', key: 'chave-publica', table: 'custos' }`. Envie o `config.js` ao GitHub.
-7. Abra o site, toque na lupa, entre com o e-mail e a senha e use **Importar planilha** para enviar o CSV. Pronto: os outros aparelhos só precisam entrar.
-
-A URL e a chave pública ficam visíveis no site; isso é normal no Supabase. Quem protege os dados é o login somado às regras do passo 2. Para autorizar outra pessoa, adicione o e-mail no `supabase.sql`, rode de novo e crie o usuário no passo 3. O plano gratuito pausa projetos sem uso por cerca de uma semana; se o site disser "Sem conexão com a nuvem", entre no painel do Supabase e reative o projeto.
+- A planilha é lida no próprio aparelho e a lista fica guardada no navegador dele. Não há login, nuvem nem servidor: nada é enviado pela internet.
+- Cada aparelho (ou navegador) precisa importar a planilha uma vez. Limpar os dados do navegador apaga a lista; basta importar de novo.
+- Em janela anônima ou com armazenamento bloqueado, a lista vale só enquanto a página estiver aberta.

@@ -1,6 +1,18 @@
 # Testes da calculadora Sellneeds
 
-## 0. Custos por SKU (30/10/2026)
+## 0. Shopee nova taxa por item e custos somente leitura (03/11/2026)
+
+Mudanças: taxa por item da Shopee pela nova tabela (abaixo de R$ 9 = 50% do preço; R$ 9 a R$ 79,99 = R$ 4,50; demais faixas iguais) e custos por SKU sem Supabase e sem login — só importar planilha, pesquisar e usar.
+
+- **`node testes.js`: APROVADO, 351 verificações.** Novas: taxa por item nos limites R$ 8; 8,99; 9; 79,99; 80; 99,99; 100; 199,99; lucro na Shopee com R$ 8 (custo 1: comissão R$ 1,60 + taxa R$ 4,00) e com R$ 50 (custo 20: lucro R$ 15,50); o verificador independente do preço por margem foi atualizado para a nova tabela e as 96 comparações continuam batendo. Os testes de nuvem simulada saíram; entraram os da lista no aparelho (importar substitui a lista inteira, lista continua salva ao reabrir, login antigo da nuvem apagado, armazenamento bloqueado não quebra, sem função de alterar custo).
+- **Navegador do app (Chrome, servidor local):** importar uma planilha de teste (3 SKUs válidos, 1 ignorado) → lista mostra SKU e custo sem campo editável; botões só "×" e "Importar planilha"; pesquisa "acqua 002" → tocar na linha → custo R$ 42,50 no bloco e painel fechado; pesquisa sem resultado mostra "Nenhum SKU encontrado."; login antigo salvo no navegador foi apagado; nenhum erro no console.
+- **Layout:** 360×640, 375×812, 390×844, 844×390 e 1366×768, claro e escuro, Shopee com preço R$ 8 e SKU longo escolhido: sem rolagem e sem bloco cortado. O botão com um SKU de 18 letras (ACQUABIOS-002PRETO) aparece com reticências em 375 e 390 px de largura — comportamento que já existia (o botão tem largura máxima), não mudou nesta rodada.
+
+**Não verificado nesta rodada:** importar pelo seletor de arquivos real (o arquivo foi entregue ao campo pelo código), planilha real de 974 SKUs nesta versão, Firefox/Safari e aparelhos reais. Os scripts Playwright não foram rodados (Playwright não instalado).
+
+---
+
+## Custos por SKU (30/10/2026)
 
 Rodada da nova função de custos por SKU (`custos.js`). Taxas, faixas e frete não mudaram; `config.js` só ganhou `cloud`.
 

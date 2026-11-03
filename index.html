@@ -46,16 +46,7 @@
   </dialog>
   <dialog id="sku-dialog" class="info-dialog sku-dialog" aria-labelledby="sku-title">
     <div class="info-head"><h2 id="sku-title">Custos por SKU</h2><button id="sku-close" class="icon-button" type="button" aria-label="Fechar custos"><span aria-hidden="true">×</span></button></div>
-    <form id="sku-login" class="sku-login" hidden>
-      <p class="muted">Entre para consultar e alterar os custos salvos na nuvem. O login fica salvo neste navegador.</p>
-      <label for="sku-email">E-mail</label>
-      <div class="input-wrap"><input id="sku-email" type="email" autocomplete="username" required></div>
-      <label for="sku-password">Senha</label>
-      <div class="input-wrap"><input id="sku-password" type="password" autocomplete="current-password" required></div>
-      <p id="sku-login-error" class="sku-error" role="alert"></p>
-      <button class="sku-primary" type="submit">Entrar</button>
-    </form>
-    <div id="sku-main" class="sku-main">
+    <div class="sku-main">
       <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="sku-query" type="text" placeholder="Pesquisar SKU" aria-label="Pesquisar SKU" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
       <p id="sku-status" class="sku-status" aria-live="polite"></p>
       <ul id="sku-list" class="sku-list" aria-label="Custos encontrados"></ul>
@@ -63,8 +54,6 @@
       <div class="sku-actions">
         <button id="sku-import" class="chip" type="button">Importar planilha</button>
         <input id="sku-file" type="file" accept=".csv,text/csv,text/plain" hidden>
-        <button id="sku-export" class="chip" type="button">Baixar planilha</button>
-        <button id="sku-logout" class="chip" type="button" hidden>Sair</button>
       </div>
     </div>
   </dialog>

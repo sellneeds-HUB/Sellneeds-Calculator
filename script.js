@@ -47,7 +47,7 @@
     checkBands(ml.priceBands);
     [C.shopee, C.tiktok].forEach(m => {
       checkBands(m.bands);
-      m.bands.forEach(b => { if (!ratio(b.commission) || !nonnegative(b.fixed)) throw Error('Comissão ou taxa fixa inválida.'); });
+      m.bands.forEach(b => { if (!ratio(b.commission) || !nonnegative(b.fixed) || !ratio(b.fixedRate || 0)) throw Error('Comissão ou taxa fixa inválida.'); });
     });
     C.tiktok.bands.forEach(b => { if (!ratio(b.shippingRate) || !nonnegative(b.shippingFixed)) throw Error('Frete TikTok inválido.'); });
     if (!Number.isInteger(ml.fastShippingColumn) || ml.fastShippingColumn < 0 || ml.fastShippingColumn >= ml.priceBands.length) throw Error('Coluna de frete rápido inválida.');
@@ -82,15 +82,15 @@
   function charges(market, price, data, ctx) {
     if (market === 'mercadoLivre') {
       const m = C.mercadoLivre;
-      if (data.manualMode) return { commission: m.commission, fixed: 0, shippingRate: 0, shippingFixed: data.manualShipping, affiliate: 0, manual: true, bandLabel: 'Frete manual', capped: false };
+      if (data.manualMode) return { commission: m.commission, fixed: 0, fixedRate: 0, shippingRate: 0, shippingFixed: data.manualShipping, affiliate: 0, manual: true, bandLabel: 'Frete manual', capped: false };
       const fast = price < m.mandatoryFreeShippingFrom && data.fastShipping;
       const index = fast ? m.fastShippingColumn : m.priceBands.findIndex(b => inBand(price, b));
       const tableShipping = ctx.row[index + 1];
       const capped = price < m.cheapShippingCap.below && tableShipping > price * m.cheapShippingCap.rate + EPS;
-      return { commission: m.commission, fixed: 0, shippingRate: capped ? m.cheapShippingCap.rate : 0, shippingFixed: capped ? 0 : tableShipping, affiliate: 0, manual: false, capped, tableShipping, bandLabel: fast ? 'Frete grátis rápido · ' + m.priceBands[index].label : m.priceBands[index].label };
+      return { commission: m.commission, fixed: 0, fixedRate: 0, shippingRate: capped ? m.cheapShippingCap.rate : 0, shippingFixed: capped ? 0 : tableShipping, affiliate: 0, manual: false, capped, tableShipping, bandLabel: fast ? 'Frete grátis rápido · ' + m.priceBands[index].label : m.priceBands[index].label };
     }
     const b = C[market].bands.find(item => inBand(price, item));
-    return { commission: b.commission, fixed: b.fixed, shippingRate: b.shippingRate || 0, shippingFixed: b.shippingFixed || 0, affiliate: market === 'tiktok' ? data.affiliate / 100 : 0, bandLabel: money(b.min) + (b.max === null ? ' ou mais' : ' a ' + money(b.max - 0.01)) };
+    return { commission: b.commission, fixed: b.fixed, fixedRate: b.fixedRate || 0, shippingRate: b.shippingRate || 0, shippingFixed: b.shippingFixed || 0, affiliate: market === 'tiktok' ? data.affiliate / 100 : 0, bandLabel: money(b.min) + (b.max === null ? ' ou mais' : ' a ' + money(b.max - 0.01)) };
   }
 
   function calculate(market, data) {
@@ -102,11 +102,12 @@
     const commission = data.price * r.commission;
     const shipping = data.price * r.shippingRate + r.shippingFixed;
     const affiliate = data.price * r.affiliate;
-    const total = data.cost + commission + r.fixed + shipping + affiliate;
+    const fixed = data.price * r.fixedRate + r.fixed;
+    const total = data.cost + commission + fixed + shipping + affiliate;
     const profit = data.price - total;
     const margin = profit / data.price;
     const tone = margin < C.marginColors.low - EPS ? 'bad' : margin <= C.marginColors.high + EPS ? 'warn' : 'good';
-    return { ok: true, price: data.price, cost: data.cost, commission, fixed: r.fixed, shipping, affiliate, total, profit, margin, tone, rules: r, weights: ctx.weights };
+    return { ok: true, price: data.price, cost: data.cost, commission, fixed, shipping, affiliate, total, profit, margin, tone, rules: r, weights: ctx.weights };
   }
 
   // Não usa busca binária global: a margem pode cair ao mudar a faixa.
@@ -133,7 +134,7 @@
       const low = sorted[i], high = sorted[i + 1] ?? Infinity;
       const probe = finite(high) ? (low + high) / 2 : low + 1;
       const r = charges(market, probe, data, ctx);
-      const availableRate = 1 - r.commission - r.shippingRate - r.affiliate - target;
+      const availableRate = 1 - r.commission - r.fixedRate - r.shippingRate - r.affiliate - target;
       const fixedCosts = data.cost + r.fixed + r.shippingFixed;
       if (availableRate < -EPS || (Math.abs(availableRate) <= EPS && fixedCosts > EPS)) continue;
       const raw = availableRate > EPS ? fixedCosts / availableRate : 0;
@@ -329,7 +330,7 @@
         else notes.push('Faixa ' + r.rules.bandLabel + ' · faixa de peso até ' + decimal(context(market, data).row[0], 1) + ' kg (somente o peso informado).');
         if (r.rules.capped) notes.push('Frete limitado a ' + decimal(ML.cheapShippingCap.rate * 100, 0) + '% do preço: tabela ' + money(r.rules.tableShipping) + ' → aplicado ' + money(r.shipping) + '.');
         if (r.price >= ML.mandatoryFreeShippingFrom) notes.push('Frete grátis obrigatório a partir de ' + money(ML.mandatoryFreeShippingFrom) + '.');
-      } else notes.push('Faixa vigente: ' + r.rules.bandLabel + '. Taxas sobre o preço de venda.');
+      } else notes.push('Faixa vigente: ' + r.rules.bandLabel + '. Taxas sobre o preço de venda' + (r.rules.fixedRate ? '; taxa por item de ' + rate(r.rules.fixedRate) + ' do preço.' : '.'));
       if (r.profit < -EPS) notes.push('Os custos excedem a venda em ' + money(-r.profit) + '. A barra representa o total dos custos; os percentuais usam o preço de venda.');
       if (kind === 'margin') {
         notes.push('Menor preço, em centavos, que atinge ' + decimal(data.target) + '% (margem obtida: ' + percent(r.margin) + '). Ao aumentar o preço, recalcule: uma nova faixa de taxas pode reduzir a margem.');
@@ -405,7 +406,7 @@
     add('h3', 'Sobre o cálculo');
     add('p', 'Margem de contribuição não é lucro líquido. A simulação considera somente os custos e taxas exibidos. Impostos, anúncios, embalagem e despesas operacionais não estão incluídos.');
     add('p', 'Mercado Livre: o frete usa somente o peso informado. Frete grátis rápido é opcional abaixo de ' + money(ML.mandatoryFreeShippingFrom) + '. Abaixo de ' + money(ML.cheapShippingCap.below) + ', o frete fica limitado a ' + decimal(ML.cheapShippingCap.rate * 100, 0) + '% do preço. O frete manual substitui a tabela.');
-    add('p', 'Shopee: R$ 200,00 foi incluído na última faixa. TikTok: frete percentual e afiliado incidem sobre o preço de venda.');
+    add('p', 'Shopee: abaixo de ' + money(C.shopee.bands[1].min) + ', a taxa por item é ' + rate(C.shopee.bands[0].fixedRate || 0) + ' do preço; R$ 200,00 foi incluído na última faixa. TikTok: frete percentual e afiliado incidem sobre o preço de venda.');
     add('p', 'As taxas seguem os valores informados pela Sellneeds, sem consulta automática aos marketplaces. Os cálculos usam precisão completa; o preço por margem é arredondado para cima ao centavo.', 'muted');
     add('p', 'Regras: ' + C.version + '.', 'muted');
   }
