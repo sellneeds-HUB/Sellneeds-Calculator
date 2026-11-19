@@ -7,7 +7,7 @@
 (function (root) {
   'use strict';
   const config = {
-    version: '03/11/2026 · regras Sellneeds · Shopee nova taxa por item · ML somente peso informado',
+    version: '12/11/2026 · regras Sellneeds · aba Fiscal · Shopee nova taxa por item · ML somente peso informado',
     currency: 'BRL',
     locale: 'pt-BR',
     marginColors: { low: 0.10, high: 0.20 }, // Vermelho <10%; amarelo 10–20%; verde >20%.
@@ -66,6 +66,20 @@
         { min: 100, max: 200, commission: 0.14, fixed: 20 },
         { min: 200, max: null, commission: 0.14, fixed: 26 }
       ]
+    },
+    // Aba Fiscal: alíquotas da planilha "tabela de calculadora.xlsx". Comissão, taxa fixa e frete vêm das regras acima.
+    fiscal: {
+      // ICMS interno sobre a venda; a primeira opção é a inicial.
+      icmsOptions: [
+        { rate: 0.189, label: 'com DIFAL' },
+        { rate: 0.091, label: 'sem DIFAL' }
+      ],
+      pisCofins: 0.0925, // 1,65% PIS + 7,6% COFINS, sobre o preço de venda menos o ICMS.
+      costIcmsCredit: 0.18, // Crédito de ICMS sobre o preço de custo da nota fiscal.
+      costPisCofinsCredit: 0.092497022628027, // Crédito de PIS e COFINS sobre o preço de custo.
+      feePisCofinsCredit: 0.0925, // Crédito de PIS e COFINS sobre a tarifa (comissão) do marketplace.
+      shippingIcmsCredit: 0.1395, // Crédito de ICMS sobre o frete.
+      shippingPisCofinsCredit: 0.092449922958397532 // Crédito de PIS e COFINS sobre o frete.
     },
     tiktok: {
       name: 'TikTok Shop',

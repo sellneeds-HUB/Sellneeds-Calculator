@@ -118,6 +118,32 @@ const porPreco=calculate('mercadoLivre',{...bloco2,price:porMargem.price});
 ok((porPreco.margin*100).toFixed(2)==='20.00','Bloco 1 com R$ 93,90: margem 20,00% (obtido '+(porPreco.margin*100).toFixed(4)+'%)');
 ok(calculate('mercadoLivre',{...bloco2,price:93.89}).margin<0.20,'Bloco 1 com R$ 93,89 fica abaixo de 20%');
 console.log('Bloco 2: preço '+porMargem.price.toFixed(2)+' | bloco 1 nesse preço: margem '+(porPreco.margin*100).toFixed(2)+'%');
+// Aba Fiscal: reproduz a planilha "tabela de calculadora.xlsx" (ML, preço 32,99, custo 15,96, frete 7,35).
+// A planilha usa tarifa de 11,5%; a calculadora usa a comissão do config. O teste troca a comissão só para comparar.
+const { fiscal } = require('./script.js');
+const planilhaFiscal={...C.defaults,price:32.99,cost:15.96,manualMode:true,manualShipping:7.35};
+const comissaoML=C.mercadoLivre.commission; C.mercadoLivre.commission=0.115;
+const comDifal=fiscal('mercadoLivre',{...planilhaFiscal,icms:0.189}), semDifal=fiscal('mercadoLivre',{...planilhaFiscal,icms:0.091});
+C.mercadoLivre.commission=comissaoML;
+ok(comDifal.ok&&semDifal.ok,'Fiscal: planilha calculada');
+equal(comDifal.icms,6.23511,'Fiscal: ICMS 18,9%'); equal(comDifal.pisCofins,2.474827325,'Fiscal: PIS e COFINS sobre preço menos ICMS');
+equal(comDifal.netRevenue,24.280062675,'Fiscal: receita líquida'); equal(comDifal.netCost,11.61094751885669,'Fiscal: custo líquido');
+equal(comDifal.feeCredit,0.350931125,'Fiscal: crédito sobre a tarifa'); equal(comDifal.platform,9.0880869412557779,'Fiscal: custo da plataforma');
+equal(comDifal.profit,3.5810282148875352,'Fiscal: sobra com DIFAL'); equal(comDifal.margin,0.1085489001178398,'Fiscal: margem com DIFAL');
+equal(semDifal.netRevenue,27.214028325,'Fiscal: receita líquida sem DIFAL');
+equal(semDifal.profit,6.5149938648875327,'Fiscal: sobra sem DIFAL'); equal(semDifal.margin,0.19748390011783973,'Fiscal: margem sem DIFAL');
+// Com as regras da calculadora: ML 12% e frete pelo peso; Shopee com taxa fixa sem crédito; TikTok com afiliado.
+const fiscalML=fiscal('mercadoLivre',{...C.defaults,price:32.99,cost:15.96,weight:1.5,icms:0.189});
+equal(fiscalML.shipping,7.35,'Fiscal ML: frete pelo peso'); equal(fiscalML.profit,comDifal.profit-32.99*0.005*(1-0.0925),'Fiscal ML: 12% reduz a sobra só pela comissão líquida de crédito');
+const fiscalShopee=fiscal('shopee',{...C.defaults,price:50,cost:20,icms:0.091});
+equal(fiscalShopee.platform,10-10*0.0925+4.5,'Fiscal Shopee: crédito só sobre a comissão, taxa fixa cheia');
+equal(fiscalShopee.profit,(50-4.55-(50-4.55)*0.0925)-(20-3.6-20*C.fiscal.costPisCofinsCredit)-(10-0.925+4.5),'Fiscal Shopee: sobra');
+const fiscalTikTok=fiscal('tiktok',{...C.defaults,price:30,cost:10,affiliate:5,icms:0.189});
+equal(fiscalTikTok.platform,3-3*0.0925+4+1.5+1.8-1.8*C.fiscal.shippingIcmsCredit-1.8*C.fiscal.shippingPisCofinsCredit,'Fiscal TikTok: afiliado sem crédito e créditos do frete');
+ok(!fiscal('shopee',{...C.defaults,icms:null}).ok&&!fiscal('shopee',{...C.defaults,icms:1.5}).ok,'Fiscal: ICMS inválido');
+ok(!fiscal('mercadoLivre',{...C.defaults,weight:30,icms:0.189}).ok&&!fiscal('shopee',{...C.defaults,price:0,icms:0.189}).ok,'Fiscal: herda as validações do cálculo normal');
+ok(fiscal('shopee',{...C.defaults,price:100,cost:90,icms:0.189}).tone==='bad','Fiscal: prejuízo em vermelho');
+console.log('Fiscal (planilha): com DIFAL sobra '+comDifal.profit.toFixed(2)+' ('+(comDifal.margin*100).toFixed(2)+'%) | sem DIFAL sobra '+semDifal.profit.toFixed(2)+' ('+(semDifal.margin*100).toFixed(2)+'%)');
 // Custos por SKU: leitura da planilha, pesquisa e armazenamento no navegador (somente leitura).
 const { parseCsv, search, normalizeSku, createStore } = require('./custos.js');
 const planilha=parseCsv('﻿CUSTO;SKU\r\n44;RM-001GG\r\n44;RM-001G\r\n48,5;FLASH-001\r\n17;CAFÉ-001\r\n;SEM-CUSTO\r\nabc;Y\r\n0;SKU DFQ-007\r\n12;RM-001G\r\n');

@@ -1,6 +1,6 @@
 # Calculadora de Margem de Contribuição · Sellneeds
 
-Site estático completo, em HTML, CSS e JavaScript puro. Não precisa instalar nada para usar. Logo enviada pela Sellneeds, base visual em preto e branco com verde nos destaques, fontes Manrope e DM Sans, modos claro e escuro. Tela única, sem rolagem, com dois blocos: **Cálculo por preço** (informa o preço e mostra a margem) e **Cálculo por margem** (informa a margem alvo e mostra o preço de venda necessário).
+Site estático completo, em HTML, CSS e JavaScript puro. Não precisa instalar nada para usar. Logo enviada pela Sellneeds, base visual em preto e branco com verde nos destaques, fontes Manrope e DM Sans, modos claro e escuro. Tela única, sem rolagem, com dois blocos: **Cálculo por preço** (informa o preço e mostra a margem) e **Cálculo por margem** (informa a margem alvo e mostra o preço de venda necessário). A aba **Fiscal** mostra o que sobra depois dos impostos e créditos da nota fiscal (seção 10).
 
 ## 1. Abrir no computador
 
@@ -82,6 +82,7 @@ Use **ponto decimal no código**. Uma comissão de 12% é `0.12`; R$ 6,85 é `6.
 | Coluna usada no frete rápido | `mercadoLivre.fastShippingColumn` — `3` significa P4 |
 | Comissão e taxa por item Shopee | `shopee.bands` — `fixed` em R$; `fixedRate` em percentual do preço (abaixo de R$ 9 = `0.50`) |
 | Comissão, taxa fixa e frete TikTok | `tiktok.bands` |
+| Alíquotas da aba Fiscal (ICMS, PIS e COFINS, créditos) | `fiscal` — veja a seção 10 |
 | Limites das cores | `marginColors.low` e `marginColors.high` |
 | Valores iniciais dos campos | `defaults` |
 | Descrição/data das regras | `version` |
@@ -114,7 +115,7 @@ Se escolher outra Google Font, ajuste também o endereço da fonte no `<head>` d
 
 **Mercado Livre:** usa exclusivamente o peso do pacote informado, conforme ajuste solicitado pela Sellneeds. Os campos de dimensões e o cálculo de cubagem foram removidos. Seleciona a primeira linha que comporta o peso, inclusive o limite exato. Escolhe a coluna de preço, considerando frete rápido abaixo de R$ 79,00. Aplica o teto para preço estritamente menor que R$ 19,00, se ele reduzir o frete. O frete manual substitui tudo isso e permite simular pacotes acima do limite da tabela.
 
-**Tela única:** tudo cabe na tela, sem rolagem, usando tamanhos fluidos. Pontos de corte: computador, notebook e tablet deitado (largura ≥ 700 px e tela mais larga que alta, ou largura ≥ 1000 px) mostram os dois blocos empilhados, com entradas à esquerda e resultado à direita; com largura ≥ 900 px o cabeçalho fica em uma linha. Celular em pé e tablet em pé mostram os blocos empilhados e compactos. Tela deitada com altura ≤ 600 px mostra os blocos lado a lado. Tela em pé com altura < 740 px (ex.: 360×640) ou qualquer tela com altura < 341 px mostra o seletor **Por preço | Por margem**, com um bloco por vez; o mesmo seletor aparece automaticamente se, em algum aparelho, os dois blocos não couberem. Com o teclado do celular aberto, só a área dos blocos pode rolar, para o campo em foco não ficar escondido.
+**Tela única:** tudo cabe na tela, sem rolagem, usando tamanhos fluidos. Pontos de corte: computador, notebook e tablet deitado (largura ≥ 700 px e tela mais larga que alta, ou largura ≥ 1000 px) mostram os dois blocos empilhados, com entradas à esquerda e resultado à direita; com largura ≥ 900 px o cabeçalho fica em uma linha. Celular em pé e tablet em pé mostram os blocos empilhados e compactos. Tela deitada com altura ≤ 600 px mostra os blocos lado a lado. Abaixo do cabeçalho ficam as abas **Preço e margem | Fiscal**. Tela em pé com altura < 740 px (ex.: 360×640) ou qualquer tela com altura < 341 px mostra as abas **Por preço | Por margem | Fiscal**, com um bloco por vez; o mesmo acontece automaticamente se, em algum aparelho, os dois blocos não couberem (ex.: tablet em pé 768×1024). A aba Fiscal sempre mostra um bloco só. Com o teclado do celular aberto, só a área dos blocos pode rolar, para o campo em foco não ficar escondido.
 
 **Preço por margem (bloco 2):** resolve todas as faixas e os trechos do teto de frete, arredonda para cima ao centavo e confere o resultado. Retorna o menor preço válido. Não usa uma busca global que pressuponha margem sempre crescente. Na Shopee, por exemplo, subir de R$ 79,99 para R$ 80,00 pode reduzir a margem. Recalcule quando alterar o preço.
 
@@ -131,7 +132,7 @@ Se escolher outra Google Font, ajuste também o endereço da fonte no `<head>` d
 - Os cálculos usam precisão completa; as saídas monetárias são arredondadas na exibição. Campos monetários são formatados em duas casas ao sair do campo. O preço por margem sempre usa centavos. Pode haver diferenças de centavos em relação a plataformas que arredondam cada parcela de outra forma.
 - Aceita vírgula ou ponto decimal; para valores com milhar, use `1.234,56` ou `1,234.56`. Um único separador é interpretado como decimal.
 - O peso precisa ser positivo no frete automático. Frete e custo podem ser zero. A meta e o afiliado aceitam de 0% a 100%, com "—" e uma frase curta quando a meta não é viável. Erros de campo aparecem com borda vermelha e uma mensagem curta sobre a borda, sem mover o layout. O limite numérico de entrada é R$ 1 bilhão, editável em `maxInput`.
-- Não inclui impostos, Ads, embalagem, descontos, devoluções, subsídios não informados nem despesas operacionais. Portanto, não representa lucro líquido.
+- Os blocos por preço e por margem não incluem impostos; a aba **Fiscal** inclui ICMS, PIS e COFINS e os créditos (seção 10). Nenhuma aba inclui Ads, embalagem, descontos, devoluções, subsídios não informados nem despesas operacionais. Portanto, não representa lucro líquido.
 - GitHub Pages publica uma página acessível na internet. Código, taxas e logo ficam públicos. Os custos por SKU **não** fazem parte do site: a planilha é lida no próprio aparelho e não é enviada para nenhum servidor. Não coloque a planilha de custos no repositório.
 - Recurso externo: só Google Fonts (fontes). Não há login, banco de dados, analytics nem integração com contas dos marketplaces.
 
@@ -156,3 +157,28 @@ Uma melhoria futura possível é incluir impostos, anúncios e embalagem como cu
 - A planilha é lida no próprio aparelho e a lista fica guardada no navegador dele. Não há login, nuvem nem servidor: nada é enviado pela internet.
 - Cada aparelho (ou navegador) precisa importar a planilha uma vez. Limpar os dados do navegador apaga a lista; basta importar de novo.
 - Em janela anônima ou com armazenamento bloqueado, a lista vale só enquanto a página estiver aberta.
+
+## 10. Aba Fiscal (o que sobra na mão)
+
+Toque em **Fiscal**, escolha o marketplace pela logo e informe:
+- **Preço de venda**.
+- **Preço de custo** (da nota fiscal; o botão **SKU** também funciona aqui).
+- **ICMS interno:** 18,9% (com DIFAL) ou 9,1% (sem DIFAL).
+- No Mercado Livre, o **peso** (ou o frete manual) e o frete grátis rápido, como nos outros blocos. No TikTok, a comissão de afiliado.
+
+A conta segue a planilha `tabela de calculadora.xlsx`, mas a comissão, a taxa fixa e o frete vêm das regras da calculadora (por exemplo, Mercado Livre 12%, e não os 11,5% da planilha):
+
+| Parte | Como é calculada |
+| --- | --- |
+| Receita líquida | Preço − ICMS interno (sobre o preço) − PIS e COFINS de 9,25% (sobre o preço menos o ICMS) |
+| Custo líquido | Preço de custo − crédito de ICMS de 18% − crédito de PIS e COFINS de 9,2497% |
+| Custo da plataforma | Tarifa (comissão) − crédito de PIS e COFINS de 9,25% sobre a tarifa + taxa fixa + afiliado + frete − crédito de ICMS de 13,95% e de PIS e COFINS de 9,245% sobre o frete |
+| Sobra na mão | Receita líquida − custo líquido − custo da plataforma. Margem = sobra ÷ preço de venda |
+
+Conferência com a planilha (tarifa de 11,5%, frete de R$ 7,35, preço R$ 32,99, custo R$ 15,96): sobra de R$ 3,58 (10,85%) com DIFAL e R$ 6,51 (19,75%) sem DIFAL, iguais ao Excel. Com os 12% da calculadora e peso de 1,5 kg, a sobra com DIFAL é R$ 3,43 (10,40%).
+
+Suposições:
+- O crédito de 9,25% vale só sobre a **tarifa (comissão)**. A taxa fixa por item (Shopee e TikTok) e o afiliado do TikTok entram como custo cheio, sem crédito.
+- Os créditos do frete valem para qualquer frete cobrado, inclusive o do TikTok. A Shopee não tem frete nesta calculadora.
+- As alíquotas ficam em `fiscal`, no `config.js`. Para mudar as opções de ICMS, edite `fiscal.icmsOptions`.
+- É uma simulação com as alíquotas da planilha; não substitui a apuração do contador.

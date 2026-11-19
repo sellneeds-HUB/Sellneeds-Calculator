@@ -34,8 +34,10 @@
       </div>
     </header>
     <div class="view-switch segmented" role="group" aria-label="Tipo de cálculo">
+      <button type="button" data-view="ambos" aria-controls="blocks" aria-pressed="true">Preço e margem</button>
       <button type="button" data-view="preco" aria-controls="preco" aria-pressed="true">Por preço</button>
       <button type="button" data-view="margem" aria-controls="margem" aria-pressed="false">Por margem</button>
+      <button type="button" data-view="fiscal" aria-controls="fiscal" aria-pressed="false">Fiscal</button>
     </div>
     <div id="fatal-error" class="notice danger" role="alert" hidden></div>
     <main id="blocks" class="blocks" data-market="mercadoLivre" role="tabpanel" aria-labelledby="tab-mercadoLivre"></main>

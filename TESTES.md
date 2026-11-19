@@ -1,6 +1,19 @@
 # Testes da calculadora Sellneeds
 
-## 0. Shopee nova taxa por item e custos somente leitura (03/11/2026)
+## 0. Aba Fiscal (13/11/2026)
+
+Nova aba **Fiscal**, com a conta da planilha `tabela de calculadora.xlsx` (ICMS, PIS e COFINS e créditos) sobre as taxas e o frete da calculadora. As taxas dos marketplaces não mudaram.
+
+- **`node testes.js`: APROVADO, 371 verificações** (as 351 anteriores + 20 novas). A conta fiscal reproduz a planilha linha a linha com a tarifa de 11,5% e frete de R$ 7,35: sobra de R$ 3,58 (10,85%) com DIFAL e R$ 6,51 (19,75%) sem DIFAL. Também foram conferidos: Mercado Livre com 12% e frete pelo peso, Shopee (crédito só sobre a comissão, taxa fixa cheia), TikTok (afiliado sem crédito, créditos do frete), ICMS inválido, validações herdadas do cálculo normal e cor de prejuízo.
+- **Navegador do app (Chrome, servidor local):** aba Fiscal com preço R$ 32,99, custo R$ 15,96 e peso 1,5 kg mostra R$ 3,43 e margem 10,40%; trocar para 9,1% recalcula na hora; nenhum erro no console.
+- **Layout:** 320×568, 360×640, 390×844, 412×915, 844×390, 768×1024, 1366×768 e 1920×1080; três marketplaces; preços R$ 100, R$ 32,99 e R$ 8; abas de preço/margem e Fiscal: **sem rolagem, sem bloco cortado e sem texto com reticências**. Conferido a olho em 360×640 (claro e escuro), 844×390 e 1366×768 (escuro).
+- **Mudança de arranjo:** as abas agora aparecem sempre, o que ocupa uma linha. Por isso o tablet em pé (768×1024) passou a mostrar um bloco por vez (Por preço | Por margem | Fiscal) em vez dos dois empilhados. A letra das telas em pé ficou cerca de 3% menor.
+
+**Não verificado nesta rodada:** aparelhos reais, teclado do celular na aba Fiscal, Firefox/Safari, os scripts Playwright (não instalado; `teste-funcional.js` ainda espera o seletor antigo de dois botões) e a validade fiscal das alíquotas, que vieram da planilha.
+
+---
+
+## Shopee nova taxa por item e custos somente leitura (03/11/2026)
 
 Mudanças: taxa por item da Shopee pela nova tabela (abaixo de R$ 9 = 50% do preço; R$ 9 a R$ 79,99 = R$ 4,50; demais faixas iguais) e custos por SKU sem Supabase e sem login — só importar planilha, pesquisar e usar.
 

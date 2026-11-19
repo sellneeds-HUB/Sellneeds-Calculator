@@ -1,6 +1,6 @@
 # Código completo · Sellneeds
 
-Versão com layout de tela única (blocos "Cálculo por preço" e "Cálculo por margem"), taxa por item nova da Shopee (03/11/2026) e custos por SKU somente leitura (importar planilha, pesquisar e usar; sem login e sem nuvem).
+Versão com layout de tela única (abas "Preço e margem" e "Fiscal"), aba Fiscal com impostos e créditos (13/11/2026), taxa por item nova da Shopee e custos por SKU somente leitura.
 
 Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `logo-sellneeds.png` e as três logos dos marketplaces (`logo-mercado-livre.webp`, `logo-shopee.webp`, `logo-tiktok.webp`) juntos. As imagens não estão neste documento.
 
@@ -43,8 +43,10 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `l
       </div>
     </header>
     <div class="view-switch segmented" role="group" aria-label="Tipo de cálculo">
+      <button type="button" data-view="ambos" aria-controls="blocks" aria-pressed="true">Preço e margem</button>
       <button type="button" data-view="preco" aria-controls="preco" aria-pressed="true">Por preço</button>
       <button type="button" data-view="margem" aria-controls="margem" aria-pressed="false">Por margem</button>
+      <button type="button" data-view="fiscal" aria-controls="fiscal" aria-pressed="false">Fiscal</button>
     </div>
     <div id="fatal-error" class="notice danger" role="alert" hidden></div>
     <main id="blocks" class="blocks" data-market="mercadoLivre" role="tabpanel" aria-labelledby="tab-mercadoLivre"></main>
@@ -122,7 +124,7 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `l
 }
 
 /* Tamanho fluido: tudo usa rem, que acompanha a altura e a largura da tela. */
-html { font-size: clamp(11px, min(1.85vh, 3.6vw), 20px); height: 100%; }
+html { font-size: clamp(11px, min(1.8vh, 3.6vw), 20px); height: 100%; }
 html.single { font-size: clamp(11px, min(2.3vh, 3.7vw), 16px); }
 * { box-sizing: border-box; }
 body { margin: 0; height: 100%; height: 100dvh; overflow: hidden; overscroll-behavior: none; color: var(--text); background: var(--bg); font-family: var(--font-body); font-size: .9rem; line-height: 1.35; transition: background .2s, color .2s; }
@@ -165,13 +167,13 @@ h1, h2, h3, p, ul { margin: 0; }
 .logo-failed img { display: none; }
 .logo-failed .logo-fallback { display: block; }
 
-/* Seletor "Por preço | Por margem": só aparece quando os dois blocos não cabem. */
+/* Abas de cálculo: "Preço e margem | Fiscal"; quando os dois blocos não cabem, "Por preço | Por margem | Fiscal". */
 .segmented { display: flex; padding: .18rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface-soft); gap: .15rem; }
 .segmented button { flex: 1; border: 0; padding: 0 .5rem; border-radius: .42rem; background: transparent; font-size: .8rem; font-weight: 600; color: var(--muted); }
 .segmented [aria-pressed='true'] { background: var(--text); color: var(--surface); }
-.view-switch { display: none; flex-shrink: 0; height: 2.3rem; }
-.single .view-switch { display: flex; }
-.single .block:not(.is-current) { display: none; }
+.view-switch { flex-shrink: 0; height: 2.3rem; }
+html:not(.single) .view-switch :is([data-view='preco'], [data-view='margem']), .single .view-switch [data-view='ambos'] { display: none; }
+.single .block:not(.is-current), html:not(.fiscal) .block[data-kind='fiscal'], .fiscal .block:not([data-kind='fiscal']) { display: none; }
 
 /* Área dos blocos: encolhe até o espaço restante, sem rolagem. */
 .blocks { flex: 0 1 auto; min-height: 0; display: grid; gap: .6rem; overflow: hidden; }
@@ -220,6 +222,15 @@ input[type='text']:focus-visible { outline: none; }
 .legend .profit-row .amount { color: var(--tone); }
 /* Itens estreitos usam o nome curto; o nome completo continua disponível para leitores de tela. */
 @container (max-width: 15.5rem) { .legend .long { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .legend .short { display: inline; } }
+/* Aba Fiscal: demonstrativo em três grupos (venda, custo, plataforma), como na planilha. */
+.field-note { color: var(--muted); font-size: .66rem; white-space: nowrap; }
+.statement { display: grid; gap: .3rem; }
+.st-group h3 { margin-bottom: .05rem; }
+.st-group ul { list-style: none; padding: 0; }
+.st-group li { display: flex; justify-content: space-between; gap: .5rem; font-size: .74rem; line-height: 1.45; }
+.st-group .name { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-group .amount { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st-group .st-sub { border-top: 1px solid var(--line); font-weight: 700; }
 .result-msg { color: var(--muted); font-size: .76rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: .2rem 0; }
 
 /* Painel de informações sobreposto: não ocupa espaço na tela. */
@@ -267,6 +278,20 @@ input[type='text']:focus-visible { outline: none; }
   .headline { flex-direction: column; align-items: flex-start; gap: .1rem; }
   .headline-value { font-size: 2.15rem; }
   .block { padding: .8rem 1.1rem .9rem; }
+  .fiscal .block-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); }
+  .statement { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem 1.1rem; align-items: start; }
+  .st-group li { font-size: .8rem; line-height: 1.6; }
+}
+/* Celular em pé na aba Fiscal: demonstrativo compacto, com os títulos dos grupos só para leitores de tela. */
+@media (orientation: portrait) and (max-width: 699px) {
+  .fiscal .block { gap: .35rem; padding-block: .55rem .6rem; }
+  .fiscal .block-body { gap: .45rem; }
+  .fiscal .inputs { gap: .35rem .7rem; }
+  .fiscal .result { gap: .25rem; padding-block: .4rem .45rem; }
+  .fiscal .headline-value { font-size: 1.6rem; }
+  .statement { gap: .15rem; }
+  .st-group h3 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .st-group li { line-height: 1.32; }
 }
 /* Telas largas: cabeçalho em uma linha só. */
 @media (min-width: 900px) {
@@ -290,6 +315,10 @@ input[type='text']:focus-visible { outline: none; }
   .headline { flex-direction: row; align-items: baseline; }
   .headline-value { font-size: 1.7rem; }
   .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fiscal .blocks { grid-template-columns: 1fr; }
+  .fiscal .block-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: .9rem; }
+  .statement { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .3rem .9rem; align-items: start; }
+  .st-group li { font-size: .74rem; line-height: 1.45; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 ```
@@ -349,6 +378,8 @@ input[type='text']:focus-visible { outline: none; }
       m.bands.forEach(b => { if (!ratio(b.commission) || !nonnegative(b.fixed) || !ratio(b.fixedRate || 0)) throw Error('Comissão ou taxa fixa inválida.'); });
     });
     C.tiktok.bands.forEach(b => { if (!ratio(b.shippingRate) || !nonnegative(b.shippingFixed)) throw Error('Frete TikTok inválido.'); });
+    const f = C.fiscal;
+    if (!Array.isArray(f.icmsOptions) || !f.icmsOptions.length || f.icmsOptions.some(o => !ratio(o.rate)) || [f.pisCofins, f.costIcmsCredit, f.costPisCofinsCredit, f.feePisCofinsCredit, f.shippingIcmsCredit, f.shippingPisCofinsCredit].some(n => !ratio(n))) throw Error('Revise as alíquotas de fiscal no config.js.');
     if (!Number.isInteger(ml.fastShippingColumn) || ml.fastShippingColumn < 0 || ml.fastShippingColumn >= ml.priceBands.length) throw Error('Coluna de frete rápido inválida.');
     if (!ml.shippingTable.length) throw Error('A tabela de frete está vazia.');
     ml.shippingTable.forEach((row, i) => {
@@ -409,6 +440,29 @@ input[type='text']:focus-visible { outline: none; }
     return { ok: true, price: data.price, cost: data.cost, commission, fixed, shipping, affiliate, total, profit, margin, tone, rules: r, weights: ctx.weights };
   }
 
+  // Aba Fiscal: parte do cálculo normal e aplica impostos da venda e créditos, como na planilha da Sellneeds.
+  // O crédito sobre a tarifa vale só para a comissão; taxa fixa e afiliado entram sem crédito.
+  function fiscal(market, data) {
+    const F = C.fiscal;
+    if (!finite(data.icms) || data.icms < 0 || data.icms > 1) return { ok: false, error: 'Escolha o ICMS interno.' };
+    const base = calculate(market, data);
+    if (!base.ok) return base;
+    const icms = base.price * data.icms;
+    const pisCofins = (base.price - icms) * F.pisCofins;
+    const netRevenue = base.price - icms - pisCofins;
+    const costIcmsCredit = base.cost * F.costIcmsCredit;
+    const costPisCofinsCredit = base.cost * F.costPisCofinsCredit;
+    const netCost = base.cost - costIcmsCredit - costPisCofinsCredit;
+    const feeCredit = base.commission * F.feePisCofinsCredit;
+    const shippingIcmsCredit = base.shipping * F.shippingIcmsCredit;
+    const shippingPisCofinsCredit = base.shipping * F.shippingPisCofinsCredit;
+    const platform = base.commission - feeCredit + base.fixed + base.affiliate + base.shipping - shippingIcmsCredit - shippingPisCofinsCredit;
+    const profit = netRevenue - netCost - platform;
+    const margin = profit / base.price;
+    const tone = margin < C.marginColors.low - EPS ? 'bad' : margin <= C.marginColors.high + EPS ? 'warn' : 'good';
+    return { ...base, icmsRate: data.icms, icms, pisCofins, netRevenue, costIcmsCredit, costPisCofinsCredit, netCost, feeCredit, shippingIcmsCredit, shippingPisCofinsCredit, platform, profit, margin, tone };
+  }
+
   // Não usa busca binária global: a margem pode cair ao mudar a faixa.
   // Particiona em todos os limites de preço e nos pontos do teto de frete.
   // Resolve cada trecho, arredonda para cima ao centavo e confirma no cálculo real.
@@ -452,7 +506,7 @@ input[type='text']:focus-visible { outline: none; }
     return best || { ok: false, error: 'Meta inviável com esses custos e taxas dentro do limite de ' + money(C.maxInput) + '.' };
   }
 
-  const api = { parseNumber, weights, calculate, minimumPrice, validateConfig };
+  const api = { parseNumber, weights, calculate, fiscal, minimumPrice, validateConfig };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SellneedsCalculator = api;
   if (typeof document === 'undefined') return;
@@ -473,10 +527,12 @@ input[type='text']:focus-visible { outline: none; }
   const cashFields = ['price', 'cost', 'manualShipping'];
   let market = 'mercadoLivre';
 
-  // Os dois blocos usam o mesmo componente; muda só o campo principal e o resultado.
+  // Os blocos usam o mesmo componente; muda só o campo principal e o resultado.
+  // O bloco fiscal tem ainda o ICMS interno e troca o gráfico pelo demonstrativo.
   const KINDS = {
-    price: { title: 'Cálculo por preço', main: 'price', mainLabel: 'Preço de venda', unit: 'R$', resultLabel: 'Margem de contribuição' },
-    margin: { title: 'Cálculo por margem', main: 'target', mainLabel: 'Margem alvo', unit: '%', resultLabel: 'Preço de venda necessário' }
+    price: { title: 'Cálculo por preço', main: 'price', mainLabel: 'Preço de venda', unit: 'R$', costLabel: 'Custo do produto', resultLabel: 'Margem de contribuição' },
+    margin: { title: 'Cálculo por margem', main: 'target', mainLabel: 'Margem alvo', unit: '%', costLabel: 'Custo do produto', resultLabel: 'Preço de venda necessário' },
+    fiscal: { title: 'Cálculo fiscal', main: 'price', mainLabel: 'Preço de venda', unit: 'R$', costLabel: 'Preço de custo', resultLabel: 'Sobra na mão' }
   };
 
   function inputHtml(p, key, unit, hidden) {
@@ -501,7 +557,9 @@ input[type='text']:focus-visible { outline: none; }
       '<h2 id="' + p + '-title" class="block-title">' + t.title + '</h2>' +
       '<div class="block-body"><form class="inputs" novalidate>' +
         fieldHtml(p, t.main, t.mainLabel, t.unit) +
-        fieldHtml(p, 'cost', 'Custo do produto', 'R$', '', '<button id="' + p + '-sku" class="chip sku-chip" type="button" aria-pressed="false" aria-haspopup="dialog">SKU</button>') +
+        fieldHtml(p, 'cost', t.costLabel, 'R$', '', '<button id="' + p + '-sku" class="chip sku-chip" type="button" aria-pressed="false" aria-haspopup="dialog">SKU</button>') +
+        (kind === 'fiscal' ? '<div class="field"><div class="field-head"><span id="' + p + '-icms-label" class="label">ICMS interno</span><span id="' + p + '-icms-note" class="field-note"></span></div>' +
+          '<div class="segmented" role="group" aria-labelledby="' + p + '-icms-label">' + C.fiscal.icmsOptions.map((o, i) => '<button type="button" data-icms="' + i + '" aria-pressed="false">' + rate(o.rate) + '</button>').join('') + '</div></div>' : '') +
         '<div class="field ml-only"><div class="field-head"><label id="' + p + '-ship-label" for="' + p + '-weight">Peso</label>' +
           '<button id="' + p + '-manual" class="chip" type="button" aria-pressed="false">Frete manual</button></div>' +
           inputHtml(p, 'weight', 'kg') + inputHtml(p, 'manualShipping', 'R$', true) + '</div>' +
@@ -510,15 +568,17 @@ input[type='text']:focus-visible { outline: none; }
         fieldHtml(p, 'affiliate', 'Comissão de afiliado', '%', 'tiktok-only') +
       '</form>' +
       '<div id="' + p + '-result" class="result" data-tone="empty">' +
-        '<div class="headline"><span class="headline-label">' + t.resultLabel + '</span><strong id="' + p + '-value" class="headline-value">—</strong></div>' +
-        '<div class="money"><h3>Para onde vai o dinheiro</h3><div id="' + p + '-bar" class="composition" aria-hidden="true"></div>' +
-          '<ul id="' + p + '-list" class="legend" aria-label="Para onde vai o dinheiro"></ul><p id="' + p + '-msg" class="result-msg" hidden></p></div>' +
+        '<div class="headline"><span id="' + p + '-label" class="headline-label">' + t.resultLabel + '</span><strong id="' + p + '-value" class="headline-value">—</strong></div>' +
+        (kind === 'fiscal'
+          ? '<div class="money"><div id="' + p + '-list" class="statement"></div><p id="' + p + '-msg" class="result-msg" hidden></p></div>'
+          : '<div class="money"><h3>Para onde vai o dinheiro</h3><div id="' + p + '-bar" class="composition" aria-hidden="true"></div>' +
+            '<ul id="' + p + '-list" class="legend" aria-label="Para onde vai o dinheiro"></ul><p id="' + p + '-msg" class="result-msg" hidden></p></div>') +
       '</div></div>';
     $('blocks').append(section);
 
     const el = id => $(p + '-' + id);
     const keys = [t.main, 'cost', 'weight', 'manualShipping', 'affiliate'];
-    const state = { fast: C.defaults.fastShipping, manual: C.defaults.manualMode, sku: null, shown: 0, frame: 0, quote: null, notes: [] };
+    const state = { fast: C.defaults.fastShipping, manual: C.defaults.manualMode, icms: 0, sku: null, shown: 0, frame: 0, quote: null, notes: [] };
     keys.forEach(k => { el(k).value = cashFields.includes(k) ? decimal(C.defaults[k]) : String(C.defaults[k]).replace('.', ','); });
 
     function read() {
@@ -555,11 +615,17 @@ input[type='text']:focus-visible { outline: none; }
       el('fast-no').setAttribute('aria-pressed', String(!value));
       el('fast-yes').setAttribute('aria-pressed', String(value));
     }
+    // ICMS interno da aba Fiscal: índice da opção em C.fiscal.icmsOptions.
+    function setIcms(index) {
+      state.icms = index;
+      section.querySelectorAll('[data-icms]').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.icms === index)));
+      if (el('icms-note')) el('icms-note').textContent = C.fiscal.icmsOptions[index].label;
+    }
     // O botão do custo mostra o SKU escolhido; digitar outro custo desfaz a ligação.
     // Com SKU, o rótulo encurta para "Custo" e o SKU ganha espaço no celular.
     function setSku(sku) {
       state.sku = sku;
-      section.querySelector('label[for="' + p + '-cost"]').textContent = sku ? 'Custo' : 'Custo do produto';
+      section.querySelector('label[for="' + p + '-cost"]').textContent = sku ? 'Custo' : t.costLabel;
       el('sku').textContent = sku || 'SKU';
       el('sku').title = sku ? 'Custo do SKU ' + sku + ' · trocar' : 'Buscar o custo pelo SKU';
       el('sku').setAttribute('aria-label', el('sku').title);
@@ -572,7 +638,7 @@ input[type='text']:focus-visible { outline: none; }
       el('ship-label').htmlFor = p + '-' + (state.manual ? 'manualShipping' : 'weight');
       el('manual').setAttribute('aria-pressed', String(state.manual));
       // Por preço: só abaixo do frete obrigatório. Por margem: sempre, pois o preço é a resposta.
-      el('fast-field').hidden = kind === 'price' && !(finite(data.price) && data.price < ML.mandatoryFreeShippingFrom);
+      el('fast-field').hidden = kind !== 'margin' && !(finite(data.price) && data.price < ML.mandatoryFreeShippingFrom);
       el('fast-no').disabled = el('fast-yes').disabled = state.manual;
     }
     function animate(to, format) {
@@ -617,6 +683,48 @@ input[type='text']:focus-visible { outline: none; }
         li.append(swatch, name, value, share); list.append(li);
       });
     }
+    // Demonstrativo da aba Fiscal, na ordem da planilha: venda, custo, plataforma e resultado.
+    // Linhas zeradas (taxa fixa, afiliado, frete) são ocultadas.
+    function statement(r) {
+      const F = C.fiscal;
+      const groups = [
+        ['Venda', [
+          ['Preço de venda', r.price],
+          ['ICMS ' + rate(r.icmsRate), -r.icms],
+          ['PIS/COFINS ' + rate(F.pisCofins), -r.pisCofins],
+          ['Receita líquida', r.netRevenue, 'sub']
+        ]],
+        ['Custo do produto', [
+          ['Preço de custo', -r.cost],
+          ['Crédito ICMS ' + rate(F.costIcmsCredit), r.costIcmsCredit],
+          ['Crédito PIS/COFINS', r.costPisCofinsCredit],
+          ['Custo líquido', -r.netCost, 'sub']
+        ]],
+        ['Plataforma', [
+          ['Tarifa ' + rate(r.rules.commission), -r.commission],
+          ['Crédito PIS/COFINS', r.feeCredit],
+          ['Taxa fixa', -r.fixed, 'zero'],
+          ['Afiliado ' + rate(r.rules.affiliate), -r.affiliate, 'zero'],
+          ['Frete', -r.shipping, 'zero'],
+          ['Créd. ICMS frete', r.shippingIcmsCredit, 'zero'],
+          ['Créd. PIS/COFINS frete', r.shippingPisCofinsCredit, 'zero'],
+          ['Custo plataforma', -r.platform, 'sub']
+        ]]
+      ];
+      const make = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+      el('list').replaceChildren(...groups.map(([title, rows]) => {
+        const group = make('section', 'st-group');
+        const list = make('ul');
+        rows.forEach(([name, amount, type]) => {
+          if (type === 'zero' && Math.abs(amount) < 0.005) return;
+          const li = make('li', type === 'sub' ? 'st-sub' : '');
+          li.append(make('span', 'name', name), make('span', 'amount', money(amount)));
+          list.append(li);
+        });
+        group.append(make('h3', '', title), list);
+        return group;
+      }));
+    }
     function shortMessage(data, invalid) {
       if (market === 'mercadoLivre' && !state.manual && finite(data.weight) && data.weight > maxWeight + EPS) return 'Peso acima de ' + decimal(maxWeight, 0) + ' kg: use Frete manual.';
       if (invalid) return 'Revise o campo destacado.';
@@ -630,6 +738,13 @@ input[type='text']:focus-visible { outline: none; }
         if (r.rules.capped) notes.push('Frete limitado a ' + decimal(ML.cheapShippingCap.rate * 100, 0) + '% do preço: tabela ' + money(r.rules.tableShipping) + ' → aplicado ' + money(r.shipping) + '.');
         if (r.price >= ML.mandatoryFreeShippingFrom) notes.push('Frete grátis obrigatório a partir de ' + money(ML.mandatoryFreeShippingFrom) + '.');
       } else notes.push('Faixa vigente: ' + r.rules.bandLabel + '. Taxas sobre o preço de venda' + (r.rules.fixedRate ? '; taxa por item de ' + rate(r.rules.fixedRate) + ' do preço.' : '.'));
+      if (kind === 'fiscal') {
+        const F = C.fiscal;
+        notes.push('ICMS interno de ' + rate(r.icmsRate) + ' (' + C.fiscal.icmsOptions[state.icms].label + ') sobre o preço; PIS e COFINS de ' + rate(F.pisCofins) + ' sobre o preço menos o ICMS.');
+        notes.push('Créditos: ICMS ' + rate(F.costIcmsCredit) + ' e PIS e COFINS ' + rate(F.costPisCofinsCredit) + ' sobre o preço de custo; PIS e COFINS ' + rate(F.feePisCofinsCredit) + ' sobre a tarifa (comissão); ICMS ' + rate(F.shippingIcmsCredit) + ' e PIS e COFINS ' + rate(F.shippingPisCofinsCredit) + ' sobre o frete. Taxa fixa e afiliado entram sem crédito.');
+        if (r.profit < -EPS) notes.push('Prejuízo de ' + money(-r.profit) + ' por venda.');
+        return notes;
+      }
       if (r.profit < -EPS) notes.push('Os custos excedem a venda em ' + money(-r.profit) + '. A barra representa o total dos custos; os percentuais usam o preço de venda.');
       if (kind === 'margin') {
         notes.push('Menor preço, em centavos, que atinge ' + decimal(data.target) + '% (margem obtida: ' + percent(r.margin) + '). Ao aumentar o preço, recalcule: uma nova faixa de taxas pode reduzir a margem.');
@@ -643,20 +758,21 @@ input[type='text']:focus-visible { outline: none; }
       const invalid = validate(data);
       visibility(data);
       let quote = null;
-      if (kind === 'price') { const r = calculate(market, data); if (r.ok) quote = r; }
-      else if (!invalid) { const m = minimumPrice(market, data, data.target); if (m.ok) quote = m.quote; }
+      if (kind === 'margin') { if (!invalid) { const m = minimumPrice(market, data, data.target); if (m.ok) quote = m.quote; } }
+      else { const r = kind === 'fiscal' ? fiscal(market, { ...data, icms: C.fiscal.icmsOptions[state.icms].rate }) : calculate(market, data); if (r.ok) quote = r; }
       state.quote = quote;
       el('result').dataset.tone = quote ? quote.tone : 'empty';
       el('msg').hidden = !!quote;
+      if (kind === 'fiscal') el('label').textContent = t.resultLabel + (quote ? ' · margem ' + percent(quote.margin) : '');
       if (quote) {
-        if (kind === 'price') animate(quote.margin, percent); else animate(quote.price, money);
-        chart(quote);
+        if (kind === 'price') animate(quote.margin, percent); else animate(kind === 'fiscal' ? quote.profit : quote.price, money);
+        if (kind === 'fiscal') statement(quote); else chart(quote);
         state.notes = notesFor(data, quote);
       } else {
         cancelAnimationFrame(state.frame); state.shown = 0;
         el('value').textContent = '—';
         el('msg').textContent = shortMessage(data, invalid);
-        el('list').replaceChildren(); el('bar').replaceChildren();
+        el('list').replaceChildren(); if (el('bar')) el('bar').replaceChildren();
         state.notes = [];
       }
     }
@@ -686,18 +802,22 @@ input[type='text']:focus-visible { outline: none; }
       el('cost').value = decimal(e.detail.cost);
       refresh();
     });
+    section.querySelectorAll('[data-icms]').forEach(b => b.addEventListener('click', () => { setIcms(+b.dataset.icms); refresh(); }));
     setFast(state.fast);
+    setIcms(state.icms);
     setSku(null);
-    return { id: p, title: t.title, section, update, state };
+    return { id: p, kind, title: t.title, section, update, state };
   }
 
-  const blocks = [createBlock('preco', 'price'), createBlock('margem', 'margin')];
+  const blocks = [createBlock('preco', 'price'), createBlock('margem', 'margin'), createBlock('fiscal', 'fiscal')];
+  // A aba Fiscal mostra só o bloco fiscal; as outras, só os blocos de preço e margem.
+  const shown = () => blocks.filter(b => (b.kind === 'fiscal') === html.classList.contains('fiscal'));
 
   function renderInfo() {
     const content = $('info-content');
     content.replaceChildren();
     const add = (tag, text, cls) => { const n = document.createElement(tag); n.textContent = text; if (cls) n.className = cls; content.append(n); return n; };
-    blocks.forEach(b => {
+    shown().forEach(b => {
       add('h3', b.title + ' · ' + C[market].name);
       if (!b.state.notes.length) add('p', 'Complete os campos para ver as faixas aplicadas.', 'muted');
       b.state.notes.forEach(n => add('p', n));
@@ -706,6 +826,7 @@ input[type='text']:focus-visible { outline: none; }
     add('p', 'Margem de contribuição não é lucro líquido. A simulação considera somente os custos e taxas exibidos. Impostos, anúncios, embalagem e despesas operacionais não estão incluídos.');
     add('p', 'Mercado Livre: o frete usa somente o peso informado. Frete grátis rápido é opcional abaixo de ' + money(ML.mandatoryFreeShippingFrom) + '. Abaixo de ' + money(ML.cheapShippingCap.below) + ', o frete fica limitado a ' + decimal(ML.cheapShippingCap.rate * 100, 0) + '% do preço. O frete manual substitui a tabela.');
     add('p', 'Shopee: abaixo de ' + money(C.shopee.bands[1].min) + ', a taxa por item é ' + rate(C.shopee.bands[0].fixedRate || 0) + ' do preço; R$ 200,00 foi incluído na última faixa. TikTok: frete percentual e afiliado incidem sobre o preço de venda.');
+    add('p', 'Aba Fiscal: usa as mesmas taxas e o mesmo frete e desconta ICMS e PIS e COFINS da venda, somando os créditos sobre o custo, a tarifa e o frete. As alíquotas vêm da planilha da Sellneeds e não substituem a apuração do contador.');
     add('p', 'As taxas seguem os valores informados pela Sellneeds, sem consulta automática aos marketplaces. Os cálculos usam precisão completa; o preço por margem é arredondado para cima ao centavo.', 'muted');
     add('p', 'Regras: ' + C.version + '.', 'muted');
   }
@@ -713,12 +834,14 @@ input[type='text']:focus-visible { outline: none; }
   let announcement = 0;
   function refresh() {
     blocks.forEach(b => b.update());
-    $('info-button').toggleAttribute('data-alert', blocks.some(b => b.state.quote && (b.state.quote.rules.capped || b.state.quote.profit < -EPS)));
+    $('info-button').toggleAttribute('data-alert', shown().some(b => b.state.quote && (b.state.quote.rules.capped || b.state.quote.profit < -EPS)));
     if ($('info-dialog').open) renderInfo();
     clearTimeout(announcement);
     announcement = setTimeout(() => {
-      const [a, b] = blocks.map(x => x.state.quote);
-      $('live-summary').textContent = C[market].name + ': ' + (a ? 'margem ' + percent(a.margin) : 'margem indisponível') + '; ' + (b ? 'preço necessário ' + money(b.price) : 'preço indisponível') + '.';
+      const [a, b, f] = blocks.map(x => x.state.quote);
+      $('live-summary').textContent = C[market].name + ': ' + (html.classList.contains('fiscal')
+        ? (f ? 'sobra na mão ' + money(f.profit) + ', margem fiscal ' + percent(f.margin) : 'cálculo fiscal indisponível')
+        : (a ? 'margem ' + percent(a.margin) : 'margem indisponível') + '; ' + (b ? 'preço necessário ' + money(b.price) : 'preço indisponível')) + '.';
     }, 500);
   }
 
@@ -727,15 +850,23 @@ input[type='text']:focus-visible { outline: none; }
   const singleQuery = window.matchMedia('(orientation: portrait) and (max-height: 739px), (max-height: 340px)');
   function fit() {
     if (html.classList.contains('typing')) return;
+    // Na aba Fiscal há um bloco só: mantém o arranjo que os outros dois já tinham.
+    if (html.classList.contains('fiscal')) { if (singleQuery.matches) html.classList.add('single'); return; }
     html.classList.toggle('single', singleQuery.matches);
     if (html.classList.contains('single')) return;
     const area = $('blocks');
     const overflow = area.scrollHeight > area.clientHeight + 1 || area.scrollWidth > area.clientWidth + 1 || blocks.some(b => b.section.scrollHeight > b.section.clientHeight + 1);
     html.classList.toggle('single', overflow);
   }
+  // Abas: "Preço e margem" (os dois blocos juntos), "Por preço" e "Por margem" (um por vez) e "Fiscal".
+  let view = 'preco';
   function setView(id) {
-    blocks.forEach(b => b.section.classList.toggle('is-current', b.id === id));
-    document.querySelectorAll('[data-view]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === id)));
+    if (id !== 'ambos') view = id;
+    else if (view === 'fiscal') view = 'preco';
+    html.classList.toggle('fiscal', view === 'fiscal');
+    blocks.forEach(b => b.section.classList.toggle('is-current', b.id === view));
+    document.querySelectorAll('[data-view]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.view === view || (button.dataset.view === 'ambos' && view !== 'fiscal'))));
+    refresh(); fit();
   }
   document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => setView(button.dataset.view)));
   setView('preco');
@@ -975,7 +1106,7 @@ input[type='text']:focus-visible { outline: none; }
 (function (root) {
   'use strict';
   const config = {
-    version: '03/11/2026 · regras Sellneeds · Shopee nova taxa por item · ML somente peso informado',
+    version: '12/11/2026 · regras Sellneeds · aba Fiscal · Shopee nova taxa por item · ML somente peso informado',
     currency: 'BRL',
     locale: 'pt-BR',
     marginColors: { low: 0.10, high: 0.20 }, // Vermelho <10%; amarelo 10–20%; verde >20%.
@@ -1034,6 +1165,20 @@ input[type='text']:focus-visible { outline: none; }
         { min: 100, max: 200, commission: 0.14, fixed: 20 },
         { min: 200, max: null, commission: 0.14, fixed: 26 }
       ]
+    },
+    // Aba Fiscal: alíquotas da planilha "tabela de calculadora.xlsx". Comissão, taxa fixa e frete vêm das regras acima.
+    fiscal: {
+      // ICMS interno sobre a venda; a primeira opção é a inicial.
+      icmsOptions: [
+        { rate: 0.189, label: 'com DIFAL' },
+        { rate: 0.091, label: 'sem DIFAL' }
+      ],
+      pisCofins: 0.0925, // 1,65% PIS + 7,6% COFINS, sobre o preço de venda menos o ICMS.
+      costIcmsCredit: 0.18, // Crédito de ICMS sobre o preço de custo da nota fiscal.
+      costPisCofinsCredit: 0.092497022628027, // Crédito de PIS e COFINS sobre o preço de custo.
+      feePisCofinsCredit: 0.0925, // Crédito de PIS e COFINS sobre a tarifa (comissão) do marketplace.
+      shippingIcmsCredit: 0.1395, // Crédito de ICMS sobre o frete.
+      shippingPisCofinsCredit: 0.092449922958397532 // Crédito de PIS e COFINS sobre o frete.
     },
     tiktok: {
       name: 'TikTok Shop',
