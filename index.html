@@ -14,6 +14,7 @@
   <script src="./config.js" defer></script>
   <script src="./script.js" defer></script>
   <script src="./custos.js" defer></script>
+  <script src="./medio.js" defer></script>
 </head>
 <body>
   <div class="app">
@@ -28,6 +29,7 @@
         <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-label="TikTok Shop" aria-selected="false" aria-controls="blocks" tabindex="-1"><img src="./logo-tiktok.webp" width="160" height="160" alt="TikTok Shop" onerror="this.parentNode.classList.add('logo-failed')"><span class="logo-fallback" aria-hidden="true">TikTok Shop</span></button>
       </nav>
       <div class="top-actions">
+        <button id="medio-button" class="icon-button" type="button" aria-label="Custo médio" title="Custo médio" aria-haspopup="dialog" aria-controls="medio-dialog"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path d="M5 20V13M10 20V8M15 20V11M20 20V5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="M3 11.5h18" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.2 2"/></svg></button>
         <button id="sku-button" class="icon-button" type="button" aria-label="Custos por SKU" title="Custos por SKU" aria-haspopup="dialog" aria-controls="sku-dialog"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg></button>
         <button id="info-button" class="icon-button" type="button" aria-label="Informações e avisos" aria-haspopup="dialog" aria-controls="info-dialog"><span aria-hidden="true">i</span></button>
         <button id="theme-toggle" class="icon-button" type="button" aria-label="Ativar modo escuro" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span></button>
@@ -53,10 +55,43 @@
       <p id="sku-status" class="sku-status" aria-live="polite"></p>
       <ul id="sku-list" class="sku-list" aria-label="Custos encontrados"></ul>
       <p id="sku-more" class="sku-status" hidden></p>
-      <div class="sku-actions">
-        <button id="sku-import" class="chip" type="button">Importar planilha</button>
-        <input id="sku-file" type="file" accept=".csv,text/csv,text/plain" hidden>
+      <div id="sku-conflict" class="sku-conflict" role="alertdialog" aria-labelledby="sku-conflict-text" hidden>
+        <p id="sku-conflict-text"></p>
+        <ul id="sku-conflict-list"></ul>
+        <div class="sku-actions"><button id="sku-conflict-keep" class="chip primary" type="button">Manter custo médio</button><button id="sku-conflict-sheet" class="chip" type="button">Usar planilha</button><button id="sku-conflict-cancel" class="chip" type="button">Cancelar</button></div>
       </div>
+      <div class="sku-actions">
+        <button id="sku-import" class="chip" type="button">Importar planilha ou backup</button>
+        <button id="sku-export" class="chip" type="button">Exportar backup</button>
+        <input id="sku-file" type="file" accept=".csv,.json,text/csv,text/plain,application/json" hidden>
+      </div>
+    </div>
+  </dialog>
+  <dialog id="medio-dialog" class="info-dialog medio-dialog" aria-labelledby="medio-title">
+    <div class="info-head"><h2 id="medio-title">Custo médio</h2><button id="medio-close" class="icon-button" type="button" aria-label="Fechar custo médio"><span aria-hidden="true">×</span></button></div>
+    <div class="medio-main">
+      <div id="medio-pick" class="medio-pick">
+        <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="medio-query" type="text" placeholder="Pesquisar SKU" aria-label="Pesquisar SKU do custo médio" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
+        <ul id="medio-results" class="medio-results" aria-label="SKUs encontrados"></ul>
+      </div>
+      <div id="medio-picked" class="medio-picked" hidden><span class="medio-picked-label">SKU</span><strong id="medio-sku" class="sku-code"></strong><span id="medio-sku-cost" class="medio-sku-cost"></span><button id="medio-change" class="chip" type="button">Trocar</button></div>
+      <form id="medio-form" class="inputs medio-inputs" novalidate>
+        <div class="field"><div class="field-head"><label for="medio-stock">Estoque atual</label></div><div class="input-wrap"><input id="medio-stock" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-stock-error"><span>un</span><small id="medio-stock-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-prevCost">Custo atual</label></div><div class="input-wrap"><span>R$</span><input id="medio-prevCost" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-prevCost-error"><small id="medio-prevCost-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-qty">Quantidade comprada</label></div><div class="input-wrap"><input id="medio-qty" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-qty-error"><span>un</span><small id="medio-qty-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-unitCost">Custo da compra (un)</label></div><div class="input-wrap"><span>R$</span><input id="medio-unitCost" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-unitCost-error"><small id="medio-unitCost-error" class="field-error"></small></div></div>
+        <button type="submit" hidden></button>
+      </form>
+      <div id="medio-result" class="result medio-result" data-tone="empty" aria-live="polite">
+        <div class="headline"><span class="headline-label">Novo custo médio</span><strong id="medio-value" class="headline-value">—</strong></div>
+        <p id="medio-compare" class="medio-line"></p>
+        <p id="medio-total" class="medio-line muted"></p>
+        <p id="medio-warn" class="medio-warn" hidden></p>
+      </div>
+      <p id="medio-status" class="sku-status" aria-live="polite"></p>
+      <div class="sku-actions medio-actions"><button id="medio-save" class="chip" type="button" disabled>Salvar registro</button><button id="medio-confirm" class="chip primary" type="button" disabled>Confirmar novo custo</button></div>
+      <div class="medio-history-head"><h3 id="medio-history-title">Últimas compras</h3><button id="medio-export" class="chip" type="button">Baixar histórico</button></div>
+      <ul id="medio-history" class="medio-history" aria-labelledby="medio-history-title"></ul>
     </div>
   </dialog>
   <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>

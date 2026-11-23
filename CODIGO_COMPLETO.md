@@ -1,8 +1,8 @@
 # Código completo · Sellneeds
 
-Versão com layout de tela única (abas "Preço e margem" e "Fiscal"), aba Fiscal com impostos e créditos (13/11/2026), taxa por item nova da Shopee e custos por SKU somente leitura.
+Versão com layout de tela única (abas "Preço e margem" e "Fiscal"), aba Fiscal com impostos e créditos (13/11/2026), taxa por item nova da Shopee, custos por SKU e custo médio por SKU com histórico e backup (23/11/2026).
 
-Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `logo-sellneeds.png` e as três logos dos marketplaces (`logo-mercado-livre.webp`, `logo-shopee.webp`, `logo-tiktok.webp`) juntos. As imagens não estão neste documento.
+Copie cada bloco inteiro para o arquivo indicado. Mantenha os seis arquivos, `logo-sellneeds.png` e as três logos dos marketplaces (`logo-mercado-livre.webp`, `logo-shopee.webp`, `logo-tiktok.webp`) juntos. As imagens não estão neste documento.
 
 ## index.html
 
@@ -23,6 +23,7 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `l
   <script src="./config.js" defer></script>
   <script src="./script.js" defer></script>
   <script src="./custos.js" defer></script>
+  <script src="./medio.js" defer></script>
 </head>
 <body>
   <div class="app">
@@ -37,6 +38,7 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `l
         <button class="market-tab" type="button" role="tab" id="tab-tiktok" data-market="tiktok" aria-label="TikTok Shop" aria-selected="false" aria-controls="blocks" tabindex="-1"><img src="./logo-tiktok.webp" width="160" height="160" alt="TikTok Shop" onerror="this.parentNode.classList.add('logo-failed')"><span class="logo-fallback" aria-hidden="true">TikTok Shop</span></button>
       </nav>
       <div class="top-actions">
+        <button id="medio-button" class="icon-button" type="button" aria-label="Custo médio" title="Custo médio" aria-haspopup="dialog" aria-controls="medio-dialog"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path d="M5 20V13M10 20V8M15 20V11M20 20V5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/><path d="M3 11.5h18" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.2 2"/></svg></button>
         <button id="sku-button" class="icon-button" type="button" aria-label="Custos por SKU" title="Custos por SKU" aria-haspopup="dialog" aria-controls="sku-dialog"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg></button>
         <button id="info-button" class="icon-button" type="button" aria-label="Informações e avisos" aria-haspopup="dialog" aria-controls="info-dialog"><span aria-hidden="true">i</span></button>
         <button id="theme-toggle" class="icon-button" type="button" aria-label="Ativar modo escuro" aria-pressed="false"><span id="theme-icon" aria-hidden="true">☾</span></button>
@@ -62,10 +64,43 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os cinco arquivos, `l
       <p id="sku-status" class="sku-status" aria-live="polite"></p>
       <ul id="sku-list" class="sku-list" aria-label="Custos encontrados"></ul>
       <p id="sku-more" class="sku-status" hidden></p>
-      <div class="sku-actions">
-        <button id="sku-import" class="chip" type="button">Importar planilha</button>
-        <input id="sku-file" type="file" accept=".csv,text/csv,text/plain" hidden>
+      <div id="sku-conflict" class="sku-conflict" role="alertdialog" aria-labelledby="sku-conflict-text" hidden>
+        <p id="sku-conflict-text"></p>
+        <ul id="sku-conflict-list"></ul>
+        <div class="sku-actions"><button id="sku-conflict-keep" class="chip primary" type="button">Manter custo médio</button><button id="sku-conflict-sheet" class="chip" type="button">Usar planilha</button><button id="sku-conflict-cancel" class="chip" type="button">Cancelar</button></div>
       </div>
+      <div class="sku-actions">
+        <button id="sku-import" class="chip" type="button">Importar planilha ou backup</button>
+        <button id="sku-export" class="chip" type="button">Exportar backup</button>
+        <input id="sku-file" type="file" accept=".csv,.json,text/csv,text/plain,application/json" hidden>
+      </div>
+    </div>
+  </dialog>
+  <dialog id="medio-dialog" class="info-dialog medio-dialog" aria-labelledby="medio-title">
+    <div class="info-head"><h2 id="medio-title">Custo médio</h2><button id="medio-close" class="icon-button" type="button" aria-label="Fechar custo médio"><span aria-hidden="true">×</span></button></div>
+    <div class="medio-main">
+      <div id="medio-pick" class="medio-pick">
+        <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="medio-query" type="text" placeholder="Pesquisar SKU" aria-label="Pesquisar SKU do custo médio" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
+        <ul id="medio-results" class="medio-results" aria-label="SKUs encontrados"></ul>
+      </div>
+      <div id="medio-picked" class="medio-picked" hidden><span class="medio-picked-label">SKU</span><strong id="medio-sku" class="sku-code"></strong><span id="medio-sku-cost" class="medio-sku-cost"></span><button id="medio-change" class="chip" type="button">Trocar</button></div>
+      <form id="medio-form" class="inputs medio-inputs" novalidate>
+        <div class="field"><div class="field-head"><label for="medio-stock">Estoque atual</label></div><div class="input-wrap"><input id="medio-stock" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-stock-error"><span>un</span><small id="medio-stock-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-prevCost">Custo atual</label></div><div class="input-wrap"><span>R$</span><input id="medio-prevCost" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-prevCost-error"><small id="medio-prevCost-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-qty">Quantidade comprada</label></div><div class="input-wrap"><input id="medio-qty" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-qty-error"><span>un</span><small id="medio-qty-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-unitCost">Custo da compra (un)</label></div><div class="input-wrap"><span>R$</span><input id="medio-unitCost" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-unitCost-error"><small id="medio-unitCost-error" class="field-error"></small></div></div>
+        <button type="submit" hidden></button>
+      </form>
+      <div id="medio-result" class="result medio-result" data-tone="empty" aria-live="polite">
+        <div class="headline"><span class="headline-label">Novo custo médio</span><strong id="medio-value" class="headline-value">—</strong></div>
+        <p id="medio-compare" class="medio-line"></p>
+        <p id="medio-total" class="medio-line muted"></p>
+        <p id="medio-warn" class="medio-warn" hidden></p>
+      </div>
+      <p id="medio-status" class="sku-status" aria-live="polite"></p>
+      <div class="sku-actions medio-actions"><button id="medio-save" class="chip" type="button" disabled>Salvar registro</button><button id="medio-confirm" class="chip primary" type="button" disabled>Confirmar novo custo</button></div>
+      <div class="medio-history-head"><h3 id="medio-history-title">Últimas compras</h3><button id="medio-export" class="chip" type="button">Baixar histórico</button></div>
+      <ul id="medio-history" class="medio-history" aria-labelledby="medio-history-title"></ul>
     </div>
   </dialog>
   <div id="live-summary" class="sr-only" aria-live="polite" aria-atomic="true"></div>
@@ -264,6 +299,45 @@ input[type='text']:focus-visible { outline: none; }
 .sku-action { display: inline-flex; align-items: center; height: 2.1rem; padding: 0 .8rem; border-radius: .6rem; background: var(--brand); color: var(--surface); font-weight: 700; }
 .sku-actions { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: .45rem; padding-top: .2rem; }
 .sku-actions .chip { font-size: .78rem; padding: .4rem .7rem; }
+.chip.primary { background: var(--brand); border-color: var(--brand); color: var(--surface); font-weight: 700; }
+.sku-row.has-medio { grid-template-columns: minmax(0, 1fr) auto auto; }
+.sku-medio { font-size: .7rem; padding: .3rem .55rem; }
+/* Planilha nova x custo médio: escolha dentro do painel. */
+.sku-conflict { flex-shrink: 0; display: grid; gap: .35rem; padding: .6rem .7rem; border-radius: .6rem; background: var(--warn-soft); color: var(--text); font-size: .8rem; }
+.sku-conflict ul { padding-left: 1.1rem; color: var(--muted); font-size: .76rem; }
+
+/* Custo médio: painel sobreposto que rola por dentro. */
+.medio-dialog { width: min(38rem, calc(100vw - 2rem)); max-height: 92dvh; }
+.medio-dialog[open] { display: flex; flex-direction: column; }
+.medio-main { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: .6rem; padding: .7rem 1rem 1rem; }
+.medio-pick { display: grid; gap: .35rem; }
+.medio-results { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+.medio-empty { padding: .5rem .1rem; color: var(--muted); font-size: .8rem; }
+.medio-picked { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'label sku change' 'label cost change'; align-items: center; gap: 0 .6rem; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface-soft); }
+.medio-picked-label { grid-area: label; color: var(--muted); font-size: .72rem; font-weight: 700; }
+.medio-picked .sku-code { grid-area: sku; }
+.medio-sku-cost { grid-area: cost; color: var(--muted); font-size: .76rem; }
+.medio-picked .chip { grid-area: change; font-size: .76rem; padding: .35rem .65rem; }
+.medio-inputs { flex-shrink: 0; }
+.medio-result { flex-shrink: 0; gap: .2rem; }
+.medio-line { font-size: .8rem; font-variant-numeric: tabular-nums; }
+.medio-line.muted { color: var(--muted); }
+.medio-warn { color: var(--warn); font-size: .78rem; font-weight: 600; }
+.medio-actions { justify-content: flex-end; }
+.medio-actions .chip { font-size: .85rem; padding: .55rem .9rem; }
+.medio-history-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding-top: .3rem; border-top: 1px solid var(--line); }
+.medio-history-head h3 { font: 800 .88rem var(--font-display); }
+.medio-history { list-style: none; padding: 0; margin: 0; display: grid; gap: .4rem; }
+.medio-entry { display: grid; gap: .1rem; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: .6rem; font-size: .78rem; }
+.medio-entry[data-status='desfeito'] { opacity: .6; }
+.medio-entry-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.medio-badge { flex-shrink: 0; font-size: .66rem; font-weight: 700; padding: .12rem .45rem; border-radius: 99px; background: var(--surface-soft); color: var(--muted); }
+.medio-entry[data-status='aplicado'] .medio-badge { background: var(--good-soft); color: var(--good); }
+.medio-entry-detail { color: var(--muted); }
+.medio-entry-costs { font-weight: 600; font-variant-numeric: tabular-nums; }
+.medio-entry-actions { display: flex; gap: .4rem; padding-top: .2rem; }
+.medio-entry-actions .chip { font-size: .72rem; padding: .3rem .6rem; }
+.sku-status[data-tone='good'] { color: var(--good); font-weight: 600; }
 
 .notice { font-size: .8rem; padding: .7rem .9rem; border-radius: .6rem; color: var(--warn); background: var(--warn-soft); }
 .notice.danger { color: var(--bad); background: var(--bad-soft); }
@@ -948,7 +1022,8 @@ input[type='text']:focus-visible { outline: none; }
 ## custos.js
 
 ```javascript
-/* SELLNEEDS · Custos por SKU: importação da planilha e pesquisa, sem bibliotecas. Os custos ficam só no navegador. */
+/* SELLNEEDS · Custos por SKU: importação da planilha, pesquisa e backup, sem bibliotecas. Os custos ficam só no navegador.
+ * O custo de um SKU só muda importando a planilha (ou um backup) ou confirmando um custo médio (medio.js). */
 (function (root) {
   'use strict';
   const C = root.SELLNEEDS_CONFIG || (typeof require === 'function' ? require('./config.js') : null);
@@ -992,6 +1067,7 @@ input[type='text']:focus-visible { outline: none; }
   function createStore(storage) {
     const KEY = 'sellneeds-custos';
     let memory = [];
+    const persist = () => { try { storage.setItem(KEY, JSON.stringify(Object.fromEntries(memory.map(i => [i.sku, i.cost])))); return true; } catch (_) { return false; } };
     try { storage.removeItem('sellneeds-sessao'); } catch (_) { /* Login antigo da nuvem, não é mais usado. */ }
     return {
       load() {
@@ -1001,7 +1077,13 @@ input[type='text']:focus-visible { outline: none; }
       // Retorna false quando o navegador bloqueia o armazenamento: a lista vale só enquanto a página estiver aberta.
       replace(list) {
         memory = list.slice();
-        try { storage.setItem(KEY, JSON.stringify(Object.fromEntries(list.map(i => [i.sku, i.cost])))); return true; } catch (_) { return false; }
+        return persist();
+      },
+      // Usado só ao confirmar um custo médio: troca o custo de um SKU e mantém o resto da lista.
+      update(sku, cost) {
+        const i = memory.findIndex(x => x.sku === sku);
+        if (i < 0) memory.push({ sku, cost }); else memory[i] = { sku, cost };
+        return persist();
       }
     };
   }
@@ -1018,7 +1100,7 @@ input[type='text']:focus-visible { outline: none; }
   try { storage = root.localStorage; } catch (_) { /* Sem armazenamento: só funciona enquanto a página estiver aberta. */ }
   const store = createStore(storage);
   const LIMIT = 50;
-  let items = store.load(), pick = null, message = null;
+  let items = store.load(), pick = null, message = null, pending = null;
 
   function status(text, error) {
     message = text;
@@ -1035,11 +1117,23 @@ input[type='text']:focus-visible { outline: none; }
     return n;
   }
 
-  // Somente leitura: no modo escolha, a linha inteira é um botão que usa o custo.
+  const Medio = () => root.SellneedsMedio;
+  // Consulta: SKU, custo e atalho para o custo médio. No modo escolha, a linha inteira é um botão que usa o custo.
   function row(item) {
     const li = node('li', 'sku-row');
     const content = [node('span', 'sku-code', item.sku), node('span', 'sku-cost', money(item.cost))];
-    if (!pick) { li.append(...content); return li; }
+    if (!pick) {
+      li.append(...content);
+      if (Medio() && Medio().open) {
+        const m = node('button', 'chip sku-medio', 'Custo médio');
+        m.type = 'button';
+        m.setAttribute('aria-label', 'Custo médio de ' + item.sku);
+        m.addEventListener('click', () => { dialog.close(); Medio().open({ sku: item.sku }); });
+        li.classList.add('has-medio');
+        li.append(m);
+      }
+      return li;
+    }
     const button = node('button', 'sku-pick');
     button.type = 'button';
     button.setAttribute('aria-label', 'Usar custo de ' + item.sku + ': ' + money(item.cost));
@@ -1060,6 +1154,8 @@ input[type='text']:focus-visible { outline: none; }
 
   function open(options = {}) {
     pick = options.pick || null;
+    pending = null;
+    $('sku-conflict').hidden = true;
     $('sku-title').textContent = pick ? 'Escolher custo pelo SKU' : 'Custos por SKU';
     dialog.showModal();
     $('sku-query').value = '';
@@ -1068,6 +1164,49 @@ input[type='text']:focus-visible { outline: none; }
     $('sku-query').focus();
   }
   api.open = open;
+  api.items = () => items;
+  api.search = search;
+  // Confirmação do custo médio: grava o custo novo do SKU e atualiza os blocos que usam esse SKU.
+  api.setCost = (sku, cost) => {
+    const saved = store.update(sku, round2(cost));
+    items = store.load();
+    document.dispatchEvent(new CustomEvent('sellneeds:custo', { detail: { sku, cost: round2(cost) } }));
+    return saved;
+  };
+
+  // Troca a lista inteira (planilha ou backup) e avisa os blocos e o custo médio.
+  function finish(list, text, skipped) {
+    const saved = store.replace(list);
+    items = list;
+    items.forEach(i => document.dispatchEvent(new CustomEvent('sellneeds:custo', { detail: { sku: i.sku, cost: i.cost } })));
+    document.dispatchEvent(new CustomEvent('sellneeds:lista'));
+    message = null;
+    render();
+    status(text + (skipped ? ' · ' + skipped + ' linhas ignoradas (sem SKU ou custo inválido)' : '') + (saved ? '.' : '. O navegador bloqueou o armazenamento: importe de novo ao reabrir.'), !saved);
+  }
+
+  // Planilha nova x custos alterados pelo custo médio: pergunta na própria tela antes de trocar.
+  function askConflicts(parsed, conflicts) {
+    pending = { parsed, conflicts };
+    const shown = conflicts.slice(0, 5).map(c => c.sku + ': médio ' + money(c.medio) + ' · planilha ' + (c.planilha === null ? 'sem o SKU' : money(c.planilha)));
+    $('sku-conflict-text').textContent = conflicts.length + (conflicts.length === 1 ? ' SKU teve' : ' SKUs tiveram') + ' o custo alterado pelo custo médio e a planilha traz outro valor. Qual custo usar?';
+    $('sku-conflict-list').replaceChildren(...shown.map(t => node('li', '', t)), ...(conflicts.length > 5 ? [node('li', '', 'e mais ' + (conflicts.length - 5) + '…')] : []));
+    $('sku-conflict').hidden = false;
+    $('sku-conflict-keep').focus();
+  }
+  function resolve(choice) {
+    const p = pending;
+    pending = null;
+    $('sku-conflict').hidden = true;
+    if (!p || choice === 'cancel') { status('Importação cancelada. Nada mudou.'); return; }
+    const skus = p.conflicts.map(c => c.sku);
+    const n = skus.length + (skus.length === 1 ? ' SKU ' : ' SKUs ');
+    if (choice === 'keep') finish(Medio().keepApplied(p.parsed.items, p.conflicts), p.parsed.items.length + ' SKUs importados · ' + n + 'com o custo médio mantido', p.parsed.skipped);
+    else { Medio().history.forget(skus); finish(p.parsed.items, p.parsed.items.length + ' SKUs importados · ' + n + 'com o custo da planilha', p.parsed.skipped); }
+  }
+  $('sku-conflict-keep').addEventListener('click', () => resolve('keep'));
+  $('sku-conflict-sheet').addEventListener('click', () => resolve('sheet'));
+  $('sku-conflict-cancel').addEventListener('click', () => resolve('cancel'));
 
   $('sku-query').addEventListener('input', () => { message = null; render(); });
   $('sku-import').addEventListener('click', () => $('sku-file').click());
@@ -1076,21 +1215,370 @@ input[type='text']:focus-visible { outline: none; }
     $('sku-file').value = '';
     if (!file) return;
     try {
-      const parsed = parseCsv(await file.text());
+      const text = await file.text();
+      // Backup exportado por este site: restaura lista, histórico e custos alterados.
+      if (/\.json$/i.test(file.name) || /^\ufeff?\s*\{/.test(text)) {
+        const b = Medio().parseBackup(text);
+        if (!b.items.length) throw Error('O backup não tem nenhum custo.');
+        if (!confirm('Restaurar o backup com ' + b.items.length + ' SKUs e ' + b.history.length + ' compras no histórico? A lista e o histórico deste aparelho serão substituídos.')) return;
+        Medio().history.restore(b);
+        finish(b.items, 'Backup restaurado: ' + b.items.length + ' SKUs e ' + b.history.length + ' compras');
+        return;
+      }
+      const parsed = parseCsv(text);
       if (!parsed.items.length) throw Error('Nenhuma linha válida na planilha.');
       if (items.length && !confirm('Importar ' + parsed.items.length + ' SKUs? A lista atual (' + items.length + ' SKUs) será substituída pela da planilha.')) return;
-      const saved = store.replace(parsed.items);
-      items = parsed.items;
-      // Blocos que já usam um SKU recebem o custo novo.
-      items.forEach(i => document.dispatchEvent(new CustomEvent('sellneeds:custo', { detail: { sku: i.sku, cost: i.cost } })));
-      message = null;
-      render();
-      status(parsed.items.length + ' SKUs importados' + (parsed.skipped ? ' · ' + parsed.skipped + ' linhas ignoradas (sem SKU ou custo inválido)' : '') + (saved ? '.' : '. O navegador bloqueou o armazenamento: importe de novo ao reabrir.'), !saved);
+      const conflicts = Medio() ? Medio().findConflicts(Medio().history.applied(), parsed.items) : [];
+      if (conflicts.length) { askConflicts(parsed, conflicts); return; }
+      finish(parsed.items, parsed.items.length + ' SKUs importados', parsed.skipped);
     } catch (e) { status(e.message, true); }
+  });
+  $('sku-export').addEventListener('click', () => {
+    if (!items.length) { status('Nenhum custo para exportar.', true); return; }
+    Medio().download('sellneeds-custos-backup-' + Medio().today() + '.json', Medio().makeBackup(items, Medio().history.data()), 'application/json');
+    status('Backup baixado. No outro aparelho, use Importar e escolha esse arquivo.');
   });
   $('sku-button').addEventListener('click', () => open());
   $('sku-close').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+})(typeof window !== 'undefined' ? window : globalThis);
+```
+
+## medio.js
+
+```javascript
+/* SELLNEEDS · Custo médio por SKU: calcula o novo custo de uma compra, guarda o histórico e, ao confirmar, troca o custo do SKU. Tudo fica só no navegador. */
+(function (root) {
+  'use strict';
+  const C = root.SELLNEEDS_CONFIG || (typeof require === 'function' ? require('./config.js') : null);
+  const calc = root.SellneedsCalculator || (typeof require === 'function' ? require('./script.js') : null);
+  const round2 = n => Math.round(n * 100) / 100;
+  const finite = n => typeof n === 'number' && Number.isFinite(n);
+  const valid = (n, min = 0) => finite(n) && n >= min && n <= C.maxInput;
+  const ALERT = 0.3; // Compra 30% acima ou abaixo do custo atual pede conferência.
+
+  // Novo custo médio = (estoque × custo atual + compra × custo da compra) ÷ (estoque + compra), em centavos.
+  // Sem estoque, o custo atual não pesa e pode ficar vazio.
+  function averageCost({ stock, prevCost, qty, unitCost }) {
+    const errors = {};
+    if (!valid(stock)) errors.stock = 'Informe o estoque (0 ou mais).';
+    if (!valid(qty) || qty === 0) errors.qty = 'Informe a quantidade comprada.';
+    if (!valid(unitCost)) errors.unitCost = 'Informe o custo da compra.';
+    const usesPrev = valid(stock) && stock > 0;
+    if (usesPrev && !valid(prevCost)) errors.prevCost = 'Informe o custo atual.';
+    if (Object.keys(errors).length) return { ok: false, errors };
+    const prev = usesPrev ? prevCost : (valid(prevCost) ? prevCost : null);
+    const totalQty = stock + qty;
+    const totalValue = (usesPrev ? stock * prevCost : 0) + qty * unitCost;
+    const avg = round2(totalValue / totalQty);
+    const change = prev ? avg / prev - 1 : null;
+    const warnings = [];
+    if (prev && Math.abs(unitCost / prev - 1) > ALERT) {
+      warnings.push('O custo da compra está ' + Math.round(Math.abs(unitCost / prev - 1) * 100) + '% ' + (unitCost > prev ? 'acima' : 'abaixo') + ' do custo atual. Confira antes de confirmar.');
+    }
+    if (stock > 0 && qty > stock * 20 && qty >= 1000) warnings.push('A compra é mais de 20 vezes o estoque atual. Confira a quantidade.');
+    return { ok: true, avg, prev, change, totalQty, totalValue: round2(totalValue), warnings };
+  }
+
+  // SKUs cujo custo foi trocado pelo custo médio e que a planilha nova mudaria (ou não traz).
+  function findConflicts(applied, items) {
+    const bySku = new Map(items.map(i => [i.sku, i.cost]));
+    return Object.entries(applied || {})
+      .filter(([sku, a]) => !bySku.has(sku) || Math.abs(bySku.get(sku) - a.cost) > 0.004)
+      .map(([sku, a]) => ({ sku, medio: a.cost, planilha: bySku.has(sku) ? bySku.get(sku) : null }));
+  }
+  // Mantém o custo médio desses SKUs na lista nova.
+  function keepApplied(items, conflicts) {
+    const keep = new Map(conflicts.map(c => [c.sku, c.medio]));
+    const list = items.map(i => keep.has(i.sku) ? { sku: i.sku, cost: keep.get(i.sku) } : i);
+    conflicts.filter(c => c.planilha === null).forEach(c => list.push({ sku: c.sku, cost: c.medio }));
+    return list;
+  }
+
+  // Histórico de compras: "aplicado" trocou o custo do SKU, "registro" só foi salvo, "desfeito" voltou ao custo anterior.
+  // applied guarda, por SKU, o custo que o custo médio gravou (usado ao importar a planilha de novo).
+  function createHistory(storage) {
+    const KEY = 'sellneeds-custo-medio';
+    let data = { history: [], applied: {} };
+    const persist = () => { try { storage.setItem(KEY, JSON.stringify(data)); return true; } catch (_) { return false; } };
+    try { const saved = JSON.parse(storage.getItem(KEY)); if (saved && Array.isArray(saved.history)) data = { history: saved.history, applied: saved.applied || {} }; } catch (_) { /* Sem armazenamento: histórico só na memória. */ }
+    return {
+      list: sku => data.history.filter(e => !sku || e.sku === sku).slice().reverse(),
+      get: id => data.history.find(e => e.id === id),
+      applied: () => ({ ...data.applied }),
+      add(entry) {
+        const e = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: new Date().toISOString(), ...entry };
+        data.history.push(e);
+        if (e.status === 'aplicado') data.applied[e.sku] = { cost: e.avg, id: e.id };
+        return { entry: e, saved: persist() };
+      },
+      // Aplica um registro salvo: o SKU passa a usar o custo médio dele.
+      apply(id) {
+        const e = this.get(id);
+        if (!e || e.status === 'aplicado') return null;
+        e.status = 'aplicado'; e.appliedAt = new Date().toISOString();
+        data.applied[e.sku] = { cost: e.avg, id: e.id };
+        persist();
+        return e;
+      },
+      // Desfaz a última compra aplicada do SKU: devolve o custo anterior e reativa a compra anterior, se houver.
+      undo(id) {
+        const e = this.get(id);
+        if (!e || !data.applied[e.sku] || data.applied[e.sku].id !== id) return null;
+        e.status = 'desfeito';
+        const before = data.history.filter(x => x.sku === e.sku && x.status === 'aplicado' && x.id !== id && Math.abs(x.avg - e.prevCost) < 0.005).pop();
+        if (before) data.applied[e.sku] = { cost: before.avg, id: before.id }; else delete data.applied[e.sku];
+        persist();
+        return e;
+      },
+      remove(id) {
+        const i = data.history.findIndex(e => e.id === id);
+        if (i < 0 || data.history[i].status === 'aplicado') return false;
+        data.history.splice(i, 1);
+        persist();
+        return true;
+      },
+      // A planilha nova venceu: esses SKUs deixam de contar como alterados pelo custo médio.
+      forget(skus) { skus.forEach(s => delete data.applied[s]); persist(); },
+      restore(next) { data = { history: next.history || [], applied: next.applied || {} }; return persist(); },
+      data: () => JSON.parse(JSON.stringify(data))
+    };
+  }
+
+  const csvMoney = n => n === null || n === undefined ? '' : String(round2(n)).replace('.', ',');
+  const STATUS = { aplicado: 'Aplicado no SKU', registro: 'Só registro', desfeito: 'Desfeito' };
+  function historyCsv(entries) {
+    const head = 'Data;SKU;Estoque;Custo anterior;Quantidade comprada;Custo da compra;Custo médio;Situação';
+    return '﻿' + [head, ...entries.map(e => [new Date(e.date).toLocaleString('pt-BR'), e.sku, e.stock, csvMoney(e.prevCost), e.qty, csvMoney(e.unitCost), csvMoney(e.avg), STATUS[e.status] || e.status].join(';'))].join('\r\n');
+  }
+
+  // Backup para levar a outro aparelho: lista de custos, histórico e SKUs alterados.
+  function makeBackup(items, data) {
+    return JSON.stringify({ tipo: 'sellneeds-custos', versao: 1, exportadoEm: new Date().toISOString(), custos: Object.fromEntries(items.map(i => [i.sku, i.cost])), historico: data.history, aplicados: data.applied }, null, 1);
+  }
+  function parseBackup(text) {
+    let b;
+    try { b = JSON.parse(String(text).replace(/^﻿/, '')); } catch (_) { throw Error('Arquivo de backup inválido.'); }
+    if (!b || b.tipo !== 'sellneeds-custos' || typeof b.custos !== 'object') throw Error('Este arquivo não é um backup de custos da Sellneeds.');
+    const items = Object.entries(b.custos).filter(([sku, cost]) => sku && valid(cost)).map(([sku, cost]) => ({ sku, cost: round2(cost) }));
+    return { items, history: Array.isArray(b.historico) ? b.historico : [], applied: b.aplicados && typeof b.aplicados === 'object' ? b.aplicados : {} };
+  }
+
+  const api = { averageCost, findConflicts, keepApplied, createHistory, historyCsv, makeBackup, parseBackup };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.SellneedsMedio = api;
+  if (typeof document === 'undefined' || !document.getElementById('medio-dialog')) return;
+
+  // ---------- Tela sobreposta ----------
+  const $ = id => document.getElementById(id);
+  const dialog = $('medio-dialog');
+  const money = n => new Intl.NumberFormat(C.locale, { style: 'currency', currency: C.currency }).format(n);
+  const qtyText = n => new Intl.NumberFormat(C.locale, { maximumFractionDigits: 2 }).format(n);
+  const decimal = n => new Intl.NumberFormat(C.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + new Intl.NumberFormat(C.locale, { maximumFractionDigits: 1 }).format(Math.abs(n * 100)) + '%';
+  let storage = null;
+  try { storage = root.localStorage; } catch (_) { /* Sem armazenamento. */ }
+  const history = createHistory(storage);
+  const Custos = () => root.SellneedsCustos;
+  const FIELDS = ['stock', 'prevCost', 'qty', 'unitCost'];
+  let sku = null, last = null;
+
+  function node(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+  function status(text, tone) { $('medio-status').textContent = text || ''; $('medio-status').dataset.tone = tone || ''; }
+  const costOf = s => { const i = Custos() && Custos().items().find(x => x.sku === s); return i ? i.cost : null; };
+
+  function setSku(next) {
+    sku = next;
+    $('medio-pick').hidden = !!sku;
+    $('medio-picked').hidden = !sku;
+    if (sku) {
+      $('medio-sku').textContent = sku;
+      const cost = costOf(sku);
+      $('medio-sku-cost').textContent = cost === null ? 'sem custo' : 'custo atual ' + money(cost);
+      $('medio-prevCost').value = cost === null ? '' : decimal(cost);
+    } else {
+      $('medio-query').value = '';
+    }
+    renderResults();
+    renderHistory();
+    update();
+  }
+
+  function renderResults() {
+    const list = $('medio-results');
+    const items = Custos() ? Custos().items() : [];
+    if (sku) { list.replaceChildren(); return; }
+    if (!items.length) { list.replaceChildren(node('li', 'medio-empty', 'Nenhum custo importado. Importe a planilha pela lupa no topo.')); return; }
+    const q = $('medio-query').value.trim();
+    const found = Custos().search(items, q, 6);
+    if (!q) { list.replaceChildren(node('li', 'medio-empty', 'Digite parte do SKU para escolher o produto.')); return; }
+    if (!found.total) { list.replaceChildren(node('li', 'medio-empty', 'Nenhum SKU encontrado.')); return; }
+    list.replaceChildren(...found.items.map(item => {
+      const li = node('li', 'sku-row');
+      const b = node('button', 'sku-pick');
+      b.type = 'button';
+      b.append(node('span', 'sku-code', item.sku), node('span', 'sku-cost', money(item.cost)), node('span', 'sku-action', 'Escolher'));
+      b.addEventListener('click', () => { setSku(item.sku); $('medio-stock').focus(); });
+      li.append(b);
+      return li;
+    }));
+  }
+
+  function read() { return Object.fromEntries(FIELDS.map(k => [k, calc.parseNumber($('medio-' + k).value)])); }
+  function fieldError(k, message) {
+    $('medio-' + k).setAttribute('aria-invalid', String(!!message));
+    $('medio-' + k + '-error').textContent = message || '';
+  }
+
+  // Mostra o resultado enquanto digita; erros só aparecem nos campos já preenchidos.
+  function update(showAll) {
+    const data = read();
+    const r = averageCost(data);
+    FIELDS.forEach(k => fieldError(k, !r.ok && r.errors[k] && (showAll || $('medio-' + k).value.trim()) ? r.errors[k] : ''));
+    last = r.ok && sku ? { ...data, ...r } : null;
+    const box = $('medio-result');
+    $('medio-save').disabled = $('medio-confirm').disabled = !last;
+    if (!r.ok || !sku) {
+      box.dataset.tone = 'empty';
+      $('medio-value').textContent = '—';
+      $('medio-compare').textContent = sku ? 'Preencha estoque, quantidade e custo da compra.' : 'Escolha o SKU para começar.';
+      $('medio-total').textContent = '';
+      $('medio-warn').hidden = true;
+      return r;
+    }
+    box.dataset.tone = r.warnings.length ? 'warn' : 'good';
+    $('medio-value').textContent = money(r.avg);
+    $('medio-compare').textContent = r.prev === null ? 'Sem custo anterior: o custo médio é o da compra.' : 'Custo anterior ' + money(r.prev) + ' → ' + money(r.avg) + ' (' + signed(r.change) + ')';
+    $('medio-total').textContent = 'Estoque total ' + qtyText(r.totalQty) + ' un · valor ' + money(r.totalValue);
+    $('medio-warn').hidden = !r.warnings.length;
+    $('medio-warn').textContent = r.warnings.join(' ');
+    return r;
+  }
+
+  function clearPurchase() {
+    ['stock', 'qty', 'unitCost'].forEach(k => { $('medio-' + k).value = ''; });
+    const cost = costOf(sku);
+    $('medio-prevCost').value = cost === null ? '' : decimal(cost);
+    $('medio-sku-cost').textContent = cost === null ? 'sem custo' : 'custo atual ' + money(cost);
+    update();
+  }
+
+  function setCost(s, cost) {
+    const saved = Custos().setCost(s, cost);
+    return saved ? '' : ' O navegador bloqueou o armazenamento: exporte o backup antes de fechar.';
+  }
+
+  function save(apply) {
+    const r = update(true);
+    if (!r.ok || !sku) { status('Confira os campos destacados.', 'error'); return; }
+    if (apply && r.warnings.length && !confirm(r.warnings.join('\n') + '\n\nConfirmar o novo custo de ' + money(r.avg) + ' para ' + sku + '?')) return;
+    const entry = { sku, stock: last.stock, prevCost: r.prev, qty: last.qty, unitCost: last.unitCost, avg: r.avg, status: apply ? 'aplicado' : 'registro' };
+    const added = history.add(entry);
+    let extra = added.saved ? '' : ' O navegador bloqueou o armazenamento: o histórico vale só enquanto a página estiver aberta.';
+    if (apply) {
+      extra += setCost(sku, r.avg);
+      status('Custo de ' + sku + ' alterado: ' + (r.prev === null ? '' : money(r.prev) + ' → ') + money(r.avg) + '. Os cálculos com esse SKU já usam o custo novo.' + extra, extra ? 'error' : 'good');
+    } else {
+      status('Registro salvo no histórico. O custo de ' + sku + ' não mudou (' + (costOf(sku) === null ? 'sem custo' : money(costOf(sku))) + ').' + extra, extra ? 'error' : '');
+    }
+    clearPurchase();
+    renderHistory();
+  }
+
+  function entryRow(e) {
+    const li = node('li', 'medio-entry');
+    li.dataset.status = e.status;
+    const when = new Date(e.date);
+    const head = node('div', 'medio-entry-head');
+    head.append(node('span', 'sku-code', e.sku), node('span', 'medio-badge', STATUS[e.status] || e.status));
+    const detail = node('p', 'medio-entry-detail',
+      when.toLocaleDateString('pt-BR') + ' · estoque ' + qtyText(e.stock) + ' + compra ' + qtyText(e.qty) + ' × ' + money(e.unitCost));
+    const costs = node('p', 'medio-entry-costs', (e.prevCost === null || e.prevCost === undefined ? 'sem custo anterior' : 'anterior ' + money(e.prevCost)) + ' → médio ' + money(e.avg));
+    li.append(head, detail, costs);
+    const actions = node('div', 'medio-entry-actions');
+    const applied = history.applied()[e.sku];
+    if (e.status === 'registro') {
+      const a = node('button', 'chip', 'Aplicar no SKU');
+      a.type = 'button';
+      a.addEventListener('click', () => {
+        const now = costOf(e.sku);
+        if (now !== null && e.prevCost !== null && Math.abs(now - e.prevCost) > 0.004 && !confirm('O custo de ' + e.sku + ' mudou desde esse registro (era ' + money(e.prevCost) + ', agora é ' + money(now) + ').\n\nAplicar ' + money(e.avg) + ' mesmo assim?')) return;
+        history.apply(e.id);
+        const extra = setCost(e.sku, e.avg);
+        status('Custo de ' + e.sku + ' alterado: ' + (now === null ? '' : money(now) + ' → ') + money(e.avg) + '.' + extra, extra ? 'error' : 'good');
+        if (sku === e.sku) clearPurchase();
+        renderHistory();
+      });
+      const d = node('button', 'chip', 'Excluir');
+      d.type = 'button';
+      d.addEventListener('click', () => { if (confirm('Excluir este registro do histórico?')) { history.remove(e.id); renderHistory(); } });
+      actions.append(a, d);
+    } else if (e.status === 'aplicado' && applied && applied.id === e.id) {
+      const u = node('button', 'chip', 'Desfazer');
+      u.type = 'button';
+      u.addEventListener('click', () => {
+        const back = e.prevCost === null || e.prevCost === undefined ? null : e.prevCost;
+        if (back === null) { status('Essa compra não tinha custo anterior para voltar. Corrija com uma nova compra.', 'error'); return; }
+        if (!confirm('Voltar o custo de ' + e.sku + ' de ' + money(e.avg) + ' para ' + money(back) + '?')) return;
+        history.undo(e.id);
+        const extra = setCost(e.sku, back);
+        status('Compra desfeita: ' + e.sku + ' voltou para ' + money(back) + '.' + extra, extra ? 'error' : '');
+        if (sku === e.sku) clearPurchase();
+        renderHistory();
+      });
+      actions.append(u);
+    }
+    if (actions.children.length) li.append(actions);
+    return li;
+  }
+
+  function renderHistory() {
+    const entries = history.list(sku);
+    $('medio-history-title').textContent = sku ? 'Histórico de ' + sku : 'Últimas compras';
+    $('medio-export').disabled = !history.list().length;
+    const list = $('medio-history');
+    if (!entries.length) { list.replaceChildren(node('li', 'medio-empty', sku ? 'Nenhuma compra registrada para esse SKU.' : 'Nenhuma compra registrada ainda.')); return; }
+    list.replaceChildren(...entries.slice(0, sku ? 100 : 20).map(entryRow));
+  }
+
+  function download(name, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = node('a');
+    a.href = url; a.download = name;
+    document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  const today = () => new Date().toISOString().slice(0, 10);
+
+  function open(options = {}) {
+    if (!dialog.open) dialog.showModal();
+    status('');
+    setSku(options.sku || null);
+    if (options.sku) clearPurchase();
+    (options.sku ? $('medio-stock') : $('medio-query')).focus();
+  }
+  api.open = open;
+  api.history = history;
+  api.download = download;
+  api.today = today;
+
+  FIELDS.forEach(k => $('medio-' + k).addEventListener('input', () => { status(''); update(); }));
+  $('medio-form').addEventListener('submit', e => { e.preventDefault(); save(true); });
+  $('medio-query').addEventListener('input', renderResults);
+  $('medio-change').addEventListener('click', () => { setSku(null); $('medio-query').focus(); });
+  $('medio-save').addEventListener('click', () => save(false));
+  $('medio-confirm').addEventListener('click', () => save(true));
+  $('medio-export').addEventListener('click', () => download('sellneeds-custo-medio-' + today() + '.csv', historyCsv(history.list().reverse()), 'text/csv;charset=utf-8'));
+  $('medio-button').addEventListener('click', () => open());
+  $('medio-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
+  // Planilha nova ou backup: atualiza o custo mostrado do SKU escolhido.
+  document.addEventListener('sellneeds:lista', () => { if (dialog.open) { if (sku) clearPurchase(); renderResults(); renderHistory(); } });
 })(typeof window !== 'undefined' ? window : globalThis);
 ```
 

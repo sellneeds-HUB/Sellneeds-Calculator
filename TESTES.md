@@ -1,6 +1,18 @@
 # Testes da calculadora Sellneeds
 
-## 0. Aba Fiscal (13/11/2026)
+## 0. Custo médio por SKU (23/11/2026)
+
+Novo botão de barras no topo abre a tela sobreposta **Custo médio** (`medio.js`). Taxas, faixas e frete não mudaram.
+
+- **`node testes.js`: APROVADO, 396 verificações** (as 371 anteriores + 25 novas). Contas da planilha `Custo Médio.xlsx`: Mop 9.577 a R$ 19,17 + 3.000 a R$ 18,50 = **R$ 19,01**; Balança vidro = **R$ 16,61**; sem estoque vale o custo da compra. Alertas: bico dosador 1,80 → 3,00 (+67%) e compra de 78.000 taças. Histórico: registro salvo não muda o SKU, desfazer volta à compra anterior, aplicar um registro depois, excluir só o que não está aplicado, histórico salvo ao reabrir. Importação: acha SKUs alterados que a planilha muda ou não traz, "Manter custo médio" e "Usar planilha". CSV do histórico e backup (exportar e restaurar). Confirmar troca só o custo do SKU escolhido.
+- **Navegador do app (Chrome, servidor local, SKUs de teste):** bloco por preço ligado ao SKU de teste → custo médio pelo botão do topo → R$ 19,17 vira **R$ 19,01** no painel, na lista e no bloco, com "Custo anterior R$ 19,17 → R$ 19,01 (−0,8%)" e o histórico com "Desfazer". "Salvar registro" com alerta de +67% deixou o custo do SKU em R$ 1,80. Atalho "Custo médio" na linha do painel de custos abre com o SKU escolhido. Importar planilha com outro custo para o SKU alterado mostrou a escolha, e "Manter custo médio" manteve R$ 19,01. Nenhum erro no console. Os dados de teste foram apagados do navegador.
+- **Layout:** 360×640 (claro), 844×390 (claro) e 800×600 (escuro): cabeçalho com o botão novo cabe sem rolagem; a tela do custo médio rola por dentro nas telas baixas.
+
+**Não verificado nesta rodada:** download real do backup e do CSV do histórico (só a geração do conteúdo foi testada), restaurar backup pelo seletor de arquivos, botões "Usar planilha" e "Cancelar" no navegador (a lógica está nos testes), Firefox/Safari, aparelhos reais e os scripts Playwright (não instalado).
+
+---
+
+## Aba Fiscal (13/11/2026)
 
 Nova aba **Fiscal**, com a conta da planilha `tabela de calculadora.xlsx` (ICMS, PIS e COFINS e créditos) sobre as taxas e o frete da calculadora. As taxas dos marketplaces não mudaram.
 

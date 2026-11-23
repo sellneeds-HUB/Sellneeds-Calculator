@@ -1,4 +1,5 @@
-/* SELLNEEDS · Custos por SKU: importação da planilha e pesquisa, sem bibliotecas. Os custos ficam só no navegador. */
+/* SELLNEEDS · Custos por SKU: importação da planilha, pesquisa e backup, sem bibliotecas. Os custos ficam só no navegador.
+ * O custo de um SKU só muda importando a planilha (ou um backup) ou confirmando um custo médio (medio.js). */
 (function (root) {
   'use strict';
   const C = root.SELLNEEDS_CONFIG || (typeof require === 'function' ? require('./config.js') : null);
@@ -42,6 +43,7 @@
   function createStore(storage) {
     const KEY = 'sellneeds-custos';
     let memory = [];
+    const persist = () => { try { storage.setItem(KEY, JSON.stringify(Object.fromEntries(memory.map(i => [i.sku, i.cost])))); return true; } catch (_) { return false; } };
     try { storage.removeItem('sellneeds-sessao'); } catch (_) { /* Login antigo da nuvem, não é mais usado. */ }
     return {
       load() {
@@ -51,7 +53,13 @@
       // Retorna false quando o navegador bloqueia o armazenamento: a lista vale só enquanto a página estiver aberta.
       replace(list) {
         memory = list.slice();
-        try { storage.setItem(KEY, JSON.stringify(Object.fromEntries(list.map(i => [i.sku, i.cost])))); return true; } catch (_) { return false; }
+        return persist();
+      },
+      // Usado só ao confirmar um custo médio: troca o custo de um SKU e mantém o resto da lista.
+      update(sku, cost) {
+        const i = memory.findIndex(x => x.sku === sku);
+        if (i < 0) memory.push({ sku, cost }); else memory[i] = { sku, cost };
+        return persist();
       }
     };
   }
@@ -68,7 +76,7 @@
   try { storage = root.localStorage; } catch (_) { /* Sem armazenamento: só funciona enquanto a página estiver aberta. */ }
   const store = createStore(storage);
   const LIMIT = 50;
-  let items = store.load(), pick = null, message = null;
+  let items = store.load(), pick = null, message = null, pending = null;
 
   function status(text, error) {
     message = text;
@@ -85,11 +93,23 @@
     return n;
   }
 
-  // Somente leitura: no modo escolha, a linha inteira é um botão que usa o custo.
+  const Medio = () => root.SellneedsMedio;
+  // Consulta: SKU, custo e atalho para o custo médio. No modo escolha, a linha inteira é um botão que usa o custo.
   function row(item) {
     const li = node('li', 'sku-row');
     const content = [node('span', 'sku-code', item.sku), node('span', 'sku-cost', money(item.cost))];
-    if (!pick) { li.append(...content); return li; }
+    if (!pick) {
+      li.append(...content);
+      if (Medio() && Medio().open) {
+        const m = node('button', 'chip sku-medio', 'Custo médio');
+        m.type = 'button';
+        m.setAttribute('aria-label', 'Custo médio de ' + item.sku);
+        m.addEventListener('click', () => { dialog.close(); Medio().open({ sku: item.sku }); });
+        li.classList.add('has-medio');
+        li.append(m);
+      }
+      return li;
+    }
     const button = node('button', 'sku-pick');
     button.type = 'button';
     button.setAttribute('aria-label', 'Usar custo de ' + item.sku + ': ' + money(item.cost));
@@ -110,6 +130,8 @@
 
   function open(options = {}) {
     pick = options.pick || null;
+    pending = null;
+    $('sku-conflict').hidden = true;
     $('sku-title').textContent = pick ? 'Escolher custo pelo SKU' : 'Custos por SKU';
     dialog.showModal();
     $('sku-query').value = '';
@@ -118,6 +140,49 @@
     $('sku-query').focus();
   }
   api.open = open;
+  api.items = () => items;
+  api.search = search;
+  // Confirmação do custo médio: grava o custo novo do SKU e atualiza os blocos que usam esse SKU.
+  api.setCost = (sku, cost) => {
+    const saved = store.update(sku, round2(cost));
+    items = store.load();
+    document.dispatchEvent(new CustomEvent('sellneeds:custo', { detail: { sku, cost: round2(cost) } }));
+    return saved;
+  };
+
+  // Troca a lista inteira (planilha ou backup) e avisa os blocos e o custo médio.
+  function finish(list, text, skipped) {
+    const saved = store.replace(list);
+    items = list;
+    items.forEach(i => document.dispatchEvent(new CustomEvent('sellneeds:custo', { detail: { sku: i.sku, cost: i.cost } })));
+    document.dispatchEvent(new CustomEvent('sellneeds:lista'));
+    message = null;
+    render();
+    status(text + (skipped ? ' · ' + skipped + ' linhas ignoradas (sem SKU ou custo inválido)' : '') + (saved ? '.' : '. O navegador bloqueou o armazenamento: importe de novo ao reabrir.'), !saved);
+  }
+
+  // Planilha nova x custos alterados pelo custo médio: pergunta na própria tela antes de trocar.
+  function askConflicts(parsed, conflicts) {
+    pending = { parsed, conflicts };
+    const shown = conflicts.slice(0, 5).map(c => c.sku + ': médio ' + money(c.medio) + ' · planilha ' + (c.planilha === null ? 'sem o SKU' : money(c.planilha)));
+    $('sku-conflict-text').textContent = conflicts.length + (conflicts.length === 1 ? ' SKU teve' : ' SKUs tiveram') + ' o custo alterado pelo custo médio e a planilha traz outro valor. Qual custo usar?';
+    $('sku-conflict-list').replaceChildren(...shown.map(t => node('li', '', t)), ...(conflicts.length > 5 ? [node('li', '', 'e mais ' + (conflicts.length - 5) + '…')] : []));
+    $('sku-conflict').hidden = false;
+    $('sku-conflict-keep').focus();
+  }
+  function resolve(choice) {
+    const p = pending;
+    pending = null;
+    $('sku-conflict').hidden = true;
+    if (!p || choice === 'cancel') { status('Importação cancelada. Nada mudou.'); return; }
+    const skus = p.conflicts.map(c => c.sku);
+    const n = skus.length + (skus.length === 1 ? ' SKU ' : ' SKUs ');
+    if (choice === 'keep') finish(Medio().keepApplied(p.parsed.items, p.conflicts), p.parsed.items.length + ' SKUs importados · ' + n + 'com o custo médio mantido', p.parsed.skipped);
+    else { Medio().history.forget(skus); finish(p.parsed.items, p.parsed.items.length + ' SKUs importados · ' + n + 'com o custo da planilha', p.parsed.skipped); }
+  }
+  $('sku-conflict-keep').addEventListener('click', () => resolve('keep'));
+  $('sku-conflict-sheet').addEventListener('click', () => resolve('sheet'));
+  $('sku-conflict-cancel').addEventListener('click', () => resolve('cancel'));
 
   $('sku-query').addEventListener('input', () => { message = null; render(); });
   $('sku-import').addEventListener('click', () => $('sku-file').click());
@@ -126,17 +191,28 @@
     $('sku-file').value = '';
     if (!file) return;
     try {
-      const parsed = parseCsv(await file.text());
+      const text = await file.text();
+      // Backup exportado por este site: restaura lista, histórico e custos alterados.
+      if (/\.json$/i.test(file.name) || /^\ufeff?\s*\{/.test(text)) {
+        const b = Medio().parseBackup(text);
+        if (!b.items.length) throw Error('O backup não tem nenhum custo.');
+        if (!confirm('Restaurar o backup com ' + b.items.length + ' SKUs e ' + b.history.length + ' compras no histórico? A lista e o histórico deste aparelho serão substituídos.')) return;
+        Medio().history.restore(b);
+        finish(b.items, 'Backup restaurado: ' + b.items.length + ' SKUs e ' + b.history.length + ' compras');
+        return;
+      }
+      const parsed = parseCsv(text);
       if (!parsed.items.length) throw Error('Nenhuma linha válida na planilha.');
       if (items.length && !confirm('Importar ' + parsed.items.length + ' SKUs? A lista atual (' + items.length + ' SKUs) será substituída pela da planilha.')) return;
-      const saved = store.replace(parsed.items);
-      items = parsed.items;
-      // Blocos que já usam um SKU recebem o custo novo.
-      items.forEach(i => document.dispatchEvent(new CustomEvent('sellneeds:custo', { detail: { sku: i.sku, cost: i.cost } })));
-      message = null;
-      render();
-      status(parsed.items.length + ' SKUs importados' + (parsed.skipped ? ' · ' + parsed.skipped + ' linhas ignoradas (sem SKU ou custo inválido)' : '') + (saved ? '.' : '. O navegador bloqueou o armazenamento: importe de novo ao reabrir.'), !saved);
+      const conflicts = Medio() ? Medio().findConflicts(Medio().history.applied(), parsed.items) : [];
+      if (conflicts.length) { askConflicts(parsed, conflicts); return; }
+      finish(parsed.items, parsed.items.length + ' SKUs importados', parsed.skipped);
     } catch (e) { status(e.message, true); }
+  });
+  $('sku-export').addEventListener('click', () => {
+    if (!items.length) { status('Nenhum custo para exportar.', true); return; }
+    Medio().download('sellneeds-custos-backup-' + Medio().today() + '.json', Medio().makeBackup(items, Medio().history.data()), 'application/json');
+    status('Backup baixado. No outro aparelho, use Importar e escolha esse arquivo.');
   });
   $('sku-button').addEventListener('click', () => open());
   $('sku-close').addEventListener('click', () => dialog.close());

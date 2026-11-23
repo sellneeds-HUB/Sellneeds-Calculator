@@ -13,7 +13,7 @@ Site estático completo, em HTML, CSS e JavaScript puro. Não precisa instalar n
 7. No Mercado Livre, o botão **Frete manual** troca o peso por um valor de frete em R$. O ícone **i** no topo abre as faixas aplicadas e os avisos secundários.
 8. Para puxar o custo de um produto, toque em **SKU** ao lado de "Custo do produto", pesquise e toque em **Usar**. A lupa no topo abre a mesma lista só para consultar. Os custos vêm da planilha importada e não podem ser alterados na tela. Veja a seção 9.
 
-Mantenha `index.html`, `style.css`, `script.js`, `custos.js`, `config.js`, `logo-sellneeds.png` e as três logos dos marketplaces juntos. O site funciona sem internet após o download; sem conexão, usa uma fonte do sistema no lugar das Google Fonts. A opção de tema é salva no navegador. Os valores digitados na calculadora não são salvos; só a lista de custos por SKU importada é guardada, no navegador de cada aparelho.
+Mantenha `index.html`, `style.css`, `script.js`, `custos.js`, `medio.js`, `config.js`, `logo-sellneeds.png` e as três logos dos marketplaces juntos. O site funciona sem internet após o download; sem conexão, usa uma fonte do sistema no lugar das Google Fonts. A opção de tema é salva no navegador. Os valores digitados na calculadora não são salvos; só a lista de custos por SKU e o histórico do custo médio são guardados, no navegador de cada aparelho.
 
 ## 2. Arquivos
 
@@ -23,12 +23,13 @@ Mantenha `index.html`, `style.css`, `script.js`, `custos.js`, `config.js`, `logo
 | style.css | Cores, fontes, responsividade e animações |
 | config.js | Todas as taxas, faixas, tabela de frete e limites |
 | script.js | Cálculos, preço por margem e funcionamento da tela (componente dos dois blocos) |
-| custos.js | Custos por SKU: importar a planilha, pesquisar e usar o custo (somente leitura) |
+| custos.js | Custos por SKU: importar a planilha ou um backup, pesquisar, usar o custo e exportar o backup |
+| medio.js | Custo médio por SKU: calcula a compra nova, confirma o custo novo no SKU e guarda o histórico |
 | logo-sellneeds.png | Cópia da logo original enviada |
 | logo-mercado-livre.webp, logo-shopee.webp, logo-tiktok.webp | Logos dos botões dos marketplaces (160×160 px, 2 a 4 KB cada) |
 | testes.js | Verificação opcional dos cálculos; não é necessário para o site |
 | TESTES.md | Resultados dos testes executados |
-| CODIGO_COMPLETO.md | Código integral dos cinco arquivos, separado em blocos para copiar |
+| CODIGO_COMPLETO.md | Código integral dos seis arquivos, separado em blocos para copiar |
 | referencias/ | Esboço do layout e scripts opcionais de teste no navegador. Não fazem parte do site |
 
 ## 3. Publicar no GitHub Pages, do zero
@@ -38,7 +39,7 @@ Mantenha `index.html`, `style.css`, `script.js`, `custos.js`, `config.js`, `logo
 3. Digite `sellneeds-calculadora` em **Repository name**.
 4. Marque **Public** para usar GitHub Pages no plano gratuito. Ative a criação de um README e clique em **Create repository**.
 5. Na aba **Code**, escolha **Add file → Upload files**.
-6. Na pasta que você extraiu, selecione os nove arquivos essenciais: `index.html`, `style.css`, `script.js`, `custos.js`, `config.js`, `logo-sellneeds.png`, `logo-mercado-livre.webp`, `logo-shopee.webp` e `logo-tiktok.webp`. Arraste-os para o GitHub. Envie os arquivos extraídos; não envie o ZIP como se fosse o site.
+6. Na pasta que você extraiu, selecione os dez arquivos essenciais: `index.html`, `style.css`, `script.js`, `custos.js`, `medio.js`, `config.js`, `logo-sellneeds.png`, `logo-mercado-livre.webp`, `logo-shopee.webp` e `logo-tiktok.webp`. Arraste-os para o GitHub. Envie os arquivos extraídos; não envie o ZIP como se fosse o site.
 7. Escreva uma mensagem, como “Adicionar calculadora Sellneeds”, e confirme o envio com **Commit changes**. Se a interface abrir uma proposta de alteração em outra branch, conclua o pull request e o merge para `main`.
 8. Confira que `index.html` aparece diretamente na lista principal de arquivos, sem uma pasta extra envolvendo o site.
 9. Abra **Settings → Pages**.
@@ -52,7 +53,7 @@ O site ainda não foi publicado por esta entrega. Não é necessário contratar 
 ### Atualizar um site que já está publicado (novo layout)
 
 1. No repositório do GitHub, abra a aba **Code** e escolha **Add file → Upload files**.
-2. Arraste os arquivos novos: `index.html`, `style.css`, `script.js`, `custos.js` e `config.js`. Com o mesmo nome, eles **substituem** os antigos. `custos.js` é novo e precisa ir junto: sem ele, a pesquisa por SKU não abre.
+2. Arraste os arquivos novos: `index.html`, `style.css`, `script.js`, `custos.js`, `medio.js` e `config.js`. Com o mesmo nome, eles **substituem** os antigos. `custos.js` e `medio.js` precisam ir juntos: sem `custos.js` a pesquisa por SKU não abre, e sem `medio.js` o botão de custo médio não funciona.
 3. Arraste também as três logos novas, que ainda não existem no repositório: `logo-mercado-livre.webp`, `logo-shopee.webp` e `logo-tiktok.webp`. Sem elas, os botões mostram o nome do marketplace em texto.
 4. Confirme com **Commit changes** na branch `main`.
 5. Aguarde um ou dois minutos e abra o site com Ctrl+F5 (no celular, feche e reabra a aba) para não ver a versão antiga em cache.
@@ -150,13 +151,27 @@ Uma melhoria futura possível é incluir impostos, anúncios e embalagem como cu
 - **Importar planilha:** toque na lupa no topo (ou em **SKU**) e em **Importar planilha**. Use o CSV do Excel com as colunas `CUSTO` e `SKU` (separadas por `;`, vírgula decimal, em qualquer ordem). Linhas sem SKU ou com custo inválido são ignoradas e contadas. Importar outra planilha **substitui a lista inteira**: para mudar um custo, corrija no Excel e importe de novo.
 - **Puxar o custo:** no campo "Custo do produto", toque em **SKU**, digite parte do código (maiúsculas, acentos, hífens e espaços não importam; "acqua 002" encontra ACQUABIOS-002PRETO) e toque na linha ou em **Usar**. O botão passa a mostrar o SKU e o rótulo encurta para "Custo". Digitar outro custo à mão desfaz a ligação.
 - **Consultar:** a lupa no topo abre a mesma lista só para ver o custo de cada SKU.
-- Os custos **não podem ser alterados na tela**; a única forma de mudar é importar a planilha corrigida. Se um bloco estiver usando um SKU, o cálculo atualiza ao importar a planilha nova.
+- O custo de um SKU só muda de três jeitos: importando a planilha, restaurando um backup ou **confirmando um custo médio** (seção 9.1). Não existe campo para digitar o custo solto na lista. Se um bloco estiver usando o SKU, o cálculo atualiza na hora.
 - A lista mostra até 50 resultados por vez; digite mais do SKU para filtrar.
 
 **Onde os custos ficam**
 - A planilha é lida no próprio aparelho e a lista fica guardada no navegador dele. Não há login, nuvem nem servidor: nada é enviado pela internet.
 - Cada aparelho (ou navegador) precisa importar a planilha uma vez. Limpar os dados do navegador apaga a lista; basta importar de novo.
 - Em janela anônima ou com armazenamento bloqueado, a lista vale só enquanto a página estiver aberta.
+- **Levar para outro aparelho:** no painel de custos, toque em **Exportar backup**. Baixa um arquivo `.json` com a lista, o histórico do custo médio e os SKUs alterados. No outro aparelho, toque em **Importar planilha ou backup** e escolha esse arquivo: a lista e o histórico de lá são substituídos (a calculadora pergunta antes).
+
+### 9.1 Custo médio
+
+- **Abrir:** botão de barras no topo (ao lado da lupa) ou o botão **Custo médio** em uma linha do painel de custos, que já abre com o SKU escolhido. É uma tela sobreposta: o cálculo continua como estava por baixo.
+- **Preencher:** escolha o SKU; o **custo atual** vem do SKU (pode corrigir se precisar). Informe o **estoque atual**, a **quantidade comprada** e o **custo da compra** por unidade.
+- **Conta:** novo custo médio = (estoque × custo atual + quantidade × custo da compra) ÷ (estoque + quantidade), arredondado ao centavo. Sem estoque, vale o custo da compra. A tela mostra o custo anterior, o novo, a variação em %, o estoque total e o valor total.
+- **Alertas:** custo da compra mais de 30% acima ou abaixo do custo atual, ou compra com mais de 20 vezes o estoque (a partir de 1.000 un), aparecem em amarelo e pedem confirmação antes de trocar o custo.
+- **Confirmar novo custo:** troca o custo do SKU, registra no histórico como "Aplicado no SKU" e atualiza os blocos que usam esse SKU.
+- **Salvar registro:** guarda a conta no histórico como "Só registro", **sem mudar o custo do SKU**. Depois dá para **Aplicar no SKU** (avisa se o custo do SKU mudou desde o registro) ou **Excluir**.
+- **Desfazer:** disponível na última compra aplicada de cada SKU; volta o custo anterior.
+- **Baixar histórico:** CSV com data, SKU, estoque, custo anterior, quantidade, custo da compra, custo médio e situação, para abrir no Excel.
+- **Importar a planilha de novo:** se algum SKU teve o custo trocado pelo custo médio e a planilha traz outro valor (ou não traz o SKU), o painel pergunta: **Manter custo médio**, **Usar planilha** ou **Cancelar**. Os demais SKUs seguem a planilha.
+- O histórico fica no navegador do aparelho (chave `sellneeds-custo-medio`), junto com a lista de custos.
 
 ## 10. Aba Fiscal (o que sobra na mão)
 
