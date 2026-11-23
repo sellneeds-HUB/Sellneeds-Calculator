@@ -163,6 +163,7 @@ Uma melhoria futura possível é incluir impostos, anúncios e embalagem como cu
 ### 9.1 Custo médio
 
 - **Abrir:** botão de barras no topo (ao lado da lupa) ou o botão **Custo médio** em uma linha do painel de custos, que já abre com o SKU escolhido. É uma tela sobreposta: o cálculo continua como estava por baixo.
+- **Busca:** pesquisa os mesmos SKUs da planilha de custos (a lista da lupa), com as mesmas regras de pesquisa. Se a planilha ainda não foi importada naquele navegador, a tela mostra o botão **Importar planilha de custos**, que abre o painel de custos e o seletor do arquivo. Cada endereço do site e cada navegador têm a sua lista.
 - **Preencher:** escolha o SKU; o **custo atual** vem do SKU (pode corrigir se precisar). Informe o **estoque atual**, a **quantidade comprada** e o **custo da compra** por unidade.
 - **Conta:** novo custo médio = (estoque × custo atual + quantidade × custo da compra) ÷ (estoque + quantidade), arredondado ao centavo. Sem estoque, vale o custo da compra. A tela mostra o custo anterior, o novo, a variação em %, o estoque total e o valor total.
 - **Alertas:** custo da compra mais de 30% acima ou abaixo do custo atual, ou compra com mais de 20 vezes o estoque (a partir de 1.000 un), aparecem em amarelo e pedem confirmação antes de trocar o custo.

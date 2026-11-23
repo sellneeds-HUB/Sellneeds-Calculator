@@ -199,6 +199,7 @@ input[type='text']:focus-visible { outline: none; }
 .medio-pick { display: grid; gap: .35rem; }
 .medio-results { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
 .medio-empty { padding: .5rem .1rem; color: var(--muted); font-size: .8rem; }
+.medio-empty .chip { display: block; margin-top: .4rem; font-size: .8rem; padding: .45rem .8rem; }
 .medio-picked { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'label sku change' 'label cost change'; align-items: center; gap: 0 .6rem; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface-soft); }
 .medio-picked-label { grid-area: label; color: var(--muted); font-size: .72rem; font-weight: 700; }
 .medio-picked .sku-code { grid-area: sku; }

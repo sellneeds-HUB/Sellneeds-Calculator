@@ -80,7 +80,7 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os seis arquivos, `lo
     <div class="info-head"><h2 id="medio-title">Custo médio</h2><button id="medio-close" class="icon-button" type="button" aria-label="Fechar custo médio"><span aria-hidden="true">×</span></button></div>
     <div class="medio-main">
       <div id="medio-pick" class="medio-pick">
-        <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="medio-query" type="text" placeholder="Pesquisar SKU" aria-label="Pesquisar SKU do custo médio" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
+        <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="medio-query" type="text" placeholder="Pesquisar SKU da planilha de custos" aria-label="Pesquisar SKU da planilha de custos" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
         <ul id="medio-results" class="medio-results" aria-label="SKUs encontrados"></ul>
       </div>
       <div id="medio-picked" class="medio-picked" hidden><span class="medio-picked-label">SKU</span><strong id="medio-sku" class="sku-code"></strong><span id="medio-sku-cost" class="medio-sku-cost"></span><button id="medio-change" class="chip" type="button">Trocar</button></div>
@@ -313,6 +313,7 @@ input[type='text']:focus-visible { outline: none; }
 .medio-pick { display: grid; gap: .35rem; }
 .medio-results { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
 .medio-empty { padding: .5rem .1rem; color: var(--muted); font-size: .8rem; }
+.medio-empty .chip { display: block; margin-top: .4rem; font-size: .8rem; padding: .45rem .8rem; }
 .medio-picked { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'label sku change' 'label cost change'; align-items: center; gap: 0 .6rem; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface-soft); }
 .medio-picked-label { grid-area: label; color: var(--muted); font-size: .72rem; font-weight: 700; }
 .medio-picked .sku-code { grid-area: sku; }
@@ -1165,6 +1166,8 @@ input[type='text']:focus-visible { outline: none; }
   }
   api.open = open;
   api.items = () => items;
+  // Atalho do custo médio sem lista: abre este painel e já o seletor da planilha.
+  api.importFile = () => { open(); $('sku-file').click(); };
   api.search = search;
   // Confirmação do custo médio: grava o custo novo do SKU e atualiza os blocos que usam esse SKU.
   api.setCost = (sku, cost) => {
@@ -1413,7 +1416,16 @@ input[type='text']:focus-visible { outline: none; }
     const list = $('medio-results');
     const items = Custos() ? Custos().items() : [];
     if (sku) { list.replaceChildren(); return; }
-    if (!items.length) { list.replaceChildren(node('li', 'medio-empty', 'Nenhum custo importado. Importe a planilha pela lupa no topo.')); return; }
+    // A busca usa a mesma lista de custos por SKU da lupa (a planilha importada neste aparelho).
+    if (!items.length) {
+      const li = node('li', 'medio-empty', 'A busca usa a planilha de custos por SKU, que ainda não foi importada neste navegador. ');
+      const b = node('button', 'chip primary', 'Importar planilha de custos');
+      b.type = 'button';
+      b.addEventListener('click', () => { dialog.close(); Custos().importFile(); });
+      li.append(b);
+      list.replaceChildren(li);
+      return;
+    }
     const q = $('medio-query').value.trim();
     const found = Custos().search(items, q, 6);
     if (!q) { list.replaceChildren(node('li', 'medio-empty', 'Digite parte do SKU para escolher o produto.')); return; }

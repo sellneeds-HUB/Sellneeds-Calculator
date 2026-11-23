@@ -164,7 +164,16 @@
     const list = $('medio-results');
     const items = Custos() ? Custos().items() : [];
     if (sku) { list.replaceChildren(); return; }
-    if (!items.length) { list.replaceChildren(node('li', 'medio-empty', 'Nenhum custo importado. Importe a planilha pela lupa no topo.')); return; }
+    // A busca usa a mesma lista de custos por SKU da lupa (a planilha importada neste aparelho).
+    if (!items.length) {
+      const li = node('li', 'medio-empty', 'A busca usa a planilha de custos por SKU, que ainda não foi importada neste navegador. ');
+      const b = node('button', 'chip primary', 'Importar planilha de custos');
+      b.type = 'button';
+      b.addEventListener('click', () => { dialog.close(); Custos().importFile(); });
+      li.append(b);
+      list.replaceChildren(li);
+      return;
+    }
     const q = $('medio-query').value.trim();
     const found = Custos().search(items, q, 6);
     if (!q) { list.replaceChildren(node('li', 'medio-empty', 'Digite parte do SKU para escolher o produto.')); return; }

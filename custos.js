@@ -141,6 +141,8 @@
   }
   api.open = open;
   api.items = () => items;
+  // Atalho do custo médio sem lista: abre este painel e já o seletor da planilha.
+  api.importFile = () => { open(); $('sku-file').click(); };
   api.search = search;
   // Confirmação do custo médio: grava o custo novo do SKU e atualiza os blocos que usam esse SKU.
   api.setCost = (sku, cost) => {
