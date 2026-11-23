@@ -164,13 +164,14 @@ Uma melhoria futura possível é incluir impostos, anúncios e embalagem como cu
 
 - **Abrir:** botão de barras no topo (ao lado da lupa) ou o botão **Custo médio** em uma linha do painel de custos, que já abre com o SKU escolhido. É uma tela sobreposta: o cálculo continua como estava por baixo.
 - **Busca:** pesquisa os mesmos SKUs da planilha de custos (a lista da lupa), com as mesmas regras de pesquisa. Se a planilha ainda não foi importada naquele navegador, a tela mostra o botão **Importar planilha de custos**, que abre o painel de custos e o seletor do arquivo. Cada endereço do site e cada navegador têm a sua lista.
-- **Preencher:** escolha o SKU; o **custo atual** vem do SKU (pode corrigir se precisar). Informe o **estoque atual**, a **quantidade comprada** e o **custo da compra** por unidade.
+- **Preencher:** escolha o SKU; o **custo atual** vem do SKU (pode corrigir se precisar). Informe o **estoque atual**, a **quantidade comprada**, o **preço da nota** (unitário), as **vezes da nota** e o **IPI** em %.
+- **Custo da compra:** preço da nota × vezes × (1 + IPI). "Vezes" cobre a nota parcial: nota cheia = 1 (padrão), meia nota = 2, um terço de nota = 3. O IPI é aplicado sobre o total já multiplicado. Exemplo: R$ 10,00 × 2 com IPI 10% = R$ 22,00 por unidade. Vezes vazio vale 1 e IPI vazio vale 0. A tela mostra o custo da compra e como ele foi formado.
 - **Conta:** novo custo médio = (estoque × custo atual + quantidade × custo da compra) ÷ (estoque + quantidade), arredondado ao centavo. Sem estoque, vale o custo da compra. A tela mostra o custo anterior, o novo, a variação em %, o estoque total e o valor total.
 - **Alertas:** custo da compra mais de 30% acima ou abaixo do custo atual, ou compra com mais de 20 vezes o estoque (a partir de 1.000 un), aparecem em amarelo e pedem confirmação antes de trocar o custo.
 - **Confirmar novo custo:** troca o custo do SKU, registra no histórico como "Aplicado no SKU" e atualiza os blocos que usam esse SKU.
 - **Salvar registro:** guarda a conta no histórico como "Só registro", **sem mudar o custo do SKU**. Depois dá para **Aplicar no SKU** (avisa se o custo do SKU mudou desde o registro) ou **Excluir**.
 - **Desfazer:** disponível na última compra aplicada de cada SKU; volta o custo anterior.
-- **Baixar histórico:** CSV com data, SKU, estoque, custo anterior, quantidade, custo da compra, custo médio e situação, para abrir no Excel.
+- **Baixar histórico:** CSV com data, SKU, estoque, custo anterior, quantidade, preço da nota, vezes, IPI %, custo da compra, custo médio e situação, para abrir no Excel.
 - **Importar a planilha de novo:** se algum SKU teve o custo trocado pelo custo médio e a planilha traz outro valor (ou não traz o SKU), o painel pergunta: **Manter custo médio**, **Usar planilha** ou **Cancelar**. Os demais SKUs seguem a planilha.
 - O histórico fica no navegador do aparelho (chave `sellneeds-custo-medio`), junto com a lista de custos.
 

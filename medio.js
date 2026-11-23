@@ -8,13 +8,29 @@
   const valid = (n, min = 0) => finite(n) && n >= min && n <= C.maxInput;
   const ALERT = 0.3; // Compra 30% acima ou abaixo do custo atual pede conferência.
 
+  // Custo da compra por unidade = preço da nota × vezes × (1 + IPI).
+  // "Vezes" cobre a nota parcial: meia nota = 2, um terço de nota = 3. IPI em fração (10% = 0.10).
+  function purchaseCost({ price, times = 1, ipi = 0 }) {
+    const errors = {};
+    if (!valid(price)) errors.price = 'Informe o preço da nota.';
+    if (!valid(times) || times === 0) errors.times = 'Mínimo maior que 0.';
+    if (!valid(ipi) || ipi > 1) errors.ipi = 'De 0 a 100%.';
+    if (Object.keys(errors).length) return { ok: false, errors };
+    return { ok: true, unitCost: price * times * (1 + ipi) };
+  }
+
   // Novo custo médio = (estoque × custo atual + compra × custo da compra) ÷ (estoque + compra), em centavos.
-  // Sem estoque, o custo atual não pesa e pode ficar vazio.
-  function averageCost({ stock, prevCost, qty, unitCost }) {
+  // Sem estoque, o custo atual não pesa e pode ficar vazio. A compra vem de preço da nota, vezes e IPI (ou de unitCost pronto).
+  function averageCost(data) {
+    const { stock, prevCost, qty } = data;
     const errors = {};
     if (!valid(stock)) errors.stock = 'Informe o estoque (0 ou mais).';
     if (!valid(qty) || qty === 0) errors.qty = 'Informe a quantidade comprada.';
-    if (!valid(unitCost)) errors.unitCost = 'Informe o custo da compra.';
+    let unitCost = data.unitCost;
+    if (data.price !== undefined) {
+      const p = purchaseCost(data);
+      if (p.ok) unitCost = p.unitCost; else Object.assign(errors, p.errors);
+    } else if (!valid(unitCost)) errors.unitCost = 'Informe o custo da compra.';
     const usesPrev = valid(stock) && stock > 0;
     if (usesPrev && !valid(prevCost)) errors.prevCost = 'Informe o custo atual.';
     if (Object.keys(errors).length) return { ok: false, errors };
@@ -28,7 +44,7 @@
       warnings.push('O custo da compra está ' + Math.round(Math.abs(unitCost / prev - 1) * 100) + '% ' + (unitCost > prev ? 'acima' : 'abaixo') + ' do custo atual. Confira antes de confirmar.');
     }
     if (stock > 0 && qty > stock * 20 && qty >= 1000) warnings.push('A compra é mais de 20 vezes o estoque atual. Confira a quantidade.');
-    return { ok: true, avg, prev, change, totalQty, totalValue: round2(totalValue), warnings };
+    return { ok: true, avg, prev, change, unitCost, totalQty, totalValue: round2(totalValue), warnings };
   }
 
   // SKUs cujo custo foi trocado pelo custo médio e que a planilha nova mudaria (ou não traz).
@@ -99,8 +115,9 @@
   const csvMoney = n => n === null || n === undefined ? '' : String(round2(n)).replace('.', ',');
   const STATUS = { aplicado: 'Aplicado no SKU', registro: 'Só registro', desfeito: 'Desfeito' };
   function historyCsv(entries) {
-    const head = 'Data;SKU;Estoque;Custo anterior;Quantidade comprada;Custo da compra;Custo médio;Situação';
-    return '﻿' + [head, ...entries.map(e => [new Date(e.date).toLocaleString('pt-BR'), e.sku, e.stock, csvMoney(e.prevCost), e.qty, csvMoney(e.unitCost), csvMoney(e.avg), STATUS[e.status] || e.status].join(';'))].join('\r\n');
+    const head = 'Data;SKU;Estoque;Custo anterior;Quantidade comprada;Preço da nota;Vezes;IPI %;Custo da compra;Custo médio;Situação';
+    const num = n => n === null || n === undefined ? '' : String(n).replace('.', ',');
+    return '﻿' + [head, ...entries.map(e => [new Date(e.date).toLocaleString('pt-BR'), e.sku, e.stock, csvMoney(e.prevCost), e.qty, csvMoney(e.price), num(e.times), e.ipi === undefined ? '' : num(round2(e.ipi * 100)), csvMoney(e.unitCost), csvMoney(e.avg), STATUS[e.status] || e.status].join(';'))].join('\r\n');
   }
 
   // Backup para levar a outro aparelho: lista de custos, histórico e SKUs alterados.
@@ -115,7 +132,7 @@
     return { items, history: Array.isArray(b.historico) ? b.historico : [], applied: b.aplicados && typeof b.aplicados === 'object' ? b.aplicados : {} };
   }
 
-  const api = { averageCost, findConflicts, keepApplied, createHistory, historyCsv, makeBackup, parseBackup };
+  const api = { purchaseCost, averageCost, findConflicts, keepApplied, createHistory, historyCsv, makeBackup, parseBackup };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SellneedsMedio = api;
   if (typeof document === 'undefined' || !document.getElementById('medio-dialog')) return;
@@ -131,7 +148,7 @@
   try { storage = root.localStorage; } catch (_) { /* Sem armazenamento. */ }
   const history = createHistory(storage);
   const Custos = () => root.SellneedsCustos;
-  const FIELDS = ['stock', 'prevCost', 'qty', 'unitCost'];
+  const FIELDS = ['stock', 'prevCost', 'qty', 'price', 'times', 'ipi'];
   let sku = null, last = null;
 
   function node(tag, cls, text) {
@@ -189,7 +206,16 @@
     }));
   }
 
-  function read() { return Object.fromEntries(FIELDS.map(k => [k, calc.parseNumber($('medio-' + k).value)])); }
+  // Vezes vazio = 1 (nota cheia); IPI vazio = 0. O IPI é digitado em % e vira fração.
+  function read() {
+    const d = Object.fromEntries(FIELDS.map(k => [k, calc.parseNumber($('medio-' + k).value)]));
+    if (d.times === null) d.times = 1;
+    d.ipi = d.ipi === null ? 0 : d.ipi / 100;
+    return d;
+  }
+  const pct = n => new Intl.NumberFormat(C.locale, { maximumFractionDigits: 2 }).format(n * 100) + '%';
+  // "R$ 10,00 × 2 + IPI 10%": como o custo da compra foi formado.
+  const formula = e => money(e.price) + (e.times !== 1 ? ' × ' + qtyText(e.times) : '') + (e.ipi ? ' + IPI ' + pct(e.ipi) : '');
   function fieldError(k, message) {
     $('medio-' + k).setAttribute('aria-invalid', String(!!message));
     $('medio-' + k + '-error').textContent = message || '';
@@ -206,14 +232,16 @@
     if (!r.ok || !sku) {
       box.dataset.tone = 'empty';
       $('medio-value').textContent = '—';
-      $('medio-compare').textContent = sku ? 'Preencha estoque, quantidade e custo da compra.' : 'Escolha o SKU para começar.';
+      $('medio-compare').textContent = sku ? 'Preencha estoque, quantidade e preço da nota.' : 'Escolha o SKU para começar.';
       $('medio-total').textContent = '';
+      $('medio-unit').textContent = '';
       $('medio-warn').hidden = true;
       return r;
     }
     box.dataset.tone = r.warnings.length ? 'warn' : 'good';
     $('medio-value').textContent = money(r.avg);
     $('medio-compare').textContent = r.prev === null ? 'Sem custo anterior: o custo médio é o da compra.' : 'Custo anterior ' + money(r.prev) + ' → ' + money(r.avg) + ' (' + signed(r.change) + ')';
+    $('medio-unit').textContent = 'Custo da compra ' + money(r.unitCost) + (data.times !== 1 || data.ipi ? ' (' + formula(data) + ')' : '') + ' por unidade';
     $('medio-total').textContent = 'Estoque total ' + qtyText(r.totalQty) + ' un · valor ' + money(r.totalValue);
     $('medio-warn').hidden = !r.warnings.length;
     $('medio-warn').textContent = r.warnings.join(' ');
@@ -221,7 +249,8 @@
   }
 
   function clearPurchase() {
-    ['stock', 'qty', 'unitCost'].forEach(k => { $('medio-' + k).value = ''; });
+    ['stock', 'qty', 'price', 'ipi'].forEach(k => { $('medio-' + k).value = ''; });
+    $('medio-times').value = '1';
     const cost = costOf(sku);
     $('medio-prevCost').value = cost === null ? '' : decimal(cost);
     $('medio-sku-cost').textContent = cost === null ? 'sem custo' : 'custo atual ' + money(cost);
@@ -237,7 +266,7 @@
     const r = update(true);
     if (!r.ok || !sku) { status('Confira os campos destacados.', 'error'); return; }
     if (apply && r.warnings.length && !confirm(r.warnings.join('\n') + '\n\nConfirmar o novo custo de ' + money(r.avg) + ' para ' + sku + '?')) return;
-    const entry = { sku, stock: last.stock, prevCost: r.prev, qty: last.qty, unitCost: last.unitCost, avg: r.avg, status: apply ? 'aplicado' : 'registro' };
+    const entry = { sku, stock: last.stock, prevCost: r.prev, qty: last.qty, price: last.price, times: last.times, ipi: last.ipi, unitCost: r.unitCost, avg: r.avg, status: apply ? 'aplicado' : 'registro' };
     const added = history.add(entry);
     let extra = added.saved ? '' : ' O navegador bloqueou o armazenamento: o histórico vale só enquanto a página estiver aberta.';
     if (apply) {
@@ -257,7 +286,7 @@
     const head = node('div', 'medio-entry-head');
     head.append(node('span', 'sku-code', e.sku), node('span', 'medio-badge', STATUS[e.status] || e.status));
     const detail = node('p', 'medio-entry-detail',
-      when.toLocaleDateString('pt-BR') + ' · estoque ' + qtyText(e.stock) + ' + compra ' + qtyText(e.qty) + ' × ' + money(e.unitCost));
+      when.toLocaleDateString('pt-BR') + ' · estoque ' + qtyText(e.stock) + ' + compra ' + qtyText(e.qty) + ' × ' + money(e.unitCost) + (e.price !== undefined && (e.times !== 1 || e.ipi) ? ' (' + formula(e) + ')' : ''));
     const costs = node('p', 'medio-entry-costs', (e.prevCost === null || e.prevCost === undefined ? 'sem custo anterior' : 'anterior ' + money(e.prevCost)) + ' → médio ' + money(e.avg));
     li.append(head, detail, costs);
     const actions = node('div', 'medio-entry-actions');

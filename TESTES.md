@@ -10,6 +10,8 @@ Novo botão de barras no topo abre a tela sobreposta **Custo médio** (`medio.js
 
 - **Busca ligada à planilha:** sem planilha no navegador, a busca do custo médio mostra "Importar planilha de custos"; o botão fecha a tela, abre o painel de custos e o seletor de arquivo. Depois de importar 2 SKUs de teste, a busca "grade" no custo médio encontra GRADE-TESTE a R$ 7,39.
 
+- **Preço da nota, vezes e IPI (6 verificações novas, total 402):** R$ 10,00 × 2 com IPI 10% = R$ 22,00; nota cheia sem IPI = preço da nota; um terço de nota = preço × 3; 100 a R$ 20 + 100 a R$ 22 = R$ 21,00; validação de vezes 0 e IPI acima de 100%. No navegador: a tela mostra "Custo da compra R$ 22,00 (R$ 10,00 × 2 + IPI 10%) por unidade", o histórico guarda a mesma fórmula e "Vezes" volta para 1 depois de salvar. Layout conferido em 640×837 (escuro) e 360×640.
+
 **Não verificado nesta rodada:** download real do backup e do CSV do histórico (só a geração do conteúdo foi testada), restaurar backup pelo seletor de arquivos, botões "Usar planilha" e "Cancelar" no navegador (a lógica está nos testes), Firefox/Safari, aparelhos reais e os scripts Playwright (não instalado).
 
 ---

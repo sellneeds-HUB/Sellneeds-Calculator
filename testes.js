@@ -183,6 +183,14 @@ equal(averageCost({stock:0,prevCost:null,qty:1000,unitCost:4.6}).avg,4.6,'Custo 
 equal(averageCost({stock:0,prevCost:8,qty:3000,unitCost:7.18}).avg,7.18,'Custo médio: sem estoque o custo atual não pesa');
 ok(averageCost({stock:11747,prevCost:1.8,qty:7200,unitCost:3}).warnings.length===1,'Custo médio: alerta quando a compra foge mais de 30% (bico dosador 1,80 → 3,00)');
 ok(averageCost({stock:1949,prevCost:20.05,qty:78000,unitCost:20.82}).warnings.some(w=>/20 vezes/.test(w)),'Custo médio: alerta de quantidade fora do padrão (78.000 taças)');
+const { purchaseCost } = require('./medio.js');
+equal(purchaseCost({price:10,times:2,ipi:0.1}).unitCost,22,'Compra: R$ 10 × 2 (meia nota) com IPI 10% sobre o total = R$ 22,00');
+equal(purchaseCost({price:10}).unitCost,10,'Compra: nota cheia sem IPI = preço da nota');
+equal(purchaseCost({price:9,times:3,ipi:0}).unitCost,27,'Compra: um terço de nota = preço × 3');
+const nota=averageCost({stock:100,prevCost:20,qty:100,price:10,times:2,ipi:0.1});
+equal(nota.unitCost,22,'Custo médio: usa o custo da compra com vezes e IPI'); equal(nota.avg,21,'Custo médio: 100 a R$ 20 + 100 a R$ 22 = R$ 21,00');
+const notaBad=purchaseCost({price:10,times:0,ipi:1.5});
+ok(!notaBad.ok&&notaBad.errors.times&&notaBad.errors.ipi&&!purchaseCost({price:null}).ok,'Compra: valida preço, vezes e IPI');
 const bad=averageCost({stock:-1,prevCost:null,qty:0,unitCost:NaN});
 ok(!bad.ok&&bad.errors.stock&&bad.errors.qty&&bad.errors.unitCost,'Custo médio: valida estoque, quantidade e custo');
 ok(!averageCost({stock:10,prevCost:null,qty:5,unitCost:2}).ok,'Custo médio: com estoque exige o custo atual');

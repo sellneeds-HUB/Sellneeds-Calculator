@@ -79,12 +79,15 @@
         <div class="field"><div class="field-head"><label for="medio-stock">Estoque atual</label></div><div class="input-wrap"><input id="medio-stock" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-stock-error"><span>un</span><small id="medio-stock-error" class="field-error"></small></div></div>
         <div class="field"><div class="field-head"><label for="medio-prevCost">Custo atual</label></div><div class="input-wrap"><span>R$</span><input id="medio-prevCost" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-prevCost-error"><small id="medio-prevCost-error" class="field-error"></small></div></div>
         <div class="field"><div class="field-head"><label for="medio-qty">Quantidade comprada</label></div><div class="input-wrap"><input id="medio-qty" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-qty-error"><span>un</span><small id="medio-qty-error" class="field-error"></small></div></div>
-        <div class="field"><div class="field-head"><label for="medio-unitCost">Custo da compra (un)</label></div><div class="input-wrap"><span>R$</span><input id="medio-unitCost" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-unitCost-error"><small id="medio-unitCost-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-price">Preço da nota (un)</label></div><div class="input-wrap"><span>R$</span><input id="medio-price" type="text" inputmode="decimal" autocomplete="off" aria-describedby="medio-price-error"><small id="medio-price-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-times">Vezes da nota</label></div><div class="input-wrap"><input id="medio-times" type="text" inputmode="decimal" autocomplete="off" value="1" title="Meia nota = 2, um terço de nota = 3" aria-describedby="medio-times-error"><span>×</span><small id="medio-times-error" class="field-error"></small></div></div>
+        <div class="field"><div class="field-head"><label for="medio-ipi">IPI</label></div><div class="input-wrap"><input id="medio-ipi" type="text" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="medio-ipi-error"><span>%</span><small id="medio-ipi-error" class="field-error"></small></div></div>
         <button type="submit" hidden></button>
       </form>
       <div id="medio-result" class="result medio-result" data-tone="empty" aria-live="polite">
         <div class="headline"><span class="headline-label">Novo custo médio</span><strong id="medio-value" class="headline-value">—</strong></div>
         <p id="medio-compare" class="medio-line"></p>
+        <p id="medio-unit" class="medio-line"></p>
         <p id="medio-total" class="medio-line muted"></p>
         <p id="medio-warn" class="medio-warn" hidden></p>
       </div>
