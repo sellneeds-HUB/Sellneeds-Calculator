@@ -57,8 +57,8 @@
   // Mantém o custo médio desses SKUs na lista nova.
   function keepApplied(items, conflicts) {
     const keep = new Map(conflicts.map(c => [c.sku, c.medio]));
-    const list = items.map(i => keep.has(i.sku) ? { sku: i.sku, cost: keep.get(i.sku) } : i);
-    conflicts.filter(c => c.planilha === null).forEach(c => list.push({ sku: c.sku, cost: c.medio }));
+    const list = items.map(i => keep.has(i.sku) ? { ...i, cost: keep.get(i.sku) } : i);
+    conflicts.filter(c => c.planilha === null).forEach(c => list.push({ sku: c.sku, cost: c.medio, name: c.name || '' }));
     return list;
   }
 
@@ -120,15 +120,17 @@
     return '﻿' + [head, ...entries.map(e => [new Date(e.date).toLocaleString('pt-BR'), e.sku, e.stock, csvMoney(e.prevCost), e.qty, csvMoney(e.price), num(e.times), e.ipi === undefined ? '' : num(round2(e.ipi * 100)), csvMoney(e.unitCost), csvMoney(e.avg), STATUS[e.status] || e.status].join(';'))].join('\r\n');
   }
 
-  // Backup para levar a outro aparelho: lista de custos, histórico e SKUs alterados.
+  // Backup para levar a outro aparelho: lista de custos, nomes dos produtos, histórico e SKUs alterados.
   function makeBackup(items, data) {
-    return JSON.stringify({ tipo: 'sellneeds-custos', versao: 1, exportadoEm: new Date().toISOString(), custos: Object.fromEntries(items.map(i => [i.sku, i.cost])), historico: data.history, aplicados: data.applied }, null, 1);
+    const nomes = Object.fromEntries(items.filter(i => i.name).map(i => [i.sku, i.name]));
+    return JSON.stringify({ tipo: 'sellneeds-custos', versao: 1, exportadoEm: new Date().toISOString(), custos: Object.fromEntries(items.map(i => [i.sku, i.cost])), nomes, historico: data.history, aplicados: data.applied }, null, 1);
   }
   function parseBackup(text) {
     let b;
     try { b = JSON.parse(String(text).replace(/^﻿/, '')); } catch (_) { throw Error('Arquivo de backup inválido.'); }
     if (!b || b.tipo !== 'sellneeds-custos' || typeof b.custos !== 'object') throw Error('Este arquivo não é um backup de custos da Sellneeds.');
-    const items = Object.entries(b.custos).filter(([sku, cost]) => sku && valid(cost)).map(([sku, cost]) => ({ sku, cost: round2(cost) }));
+    const nomes = b.nomes && typeof b.nomes === 'object' ? b.nomes : {};
+    const items = Object.entries(b.custos).filter(([sku, cost]) => sku && valid(cost)).map(([sku, cost]) => ({ sku, cost: round2(cost), name: typeof nomes[sku] === 'string' ? nomes[sku].slice(0, 200) : '' }));
     return { items, history: Array.isArray(b.historico) ? b.historico : [], applied: b.aplicados && typeof b.aplicados === 'object' ? b.aplicados : {} };
   }
 
@@ -158,7 +160,8 @@
     return n;
   }
   function status(text, tone) { $('medio-status').textContent = text || ''; $('medio-status').dataset.tone = tone || ''; }
-  const costOf = s => { const i = Custos() && Custos().items().find(x => x.sku === s); return i ? i.cost : null; };
+  const itemOf = s => (Custos() && Custos().items().find(x => x.sku === s)) || null;
+  const costOf = s => { const i = itemOf(s); return i ? i.cost : null; };
 
   function setSku(next) {
     sku = next;
@@ -167,7 +170,9 @@
     if (sku) {
       $('medio-sku').textContent = sku;
       const cost = costOf(sku);
-      $('medio-sku-cost').textContent = cost === null ? 'sem custo' : 'custo atual ' + money(cost);
+      const name = (itemOf(sku) || {}).name;
+      $('medio-sku-cost').textContent = (name ? name + ' · ' : '') + (cost === null ? 'sem custo' : 'custo atual ' + money(cost));
+      $('medio-sku-cost').title = $('medio-sku-cost').textContent;
       $('medio-prevCost').value = cost === null ? '' : decimal(cost);
     } else {
       $('medio-query').value = '';
@@ -193,13 +198,13 @@
     }
     const q = $('medio-query').value.trim();
     const found = Custos().search(items, q, 6);
-    if (!q) { list.replaceChildren(node('li', 'medio-empty', 'Digite parte do SKU para escolher o produto.')); return; }
-    if (!found.total) { list.replaceChildren(node('li', 'medio-empty', 'Nenhum SKU encontrado.')); return; }
+    if (!q) { list.replaceChildren(node('li', 'medio-empty', 'Digite parte do SKU ou do nome para escolher o produto.')); return; }
+    if (!found.total) { list.replaceChildren(node('li', 'medio-empty', 'Nenhum produto encontrado com esse SKU ou nome.')); return; }
     list.replaceChildren(...found.items.map(item => {
       const li = node('li', 'sku-row');
       const b = node('button', 'sku-pick');
       b.type = 'button';
-      b.append(node('span', 'sku-code', item.sku), node('span', 'sku-cost', money(item.cost)), node('span', 'sku-action', 'Escolher'));
+      b.append(Custos().identity(item), node('span', 'sku-cost', money(item.cost)), node('span', 'sku-action', 'Escolher'));
       b.addEventListener('click', () => { setSku(item.sku); $('medio-stock').focus(); });
       li.append(b);
       return li;

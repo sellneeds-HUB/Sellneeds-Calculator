@@ -172,7 +172,38 @@ ok(createStore(null).load().length===0,'Sem armazenamento: não quebra');
 ok(!('save' in lista)&&!('login' in lista),'Lista sem cadastro avulso e sem login');
 const lista2=createStore(fakeStorage()); lista2.replace([{sku:'A',cost:1},{sku:'B',cost:2}]);
 ok(lista2.update('A',1.5)&&lista2.load().length===2&&lista2.load().find(i=>i.sku==='A').cost===1.5,'Custo médio confirmado troca só o SKU escolhido');
-console.log('Custos por SKU: planilha, pesquisa e lista do aparelho conferidas.');
+// Nome do produto: coluna sem título (planilha da Sellneeds), acentos do Excel no Windows e pesquisa aproximada.
+const { decodeText } = require('./custos.js');
+const latin = Buffer.from('SKU;;CUSTO\r\nSELL-010;Refil Mop Reposição;4.00\r\n', 'latin1');
+const mista = Buffer.concat([latin, Buffer.from('CAFÉ-001;#N/D;17\r\n', 'utf8')]);
+const nomes = parseCsv(decodeText(mista));
+ok(nomes.items[0].name==='Refil Mop Reposição'&&nomes.items[1].sku==='CAFÉ-001','Planilha do Windows e UTF-8 misturados: acentos certos');
+ok(nomes.items[1].name==='','Nome "#N/D" do Excel conta como sem nome');
+ok(parseCsv('CUSTO;SKU;Nome do produto\n5;A-1;"Pote; tampa ""bambu"""').items[0].name==='Pote; tampa "bambu"','Coluna Nome em qualquer posição, com aspas');
+ok(parseCsv('CUSTO;SKU\n5;A-1').items[0].name==='','Planilha sem nome continua funcionando');
+const catalogo=[
+  {sku:'DRU-024',cost:9.3,name:'Lixeira 5l Preta Com Tampa Para Banheiro Cozinha'},
+  {sku:'ARTHI-040',cost:20,name:'Kit Lixeira Cozinha 5L E Dispenser'},
+  {sku:'SELL-004',cost:151.76,name:'Jogo de Panelas 10 Peças Antiaderente Tampa de Vidro Marrom'},
+  {sku:'SELL-002',cost:151.76,name:'Jogo de Panelas 10 Peças Antiaderente Tampa de Vidro Bianco'},
+  {sku:'TRC-001',cost:51.03,name:'Kit 12 Potes Herméticos Tampa Bambu Organizador Mantimentos'},
+  {sku:'PANELA-9',cost:1,name:''}];
+ok(search(catalogo,'panelas marrom').items.map(i=>i.sku).join()==='SELL-004','Pesquisa por nome: todas as palavras');
+ok(search(catalogo,'panlea').items.map(i=>i.sku).sort().join()==='SELL-002,SELL-004'&&search(catalogo,'antiadernte bianco').items[0].sku==='SELL-002','Pesquisa aproximada: erro de digitação ainda acha o produto');
+ok(search(catalogo,'hermetico').items[0].sku==='TRC-001'&&search(catalogo,'pote herm').items[0].sku==='TRC-001','Pesquisa por trecho do nome, sem acento');
+ok(search(catalogo,'lixeira').items[0].sku==='DRU-024','Nome que começa com a palavra vem primeiro');
+ok(search(catalogo,'sell 004').items[0].sku==='SELL-004'&&search(catalogo,'SELL-004').total===1,'SKU continua sendo a referência principal');
+ok(search(catalogo,'xyzw').total===0&&search(catalogo,'de').total===2,'Sem resultado para o que não existe; palavra curta só no começo da palavra');
+const lista3=createStore(fakeStorage()); lista3.replace(catalogo);
+ok(lista3.update('DRU-024',10)&&lista3.load().find(i=>i.sku==='DRU-024').name.startsWith('Lixeira'),'Custo médio confirmado mantém o nome');
+const antigo=fakeStorage(); antigo.setItem('sellneeds-custos','{"A-1":3}');
+ok(createStore(antigo).load()[0].name===''&&createStore(antigo).load()[0].cost===3,'Lista salva antes dos nomes continua valendo');
+const ns=fakeStorage(); createStore(ns).replace(catalogo);
+ok(createStore(ns).load().find(i=>i.sku==='SELL-002').name===catalogo[3].name,'Nome continua salvo ao reabrir');
+const forros=[{sku:'UTI-002',cost:2.62,name:'Kit 50 Forro Papel Airfryer Descartável'},{sku:'UTI-003',cost:5.24,name:'Kit 100 Forro Papel Airfryer Descartável'},{sku:'TOPB-001',cost:3.6,name:'Base Concreto Formol Endurecedor'},{sku:'CLI-077',cost:12.92,name:'Luva Térmica Forno Churrasco'},{sku:'SIL-007',cost:24,name:'Mini Ferro De Passar Roupa'}];
+ok(search(forros,'forro').items.map(i=>i.sku).join()==='UTI-002,UTI-003','Com resultado certo, palavras só parecidas (formol, forno, ferro) não aparecem');
+ok(search(forros,'forrro').total===2&&search(forros,'forrro').items.every(i=>i.sku.startsWith('UTI')),'Sem resultado certo, a pesquisa aproximada ainda ajuda');
+console.log('Custos por SKU: planilha, pesquisa por SKU e nome e lista do aparelho conferidas.');
 // Custo médio: casos tirados da planilha "Custo Médio.xlsx".
 const { averageCost, findConflicts, keepApplied, createHistory, historyCsv, makeBackup, parseBackup } = require('./medio.js');
 const mop=averageCost({stock:9577,prevCost:19.17,qty:3000,unitCost:18.5});
@@ -211,6 +242,8 @@ ok(kept.length===3&&kept.find(i=>i.sku==='MOP').cost===19.01&&kept.find(i=>i.sku
 hist.forget(['MOP']); ok(!hist.applied().MOP,'Importar: "Usar planilha" esquece o custo médio do SKU');
 const csv=historyCsv(hist.list()); ok(csv.split('\r\n').length===3&&csv.includes(';19,01;'),'Histórico em CSV para o Excel (vírgula decimal)');
 const bk=parseBackup(makeBackup([{sku:'MOP',cost:19.01},{sku:'X',cost:2}],hist.data()));
+ok(parseBackup(makeBackup([{sku:'MOP',cost:1,name:'Mop Spray'},{sku:'X',cost:2,name:''}],hist.data())).items[0].name==='Mop Spray','Backup leva o nome do produto');
+ok(keepApplied([{sku:'MOP',cost:18,name:'Mop Spray'}],[{sku:'MOP',medio:19,planilha:18}])[0].name==='Mop Spray','Manter custo médio não apaga o nome');
 ok(bk.items.length===2&&bk.history.length===2,'Backup: exporta e restaura custos e histórico');
 assert.throws(()=>parseBackup('{"a":1}'),/backup/); checks++;
 console.log('Custo médio: Mop 19,17 → '+mop.avg.toFixed(2)+' · histórico, desfazer, importação e backup conferidos.');

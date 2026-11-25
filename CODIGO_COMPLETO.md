@@ -60,7 +60,7 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os seis arquivos, `lo
   <dialog id="sku-dialog" class="info-dialog sku-dialog" aria-labelledby="sku-title">
     <div class="info-head"><h2 id="sku-title">Custos por SKU</h2><button id="sku-close" class="icon-button" type="button" aria-label="Fechar custos"><span aria-hidden="true">×</span></button></div>
     <div class="sku-main">
-      <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="sku-query" type="text" placeholder="Pesquisar SKU" aria-label="Pesquisar SKU" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
+      <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="sku-query" type="text" placeholder="Pesquisar SKU ou nome" aria-label="Pesquisar SKU ou nome do produto" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search"></div>
       <p id="sku-status" class="sku-status" aria-live="polite"></p>
       <ul id="sku-list" class="sku-list" aria-label="Custos encontrados"></ul>
       <p id="sku-more" class="sku-status" hidden></p>
@@ -80,7 +80,7 @@ Copie cada bloco inteiro para o arquivo indicado. Mantenha os seis arquivos, `lo
     <div class="info-head"><h2 id="medio-title">Custo médio</h2><button id="medio-close" class="icon-button" type="button" aria-label="Fechar custo médio"><span aria-hidden="true">×</span></button></div>
     <div class="medio-main">
       <div id="medio-pick" class="medio-pick">
-        <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="medio-query" type="text" placeholder="Pesquisar SKU da planilha de custos" aria-label="Pesquisar SKU da planilha de custos" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"></div>
+        <div class="input-wrap sku-search"><svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.3" fill="none" stroke="currentColor" stroke-width="2.3"/><path d="M15.3 15.3 20.5 20.5" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></svg><input id="medio-query" type="text" placeholder="Pesquisar SKU ou nome" aria-label="Pesquisar SKU ou nome da planilha de custos" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search"></div>
         <ul id="medio-results" class="medio-results" aria-label="SKUs encontrados"></ul>
       </div>
       <div id="medio-picked" class="medio-picked" hidden><span class="medio-picked-label">SKU</span><strong id="medio-sku" class="sku-code"></strong><span id="medio-sku-cost" class="medio-sku-cost"></span><button id="medio-change" class="chip" type="button">Trocar</button></div>
@@ -298,6 +298,8 @@ input[type='text']:focus-visible { outline: none; }
 .sku-pick { grid-template-columns: minmax(0, 1fr) auto auto; width: 100%; min-height: 2.9rem; padding: .3rem .1rem; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .sku-pick:hover, .sku-pick:focus-visible { background: var(--brand-soft); }
 .sku-code { font-weight: 600; overflow-wrap: anywhere; line-height: 1.25; }
+.sku-id { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+.sku-name { color: var(--muted); font-size: .76rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .sku-cost { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sku-action { display: inline-flex; align-items: center; height: 2.1rem; padding: 0 .8rem; border-radius: .6rem; background: var(--brand); color: var(--surface); font-weight: 700; }
 .sku-actions { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: .45rem; padding-top: .2rem; }
@@ -320,7 +322,7 @@ input[type='text']:focus-visible { outline: none; }
 .medio-picked { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'label sku change' 'label cost change'; align-items: center; gap: 0 .6rem; padding: .45rem .6rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface-soft); }
 .medio-picked-label { grid-area: label; color: var(--muted); font-size: .72rem; font-weight: 700; }
 .medio-picked .sku-code { grid-area: sku; }
-.medio-sku-cost { grid-area: cost; color: var(--muted); font-size: .76rem; }
+.medio-sku-cost { grid-area: cost; min-width: 0; color: var(--muted); font-size: .76rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .medio-picked .chip { grid-area: change; font-size: .76rem; padding: .35rem .65rem; }
 .medio-inputs { flex-shrink: 0; }
 .medio-result { flex-shrink: 0; gap: .2rem; }
@@ -701,11 +703,11 @@ input[type='text']:focus-visible { outline: none; }
     }
     // O botão do custo mostra o SKU escolhido; digitar outro custo desfaz a ligação.
     // Com SKU, o rótulo encurta para "Custo" e o SKU ganha espaço no celular.
-    function setSku(sku) {
+    function setSku(sku, name) {
       state.sku = sku;
       section.querySelector('label[for="' + p + '-cost"]').textContent = sku ? 'Custo' : t.costLabel;
       el('sku').textContent = sku || 'SKU';
-      el('sku').title = sku ? 'Custo do SKU ' + sku + ' · trocar' : 'Buscar o custo pelo SKU';
+      el('sku').title = sku ? 'Custo do SKU ' + sku + (name ? ' (' + name + ')' : '') + ' · trocar' : 'Buscar o custo pelo SKU ou nome';
       el('sku').setAttribute('aria-label', el('sku').title);
       el('sku').setAttribute('aria-pressed', String(!!sku));
     }
@@ -872,7 +874,7 @@ input[type='text']:focus-visible { outline: none; }
     });
     el('sku').addEventListener('click', () => {
       if (!root.SellneedsCustos || !root.SellneedsCustos.open) return;
-      root.SellneedsCustos.open({ pick: (sku, cost) => { el('cost').value = decimal(cost); setSku(sku); refresh(); } });
+      root.SellneedsCustos.open({ pick: (sku, cost, name) => { el('cost').value = decimal(cost); setSku(sku, name); refresh(); } });
     });
     el('cost').addEventListener('input', () => setSku(null));
     document.addEventListener('sellneeds:custo', e => {
@@ -1038,32 +1040,118 @@ input[type='text']:focus-visible { outline: none; }
   // Para comparar: sem acento, maiúsculo e só letras e números. "rm 001g" encontra "RM-001G".
   const normalizeSku = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 
+  // Nome do produto para comparar: sem acento, minúsculo, só letras e números separados por espaço.
+  const normalizeText = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  // Erro do Excel no lugar do nome (#N/D, #REF!, #VALOR!...) conta como produto sem nome.
+  const cleanName = s => { const n = String(s ?? '').replace(/\s+/g, ' ').trim(); return /^#[A-Z/\d]+[!?]?$/i.test(n) ? '' : n.slice(0, 200); };
+
+  // Arquivo da planilha: UTF-8 quando possível; senão o padrão do Excel no Windows (assim os acentos de "Reposição" não quebram).
+  // Linha por linha, porque há planilhas que misturam os dois (ex.: só "CAFÉ-001" em UTF-8).
+  function decodeText(bytes) {
+    const utf8 = new TextDecoder('utf-8', { fatal: true }), win = new TextDecoder('windows-1252');
+    const one = b => { try { return utf8.decode(b); } catch (_) { return win.decode(b); } };
+    try { return utf8.decode(bytes); } catch (_) { /* Não é UTF-8 inteiro: decide em cada linha. */ }
+    const lines = [];
+    let start = 0;
+    for (let i = 0; i <= bytes.length; i++) if (i === bytes.length || bytes[i] === 10) { lines.push(one(bytes.subarray(start, i))); start = i + 1; }
+    return lines.join('\n');
+  }
+
+  // Divide uma linha respeitando aspas: "Pote; tampa" fica numa célula só.
+  function splitLine(line, sep) {
+    if (!sep) return [line.trim()];
+    const out = [];
+    let cell = '', quoted = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (quoted) {
+        if (ch === '"' && line[i + 1] === '"') { cell += '"'; i++; } else if (ch === '"') quoted = false; else cell += ch;
+      } else if (ch === '"' && !cell.trim()) { quoted = true; cell = ''; } else if (ch === sep) { out.push(cell.trim()); cell = ''; } else cell += ch;
+    }
+    out.push(cell.trim());
+    return out;
+  }
+
   // Planilha exportada do Excel: colunas CUSTO e SKU, em qualquer ordem, separadas por ; (ou tab/vírgula).
+  // Nome do produto (opcional): coluna NOME, PRODUTO, TÍTULO ou DESCRIÇÃO, ou a coluna sem título, como na planilha da Sellneeds.
   function parseCsv(text) {
     const lines = String(text ?? '').replace(/^﻿/, '').split(/\r\n|\n|\r/).filter(line => line.trim());
     if (!lines.length) throw Error('A planilha está vazia.');
     const sep = [';', '\t', ','].find(s => lines[0].includes(s));
-    const cells = line => line.split(sep).map(c => c.trim().replace(/^"(.*)"$/, '$1').trim());
+    const cells = line => splitLine(line, sep);
     const head = sep ? cells(lines[0]).map(normalizeSku) : [];
     const costCol = head.findIndex(h => h.startsWith('CUSTO')), skuCol = head.indexOf('SKU');
     if (costCol < 0 || skuCol < 0) throw Error('A planilha precisa das colunas CUSTO e SKU.');
+    let nameCol = head.findIndex(h => /^(NOME|PRODUTO|TITULO|DESCRICAO)/.test(h));
+    if (nameCol < 0) nameCol = head.indexOf('');
     const bySku = new Map();
     let skipped = 0;
     lines.slice(1).forEach(line => {
       const row = cells(line);
       const sku = row[skuCol] || '', cost = calc.parseNumber(row[costCol]);
       if (!sku || !validCost(cost)) { skipped++; return; }
-      bySku.set(sku, { sku, cost: round2(cost) });
+      bySku.set(sku, { sku, cost: round2(cost), name: nameCol < 0 ? '' : cleanName(row[nameCol]) });
     });
     return { items: [...bySku.values()], skipped };
   }
 
-  // Cada palavra pesquisada precisa aparecer no SKU ("acqua 002" acha ACQUABIOS-002); quem começa com a primeira vem antes.
+  // Distância entre duas palavras: letra trocada, faltando, sobrando ou duas invertidas contam 1 cada.
+  function distance(a, b) {
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+    return d[a.length][b.length];
+  }
+
+  // Quanto uma palavra pesquisada combina com o produto (0 = não combina). O SKU vale mais; depois palavra do nome igual ou
+  // que começa igual; depois trecho no meio do nome; por fim, palavra parecida (erro de digitação, a partir de 4 letras).
+  function wordScore(w, x) {
+    const code = w.toUpperCase();
+    if (x.key.startsWith(code)) return 5;
+    if (x.key.includes(code)) return 4;
+    if (!x.words.length) return 0;
+    if (x.words.includes(w)) return 3.5;
+    if (x.words.some(n => n.startsWith(w))) return 3;
+    if (w.length >= 3 && x.flat.includes(w)) return 2;
+    if (w.length < 4) return 0;
+    const max = w.length >= 7 ? 2 : 1;
+    return x.words.some(n => n.length >= 3 && (distance(w, n.slice(0, w.length)) <= max || (Math.abs(n.length - w.length) <= max && distance(w, n) <= max))) ? 1 : 0;
+  }
+
+  // O índice da pesquisa é montado uma vez por lista.
+  const indexes = new WeakMap();
+  function indexOf(items) {
+    if (!indexes.has(items)) {
+      indexes.set(items, items.map(i => {
+        const words = normalizeText(i.name).split(' ').filter(Boolean);
+        return { item: i, key: normalizeSku(i.sku), words, flat: words.join('') };
+      }));
+    }
+    return indexes.get(items);
+  }
+
+  // Pesquisa por SKU ou nome: cada palavra digitada precisa combinar com o SKU ou com o nome ("acqua 002" acha ACQUABIOS-002,
+  // "pote herm" acha os potes herméticos, "panlea" acha panela). Quem combina melhor vem antes; empate segue a ordem do SKU.
+  // Ganham prioridade o SKU digitado inteiro ("sell-01" na frente de quem só tem "sell" e "01") e o nome que começa pela primeira palavra.
+  // Palavra parecida só entra quando nenhum produto combina de verdade: "forro" mostra os forros, não "formol", "ferro" e "forno".
   function search(items, query, limit = 50) {
-    const words = String(query ?? '').split(/\s+/).map(normalizeSku).filter(Boolean);
-    const q = words[0] || '';
-    const found = items.map(i => ({ item: i, key: normalizeSku(i.sku) })).filter(x => words.every(w => x.key.includes(w)));
-    found.sort((a, b) => (b.key.startsWith(q) - a.key.startsWith(q)) || a.item.sku.localeCompare(b.item.sku, 'pt-BR', { numeric: true }));
+    const words = normalizeText(query).split(' ').filter(Boolean);
+    const whole = normalizeSku(query);
+    let found = [];
+    indexOf(items).forEach(x => {
+      let score = 0, fuzzy = false;
+      for (const w of words) { const s = wordScore(w, x); if (!s) return; score += s; if (s === 1) fuzzy = true; }
+      if (words.length > 1 && x.key.includes(whole)) score += 10;
+      if (x.words[0] && words[0] && x.words[0].startsWith(words[0])) score += 1;
+      found.push({ item: x.item, score, fuzzy });
+    });
+    if (found.some(f => !f.fuzzy)) found = found.filter(f => !f.fuzzy);
+    found.sort((a, b) => (b.score - a.score) || a.item.sku.localeCompare(b.item.sku, 'pt-BR', { numeric: true }));
     return { total: found.length, items: found.slice(0, limit).map(x => x.item) };
   }
 
@@ -1071,11 +1159,12 @@ input[type='text']:focus-visible { outline: none; }
   function createStore(storage) {
     const KEY = 'sellneeds-custos';
     let memory = [];
-    const persist = () => { try { storage.setItem(KEY, JSON.stringify(Object.fromEntries(memory.map(i => [i.sku, i.cost])))); return true; } catch (_) { return false; } };
+    // Cada SKU vira o custo, ou [custo, nome] quando a planilha trouxe o nome. Listas antigas (só custo) continuam valendo.
+    const persist = () => { try { storage.setItem(KEY, JSON.stringify(Object.fromEntries(memory.map(i => [i.sku, i.name ? [i.cost, i.name] : i.cost])))); return true; } catch (_) { return false; } };
     try { storage.removeItem('sellneeds-sessao'); } catch (_) { /* Login antigo da nuvem, não é mais usado. */ }
     return {
       load() {
-        try { const data = JSON.parse(storage.getItem(KEY)); if (data) memory = Object.entries(data).map(([sku, cost]) => ({ sku, cost })); } catch (_) { /* Sem armazenamento: usa a lista da memória. */ }
+        try { const data = JSON.parse(storage.getItem(KEY)); if (data) memory = Object.entries(data).map(([sku, v]) => Array.isArray(v) ? { sku, cost: v[0], name: String(v[1] || '') } : { sku, cost: v, name: '' }); } catch (_) { /* Sem armazenamento: usa a lista da memória. */ }
         return memory;
       },
       // Retorna false quando o navegador bloqueia o armazenamento: a lista vale só enquanto a página estiver aberta.
@@ -1086,13 +1175,13 @@ input[type='text']:focus-visible { outline: none; }
       // Usado só ao confirmar um custo médio: troca o custo de um SKU e mantém o resto da lista.
       update(sku, cost) {
         const i = memory.findIndex(x => x.sku === sku);
-        if (i < 0) memory.push({ sku, cost }); else memory[i] = { sku, cost };
+        if (i < 0) memory.push({ sku, cost, name: '' }); else memory[i] = { ...memory[i], cost };
         return persist();
       }
     };
   }
 
-  const api = { normalizeSku, parseCsv, search, createStore };
+  const api = { normalizeSku, normalizeText, decodeText, parseCsv, search, createStore };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.SellneedsCustos = api;
   if (typeof document === 'undefined' || !document.getElementById('sku-dialog')) return;
@@ -1112,7 +1201,7 @@ input[type='text']:focus-visible { outline: none; }
     $('sku-status').dataset.tone = error ? 'error' : '';
   }
   function summary() {
-    return items.length ? items.length.toLocaleString(C.locale) + ' SKUs importados neste aparelho.' : 'Nenhum custo importado. Toque em Importar planilha (colunas CUSTO e SKU).';
+    return items.length ? items.length.toLocaleString(C.locale) + ' SKUs importados neste aparelho.' : 'Nenhum custo importado. Toque em Importar planilha (colunas SKU, nome do produto e CUSTO).';
   }
   function node(tag, cls, text) {
     const n = document.createElement(tag);
@@ -1122,10 +1211,18 @@ input[type='text']:focus-visible { outline: none; }
   }
 
   const Medio = () => root.SellneedsMedio;
-  // Consulta: SKU, custo e atalho para o custo médio. No modo escolha, a linha inteira é um botão que usa o custo.
+  // SKU em destaque e o nome do produto embaixo, menor.
+  function identity(item) {
+    const id = node('span', 'sku-id');
+    id.append(node('span', 'sku-code', item.sku));
+    if (item.name) id.append(node('span', 'sku-name', item.name));
+    return id;
+  }
+  api.identity = identity;
+  // Consulta: SKU, nome, custo e atalho para o custo médio. No modo escolha, a linha inteira é um botão que usa o custo.
   function row(item) {
     const li = node('li', 'sku-row');
-    const content = [node('span', 'sku-code', item.sku), node('span', 'sku-cost', money(item.cost))];
+    const content = [identity(item), node('span', 'sku-cost', money(item.cost))];
     if (!pick) {
       li.append(...content);
       if (Medio() && Medio().open) {
@@ -1140,9 +1237,9 @@ input[type='text']:focus-visible { outline: none; }
     }
     const button = node('button', 'sku-pick');
     button.type = 'button';
-    button.setAttribute('aria-label', 'Usar custo de ' + item.sku + ': ' + money(item.cost));
+    button.setAttribute('aria-label', 'Usar custo de ' + item.sku + (item.name ? ', ' + item.name : '') + ': ' + money(item.cost));
     button.append(...content, node('span', 'sku-action', 'Usar'));
-    button.addEventListener('click', () => { pick(item.sku, item.cost); dialog.close(); });
+    button.addEventListener('click', () => { pick(item.sku, item.cost, item.name); dialog.close(); });
     li.append(button);
     return li;
   }
@@ -1150,10 +1247,10 @@ input[type='text']:focus-visible { outline: none; }
   function render() {
     const result = search(items, $('sku-query').value.trim(), LIMIT);
     $('sku-list').replaceChildren(...result.items.map(row));
-    if (!message) status(items.length && !result.total ? 'Nenhum SKU encontrado.' : null);
+    if (!message) status(items.length && !result.total ? 'Nenhum produto encontrado com esse SKU ou nome.' : null);
     const more = $('sku-more');
     more.hidden = result.total <= LIMIT;
-    more.textContent = 'Mostrando ' + LIMIT + ' de ' + result.total.toLocaleString(C.locale) + '. Digite mais do SKU para filtrar.';
+    more.textContent = 'Mostrando ' + LIMIT + ' de ' + result.total.toLocaleString(C.locale) + '. Digite mais do SKU ou do nome para filtrar.';
   }
 
   function open(options = {}) {
@@ -1221,7 +1318,7 @@ input[type='text']:focus-visible { outline: none; }
     $('sku-file').value = '';
     if (!file) return;
     try {
-      const text = await file.text();
+      const text = decodeText(new Uint8Array(await file.arrayBuffer()));
       // Backup exportado por este site: restaura lista, histórico e custos alterados.
       if (/\.json$/i.test(file.name) || /^\ufeff?\s*\{/.test(text)) {
         const b = Medio().parseBackup(text);
@@ -1312,8 +1409,8 @@ input[type='text']:focus-visible { outline: none; }
   // Mantém o custo médio desses SKUs na lista nova.
   function keepApplied(items, conflicts) {
     const keep = new Map(conflicts.map(c => [c.sku, c.medio]));
-    const list = items.map(i => keep.has(i.sku) ? { sku: i.sku, cost: keep.get(i.sku) } : i);
-    conflicts.filter(c => c.planilha === null).forEach(c => list.push({ sku: c.sku, cost: c.medio }));
+    const list = items.map(i => keep.has(i.sku) ? { ...i, cost: keep.get(i.sku) } : i);
+    conflicts.filter(c => c.planilha === null).forEach(c => list.push({ sku: c.sku, cost: c.medio, name: c.name || '' }));
     return list;
   }
 
@@ -1375,15 +1472,17 @@ input[type='text']:focus-visible { outline: none; }
     return '﻿' + [head, ...entries.map(e => [new Date(e.date).toLocaleString('pt-BR'), e.sku, e.stock, csvMoney(e.prevCost), e.qty, csvMoney(e.price), num(e.times), e.ipi === undefined ? '' : num(round2(e.ipi * 100)), csvMoney(e.unitCost), csvMoney(e.avg), STATUS[e.status] || e.status].join(';'))].join('\r\n');
   }
 
-  // Backup para levar a outro aparelho: lista de custos, histórico e SKUs alterados.
+  // Backup para levar a outro aparelho: lista de custos, nomes dos produtos, histórico e SKUs alterados.
   function makeBackup(items, data) {
-    return JSON.stringify({ tipo: 'sellneeds-custos', versao: 1, exportadoEm: new Date().toISOString(), custos: Object.fromEntries(items.map(i => [i.sku, i.cost])), historico: data.history, aplicados: data.applied }, null, 1);
+    const nomes = Object.fromEntries(items.filter(i => i.name).map(i => [i.sku, i.name]));
+    return JSON.stringify({ tipo: 'sellneeds-custos', versao: 1, exportadoEm: new Date().toISOString(), custos: Object.fromEntries(items.map(i => [i.sku, i.cost])), nomes, historico: data.history, aplicados: data.applied }, null, 1);
   }
   function parseBackup(text) {
     let b;
     try { b = JSON.parse(String(text).replace(/^﻿/, '')); } catch (_) { throw Error('Arquivo de backup inválido.'); }
     if (!b || b.tipo !== 'sellneeds-custos' || typeof b.custos !== 'object') throw Error('Este arquivo não é um backup de custos da Sellneeds.');
-    const items = Object.entries(b.custos).filter(([sku, cost]) => sku && valid(cost)).map(([sku, cost]) => ({ sku, cost: round2(cost) }));
+    const nomes = b.nomes && typeof b.nomes === 'object' ? b.nomes : {};
+    const items = Object.entries(b.custos).filter(([sku, cost]) => sku && valid(cost)).map(([sku, cost]) => ({ sku, cost: round2(cost), name: typeof nomes[sku] === 'string' ? nomes[sku].slice(0, 200) : '' }));
     return { items, history: Array.isArray(b.historico) ? b.historico : [], applied: b.aplicados && typeof b.aplicados === 'object' ? b.aplicados : {} };
   }
 
@@ -1413,7 +1512,8 @@ input[type='text']:focus-visible { outline: none; }
     return n;
   }
   function status(text, tone) { $('medio-status').textContent = text || ''; $('medio-status').dataset.tone = tone || ''; }
-  const costOf = s => { const i = Custos() && Custos().items().find(x => x.sku === s); return i ? i.cost : null; };
+  const itemOf = s => (Custos() && Custos().items().find(x => x.sku === s)) || null;
+  const costOf = s => { const i = itemOf(s); return i ? i.cost : null; };
 
   function setSku(next) {
     sku = next;
@@ -1422,7 +1522,9 @@ input[type='text']:focus-visible { outline: none; }
     if (sku) {
       $('medio-sku').textContent = sku;
       const cost = costOf(sku);
-      $('medio-sku-cost').textContent = cost === null ? 'sem custo' : 'custo atual ' + money(cost);
+      const name = (itemOf(sku) || {}).name;
+      $('medio-sku-cost').textContent = (name ? name + ' · ' : '') + (cost === null ? 'sem custo' : 'custo atual ' + money(cost));
+      $('medio-sku-cost').title = $('medio-sku-cost').textContent;
       $('medio-prevCost').value = cost === null ? '' : decimal(cost);
     } else {
       $('medio-query').value = '';
@@ -1448,13 +1550,13 @@ input[type='text']:focus-visible { outline: none; }
     }
     const q = $('medio-query').value.trim();
     const found = Custos().search(items, q, 6);
-    if (!q) { list.replaceChildren(node('li', 'medio-empty', 'Digite parte do SKU para escolher o produto.')); return; }
-    if (!found.total) { list.replaceChildren(node('li', 'medio-empty', 'Nenhum SKU encontrado.')); return; }
+    if (!q) { list.replaceChildren(node('li', 'medio-empty', 'Digite parte do SKU ou do nome para escolher o produto.')); return; }
+    if (!found.total) { list.replaceChildren(node('li', 'medio-empty', 'Nenhum produto encontrado com esse SKU ou nome.')); return; }
     list.replaceChildren(...found.items.map(item => {
       const li = node('li', 'sku-row');
       const b = node('button', 'sku-pick');
       b.type = 'button';
-      b.append(node('span', 'sku-code', item.sku), node('span', 'sku-cost', money(item.cost)), node('span', 'sku-action', 'Escolher'));
+      b.append(Custos().identity(item), node('span', 'sku-cost', money(item.cost)), node('span', 'sku-action', 'Escolher'));
       b.addEventListener('click', () => { setSku(item.sku); $('medio-stock').focus(); });
       li.append(b);
       return li;

@@ -295,11 +295,11 @@
     }
     // O botão do custo mostra o SKU escolhido; digitar outro custo desfaz a ligação.
     // Com SKU, o rótulo encurta para "Custo" e o SKU ganha espaço no celular.
-    function setSku(sku) {
+    function setSku(sku, name) {
       state.sku = sku;
       section.querySelector('label[for="' + p + '-cost"]').textContent = sku ? 'Custo' : t.costLabel;
       el('sku').textContent = sku || 'SKU';
-      el('sku').title = sku ? 'Custo do SKU ' + sku + ' · trocar' : 'Buscar o custo pelo SKU';
+      el('sku').title = sku ? 'Custo do SKU ' + sku + (name ? ' (' + name + ')' : '') + ' · trocar' : 'Buscar o custo pelo SKU ou nome';
       el('sku').setAttribute('aria-label', el('sku').title);
       el('sku').setAttribute('aria-pressed', String(!!sku));
     }
@@ -466,7 +466,7 @@
     });
     el('sku').addEventListener('click', () => {
       if (!root.SellneedsCustos || !root.SellneedsCustos.open) return;
-      root.SellneedsCustos.open({ pick: (sku, cost) => { el('cost').value = decimal(cost); setSku(sku); refresh(); } });
+      root.SellneedsCustos.open({ pick: (sku, cost, name) => { el('cost').value = decimal(cost); setSku(sku, name); refresh(); } });
     });
     el('cost').addEventListener('input', () => setSku(null));
     document.addEventListener('sellneeds:custo', e => {

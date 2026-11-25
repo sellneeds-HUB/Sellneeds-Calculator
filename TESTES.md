@@ -1,6 +1,21 @@
 # Testes da calculadora Sellneeds
 
-## 0. Custo médio por SKU (23/11/2026)
+## 0. Pesquisa por nome do produto (25/11/2026)
+
+A planilha de custos agora traz o nome do produto junto do SKU, e a pesquisa (lupa, botão SKU e custo médio) aceita SKU ou nome, com correspondência aproximada. Taxas, faixas e frete não mudaram.
+
+- **`node testes.js`: APROVADO, 417 verificações** (as 402 anteriores + 15 novas): arquivo do Excel no Windows misturado com UTF-8 (acentos certos), `#N/D` vira sem nome, coluna Nome em qualquer posição e com aspas, planilha sem nome continua funcionando, pesquisa por várias palavras do nome, erro de digitação ("panlea", "antiadernte bianco"), trecho sem acento ("hermetico", "pote herm"), nome que começa pela palavra vem antes, SKU continua sendo a referência, palavra curta não acha trecho no meio, custo médio confirmado mantém o nome, lista salva antes dos nomes continua valendo, nome salvo ao reabrir, backup leva o nome e "Manter custo médio" não apaga o nome.
+- **Planilha real `meus-produtos-SELLNEEDS_-todos (2).csv` (no Node):** 983 SKUs, 0 linhas ignoradas, 0 acentos quebrados; **388 SKUs vêm com o nome `#N/D`** na planilha e ficam sem nome (só achados pelo SKU). Pesquisa leva cerca de 7 ms com a lista inteira.
+- **Navegador do app (Chrome, servidor local, 71 linhas da planilha real entregues ao campo de arquivo pelo código):** "panlea marom" → SELL-004 e SELL-006; "garrafa termica" → tocar em **Usar** puxa R$ 48,00 e o botão mostra ISTOK-001 com o nome na dica; custo médio "refil 6" → SELL-013 com o nome ao lado do custo atual. Nenhum erro no console. Os dados de teste foram apagados do navegador.
+- **Layout:** 375×812 (escuro, painel de custos e custo médio em claro) e 1366×768 (claro): SKU, nome em até duas linhas e custo cabem; a página continua sem rolagem.
+
+- **Ajuste da pesquisa aproximada (2 verificações novas, total 419):** palavra parecida só entra quando nenhum produto combina de verdade. Com a planilha real, "forro" passou de 22 resultados (com Formol, Ferro e Forno) para os **5 forros de airfryer** (UTI-002 a UTI-006); "panlea marom" continua achando SELL-004 e SELL-006.
+
+**Não verificado nesta rodada:** importar pelo seletor de arquivos real, planilha inteira de 983 linhas no navegador (só no Node), Firefox/Safari, aparelhos reais, tamanhos 360×640 e 844×390, e os scripts Playwright (não instalado).
+
+---
+
+## Custo médio por SKU (23/11/2026)
 
 Novo botão de barras no topo abre a tela sobreposta **Custo médio** (`medio.js`). Taxas, faixas e frete não mudaram.
 
